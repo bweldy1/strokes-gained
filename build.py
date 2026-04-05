@@ -3,7 +3,7 @@ import re
 
 ROOT = Path(__file__).resolve().parent
 SOURCE_HTML = ROOT / 'html' / 'app.html'
-OUTPUT_HTML = ROOT / 'SGA.html'
+OUTPUT_HTML = ROOT / 'index.html'
 
 RELATIVE_URL_RE = re.compile(r'^(?!https?:|//).+')
 ATTR_VALUE_TEMPLATE = r'{name}\s*=\s*(?:"([^\"]*)"|\'([^\']*)\')'
