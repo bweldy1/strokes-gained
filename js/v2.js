@@ -1,25 +1,32 @@
 // ═══════════════════════════════════════════════════════════════
-// SG LOOKUP TABLES (PLACEHOLDERS)
-// Green table = FEET; all others = YARDS
+// QUALITY BANDS
 // ═══════════════════════════════════════════════════════════════
-const SG_TABLES = {
-  tee: [[100,2.80],[150,2.95],[200,3.10],[250,3.25],[300,3.45],[350,3.62],[400,3.75],[450,3.88],[500,4.00],[550,4.10],[600,4.20]],
-  fairway: [[10,1.30],[20,1.45],[30,1.60],[40,1.72],[50,1.82],[75,2.10],[100,2.30],[125,2.48],[150,2.62],[175,2.75],[200,2.87],[225,2.96],[250,3.06],[275,3.15],[300,3.24]],
-  rough: [[10,1.40],[20,1.55],[30,1.68],[40,1.80],[50,1.92],[75,2.20],[100,2.40],[125,2.58],[150,2.72],[175,2.85],[200,2.97],[225,3.08],[250,3.18],[275,3.27],[300,3.36]],
-  sand: [[5,1.60],[10,1.72],[15,1.82],[20,1.90],[30,2.05],[40,2.18],[50,2.30],[75,2.55],[100,2.75],[125,2.92],[150,3.08],[175,3.22],[200,3.35]],
-  recovery: [[10,1.80],[20,1.95],[30,2.08],[50,2.28],[75,2.50],[100,2.70],[125,2.88],[150,3.05],[200,3.30]],
-  green: [[1,1.01],[2,1.03],[3,1.08],[4,1.14],[5,1.20],[6,1.28],[7,1.35],[8,1.40],[9,1.46],[10,1.51],[12,1.59],[15,1.68],[20,1.78],[25,1.86],[30,1.92],[40,2.01],[50,2.09],[60,2.16]]
+
+const quality_band_global =    [{label:'Exceptional',min:1,color:'#37ec98'},
+    {label:'Excellent',min:0.5,color:'#52b788'},
+    {label:'Above Average',min:0.2,color:'#74c69d'},
+    {label:'Neutral',min:-0.2,color:'#f5b17a'},
+    {label:'Below Average',min:-0.5,color:'#bb7b6b'},
+    {label:'Poor',min:-1,color:'#e76f51'},
+    {label:'Very Poor',min:-999,color:'#f32548'}]
+
+const QUALITY_BANDS = {
+  drive:     quality_band_global,
+  approach:  quality_band_global,
+  shortgame: quality_band_global,
+  putt:      quality_band_global
 };
 
-// ═══════════════════════════════════════════════════════════════
-// QUALITY BANDS (PLACEHOLDERS)
-// ═══════════════════════════════════════════════════════════════
-const QUALITY_BANDS = {
-  drive:     [{label:'Great',min:0.6,color:'#52b788'},{label:'Good',min:0.2,color:'#74c69d'},{label:'Average',min:-0.2,color:'#f4a261'},{label:'Poor',min:-0.6,color:'#e76f51'},{label:'Terrible',min:-999,color:'#e94560'}],
-  approach:  [{label:'Great',min:0.5,color:'#52b788'},{label:'Good',min:0.1,color:'#74c69d'},{label:'Average',min:-0.2,color:'#f4a261'},{label:'Poor',min:-0.5,color:'#e76f51'},{label:'Terrible',min:-999,color:'#e94560'}],
-  shortgame: [{label:'Great',min:0.4,color:'#52b788'},{label:'Good',min:0.1,color:'#74c69d'},{label:'Average',min:-0.1,color:'#f4a261'},{label:'Poor',min:-0.4,color:'#e76f51'},{label:'Terrible',min:-999,color:'#e94560'}],
-  putt:      [{label:'Great',min:0.3,color:'#52b788'},{label:'Good',min:0.05,color:'#74c69d'},{label:'Average',min:-0.1,color:'#f4a261'},{label:'Poor',min:-0.3,color:'#e76f51'},{label:'Terrible',min:-999,color:'#e94560'}]
-};
+/*
++1.0 or higher	Exceptional
++0.5 to +0.99	Excellent
++0.20- to +0.49+	Above Average
+-0.19  to + 0.19	Neutral / Expected
+-0.20 to -0.49+	Below Average
+-0.5 to -0.99	Poor
+-1.0 or lower	Very Poor / Costly
+*/
+
 
 // ═══════════════════════════════════════════════════════════════
 // STATE
