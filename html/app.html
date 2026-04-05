@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>SG Tracker</title>
+<link rel="stylesheet" href="../css/v2.css">
+</head>
+<body>
+
+<!-- HOME -->
+<div class="screen active" id="screen-home">
+  <div class="home-header">
+    <div class="home-logo">⛳ SG Tracker</div>
+    <div class="home-title">Strokes<br>Gained</div>
+    <div class="home-sub">Track every shot. Improve every round.</div>
+  </div>
+  <div class="scroll-body">
+    <button class="btn btn-primary" onclick="goToNewRound()" style="margin-bottom:24px"><span>+</span> Start New Round</button>
+    <div class="section-label">Recent Rounds</div>
+    <div id="rounds-list"></div>
+  </div>
+</div>
+
+<!-- COURSE SELECT -->
+<div class="screen" id="screen-courses">
+  <div class="topbar">
+    <button class="btn-icon" onclick="showScreen('home')">‹</button>
+    <div><div class="topbar-title">Select Course</div></div>
+    <div style="width:36px"></div>
+  </div>
+  <div class="scroll-body">
+    <div id="courses-list"></div>
+    <div class="section-label" style="margin-top:24px">Add Course</div>
+    <p style="font-size:13px;color:var(--text-muted);margin-bottom:12px">Paste course JSON. <span style="color:var(--fairway);cursor:pointer" onclick="showSampleJSON()">Load Wild Wood example ›</span></p>
+    <textarea class="json-input" id="course-json-input" placeholder='[{"name":"My Club","tees":"Blue","holes":[{"hole":1,"par":4,"yards":385},...]}]'></textarea>
+    <button class="btn btn-primary" style="margin-top:10px" onclick="saveCourseJSON()">Save Course</button>
+    <div id="json-error" style="color:var(--accent);font-size:13px;margin-top:8px;display:none"></div>
+  </div>
+</div>
+
+<!-- HOLE ENTRY -->
+<div class="screen" id="screen-hole">
+  <div class="topbar">
+    <button class="btn-icon" onclick="showScreen('home')">‹</button>
+    <div style="text-align:center">
+      <div class="topbar-title" id="hole-course-name">Course</div>
+      <div class="topbar-sub" id="hole-round-date" style="cursor:pointer" onclick="openDateEdit()"></div>
+    </div>
+    <button class="btn-icon" onclick="showScreen('summary')">⊞</button>
+  </div>
+  <div class="hole-nav">
+    <button class="hole-nav-btn" id="hole-prev-btn" onclick="prevHole()">‹</button>
+    <div class="hole-num-block">
+      <div class="hole-num-label">Hole</div>
+      <div class="hole-num" id="hole-num-display">1</div>
+      <div class="hole-info">
+        <span id="hole-par-display">Par 4</span> ·
+        <span class="hole-yardage-edit" onclick="editYardage()">
+          <span id="hole-yards-display">400 yds</span>
+          <span style="font-size:10px;color:var(--text-dim)">✎</span>
+        </span>
+      </div>
+    </div>
+    <button class="hole-nav-btn" id="hole-next-btn" onclick="nextHole()">›</button>
+  </div>
+  <div class="tally-bar">
+    <div class="tally-chip active" id="tally-total" onclick="toggleTally('total')"><span class="tally-chip-val" id="tv-total">—</span><span class="tally-chip-lbl">Total</span></div>
+    <div class="tally-chip active" id="tally-drive" onclick="toggleTally('drive')"><span class="tally-chip-val" id="tv-drive">—</span><span class="tally-chip-lbl">Drive</span></div>
+    <div class="tally-chip active" id="tally-approach" onclick="toggleTally('approach')"><span class="tally-chip-val" id="tv-approach">—</span><span class="tally-chip-lbl">Approach</span></div>
+    <div class="tally-chip active" id="tally-shortgame" onclick="toggleTally('shortgame')"><span class="tally-chip-val" id="tv-shortgame">—</span><span class="tally-chip-lbl">Short Game</span></div>
+    <div class="tally-chip active" id="tally-putt" onclick="toggleTally('putt')"><span class="tally-chip-val" id="tv-putt">—</span><span class="tally-chip-lbl">Putt</span></div>
+  </div>
+  <div class="shot-list" id="shot-list"></div>
+  <button class="add-shot-btn" onclick="openShotSheet()"><span style="font-size:20px">+</span> Add Shot</button>
+</div>
+
+<!-- ROUND SUMMARY -->
+<div class="screen" id="screen-summary">
+  <div class="topbar">
+    <button class="btn-icon" onclick="showScreen('hole')">‹</button>
+    <div><div class="topbar-title">Round Summary</div></div>
+    <button class="btn-icon" onclick="exportCSV()">↑</button>
+  </div>
+  <div class="scroll-body">
+    <div class="card" id="summary-totals"></div>
+    <div class="section-label">By Hole</div>
+    <div class="card" id="summary-holes"></div>
+    <div class="section-label">Export</div>
+    <button class="btn btn-secondary" onclick="exportCSV()" style="margin-bottom:10px">📋 Copy Full CSV</button>
+    <button class="btn btn-secondary" onclick="exportSummaryCSV()">📊 Copy Summary Row</button>
+    <div style="margin-top:12px;padding:12px;background:var(--card);border-radius:var(--radius-sm);border:1px solid var(--border)">
+      <p style="font-size:12px;color:var(--text-muted);line-height:1.6">Google Sheets: open a sheet → tap cell A1 → long-press and Paste.<br>If clipboard doesn't work, a text box will appear to copy manually.</p>
+    </div>
+    <div style="height:20px"></div>
+    <button class="btn btn-ghost" onclick="showScreen('home')">Done</button>
+  </div>
+</div>
+
+<!-- SHOT ENTRY SHEET -->
+<div class="sheet-overlay" id="shot-sheet" onclick="handleSheetOverlayClick(event)">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title" id="shot-sheet-title">Add Shot</div>
+    <div class="sheet-body">
+      <div class="form-group">
+        <div class="form-label">Starting Lie</div>
+        <div id="prefill-hint" class="prefill-hint" style="display:none"></div>
+        <div class="pill-group" id="lie-pills">
+          <div class="pill" onclick="selectLie('tee')">Tee</div>
+          <div class="pill" onclick="selectLie('fairway')">Fairway</div>
+          <div class="pill" onclick="selectLie('rough')">Rough</div>
+          <div class="pill" onclick="selectLie('sand')">Sand</div>
+          <div class="pill" onclick="selectLie('recovery')">Recovery</div>
+          <div class="pill" onclick="selectLie('green')">Green</div>
+        </div>
+      </div>
+      <div class="form-group">
+        <div class="form-label">Distance from Pin <span id="dist-from-unit-label" style="color:var(--text-dim);font-weight:400;text-transform:none;letter-spacing:0">(yards)</span></div>
+        <div class="num-input-wrap">
+          <input class="num-input" type="number" id="shot-dist-from" inputmode="numeric" placeholder="0" oninput="onShotFormChange()">
+          <span class="num-unit" id="dist-from-unit">yds</span>
+        </div>
+      </div>
+      <div class="form-group">
+        <div class="form-label">Result — Next Lie</div>
+        <div class="pill-group" id="result-lie-pills">
+          <div class="pill" onclick="selectResultLie('fairway')">Fairway</div>
+          <div class="pill" onclick="selectResultLie('rough')">Rough</div>
+          <div class="pill" onclick="selectResultLie('sand')">Sand</div>
+          <div class="pill" onclick="selectResultLie('recovery')">Recovery</div>
+          <div class="pill" onclick="selectResultLie('green')">Green</div>
+          <div class="pill" onclick="selectResultLie('holed')">Holed ⛳</div>
+        </div>
+      </div>
+      <div class="form-group" id="result-dist-group" style="display:none">
+        <div class="form-label">Result Distance <span id="result-dist-unit-label" style="color:var(--text-dim);font-weight:400;text-transform:none;letter-spacing:0"></span></div>
+        <div class="num-input-wrap">
+          <input class="num-input" type="number" id="shot-dist-result" inputmode="numeric" placeholder="0" oninput="onShotFormChange()">
+          <span class="num-unit" id="dist-result-unit">yds</span>
+        </div>
+      </div>
+      <div class="form-group">
+        <div class="form-label">Category <span style="font-size:10px;color:var(--text-dim);font-weight:400;text-transform:none;letter-spacing:0">(auto · tap to override)</span></div>
+        <div class="pill-group" id="category-pills">
+          <div class="pill" onclick="selectCategory('drive')">Drive</div>
+          <div class="pill" onclick="selectCategory('approach')">Approach</div>
+          <div class="pill" onclick="selectCategory('shortgame')">Short Game</div>
+          <div class="pill" onclick="selectCategory('putt')">Putt</div>
+        </div>
+      </div>
+      <div class="sg-preview">
+        <div class="sg-preview-val" id="sg-preview-val">—</div>
+        <div class="sg-preview-label" id="sg-preview-label">Enter shot details for SG</div>
+        <div class="sg-quality-bar"><div class="sg-quality-marker" id="sg-quality-marker" style="left:50%"></div></div>
+      </div>
+      <button class="btn btn-primary" onclick="saveShot()">Save Shot</button>
+    </div>
+  </div>
+</div>
+
+<!-- YARDAGE SHEET -->
+<div class="sheet-overlay" id="yardage-sheet" onclick="handleYardageOverlayClick(event)">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">Override Hole Yardage</div>
+    <div class="sheet-body">
+      <div class="form-group">
+        <div class="form-label">Yardage from Tee</div>
+        <div class="num-input-wrap">
+          <input class="num-input" type="number" id="yardage-override-input" inputmode="numeric" placeholder="0">
+          <span class="num-unit">yds</span>
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="saveYardageOverride()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- DATE SHEET -->
+<div class="sheet-overlay" id="date-sheet" onclick="handleDateOverlayClick(event)">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">Round Date</div>
+    <div class="sheet-body">
+      <div class="form-group">
+        <div class="form-label">Date Played</div>
+        <input type="date" class="date-input" id="round-date-input">
+      </div>
+      <button class="btn btn-primary" onclick="saveRoundDate()">Save</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="../js/v2.js"></script>
+</body>
+</html>
