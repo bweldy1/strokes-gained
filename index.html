@@ -153,7 +153,7 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
     <div class="section-label">Recent Rounds</div>
     <div id="rounds-list"></div>
   </div>
-  <div id="build-version" style="position:absolute;bottom:0;left:0;right:0;text-align:center;font-size:10px;color:var(--text);padding:4px;">Build: 2026-04-06 21:39</div>
+  <div id="build-version" style="position:absolute;bottom:0;left:0;right:0;text-align:center;font-size:10px;color:var(--text);padding:4px;">Build: 2026-04-06 22:10</div>
 </div>
 
 <!-- COURSE SELECT -->
@@ -289,7 +289,7 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
         <div class="sg-preview-label" id="sg-preview-label">Enter shot details for SG</div>
         <div class="sg-quality-bar"><div class="sg-quality-marker" id="sg-quality-marker" style="left:50%"></div></div>
       </div>
-      <button class="btn btn-primary" onclick="saveShot()">Save Shot</button>
+      <button class="btn btn-primary" id="save-shot-btn" onclick="saveShot()">Save Shot</button>
     </div>
   </div>
 </div>
@@ -953,8 +953,10 @@ function selectResultLie(lie,silent){
     if (!silent && lie !== 'holed') {
     setTimeout(() => {
         const el = document.getElementById('shot-dist-result');
-        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
         el.focus();
+
+        const btn_el = document.getElementById('save-shot-btn');
+        btn_el.scrollIntoView({ behavior: 'smooth', block: 'end', container: 'all' });
     }, 200);
     }
 }

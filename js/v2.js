@@ -303,8 +303,10 @@ function selectResultLie(lie,silent){
     if (!silent && lie !== 'holed') {
     setTimeout(() => {
         const el = document.getElementById('shot-dist-result');
-        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
         el.focus();
+
+        const btn_el = document.getElementById('save-shot-btn');
+        btn_el.scrollIntoView({ behavior: 'smooth', block: 'end', container: 'all' });
     }, 200);
     }
 }
