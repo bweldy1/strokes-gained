@@ -1,5 +1,6 @@
 from pathlib import Path
 import re
+from datetime import datetime
 
 ROOT = Path(__file__).resolve().parent
 SOURCE_HTML = ROOT / 'html' / 'app.html'
@@ -55,6 +56,8 @@ def build() -> None:
     html = SOURCE_HTML.read_text(encoding='utf-8')
     html = inline_styles(html)
     html = inline_scripts(html)
+    build_date = datetime.now().strftime('%Y-%m-%d %H:%M')
+    html = html.replace('<!-- BUILD_DATE -->', build_date)
     OUTPUT_HTML.write_text(html, encoding='utf-8')
     print(f'Built {OUTPUT_HTML}')
 

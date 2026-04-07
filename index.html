@@ -142,7 +142,7 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
 <body>
 
 <!-- HOME -->
-<div class="screen active" id="screen-home">
+<div class="screen active" id="screen-home" style="position: relative;">
   <div class="home-header">
     <div class="home-logo">⛳ SG Tracker</div>
     <div class="home-title">Strokes<br>Gained</div>
@@ -153,6 +153,7 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
     <div class="section-label">Recent Rounds</div>
     <div id="rounds-list"></div>
   </div>
+  <div id="build-version" style="position:absolute;bottom:0;left:0;right:0;text-align:center;font-size:10px;color:var(--text);padding:4px;">Build: 2026-04-06 20:51</div>
 </div>
 
 <!-- COURSE SELECT -->
@@ -948,6 +949,14 @@ function selectResultLie(lie,silent){
   });
   updateResultDistVisibility();
   if(!silent){ autoSetCategory(); updateSGPreview(); }
+
+    if (!silent && lie !== 'holed') {
+    setTimeout(() => {
+        const el = document.getElementById('shot-dist-result');
+        el.focus();
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 100);
+    }
 }
 function updateResultDistVisibility(){
   const show=state.shotResultLie&&state.shotResultLie!=='holed';
