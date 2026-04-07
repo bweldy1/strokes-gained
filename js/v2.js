@@ -304,7 +304,7 @@ function selectResultLie(lie,silent){
     setTimeout(() => {
         const el = document.getElementById('shot-dist-result');
         el.focus();
-        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 100);
     }
 }
