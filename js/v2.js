@@ -303,10 +303,9 @@ function selectResultLie(lie,silent){
     if (!silent && lie !== 'holed') {
     setTimeout(() => {
         const el = document.getElementById('shot-dist-result');
-        el.focus();
-        el.select();
         el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 100);
+        el.focus();
+    }, 200);
     }
 }
 function updateResultDistVisibility(){

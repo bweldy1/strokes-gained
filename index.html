@@ -108,7 +108,7 @@ textarea.json-input:focus { border-color: var(--fairway); }
 .num-input::-webkit-outer-spin-button, .num-input::-webkit-inner-spin-button { -webkit-appearance: none; }
 .num-input:focus { border-color: var(--fairway); }
 .num-unit { position: absolute; right: 14px; color: var(--text-muted); font-size: 14px; font-weight: 500; pointer-events: none; }
-.prefill-hint { font-size: 12px; color: var(--fairway); margin-bottom: 8px; padding: 8px 10px; background: rgba(82,183,136,.1); border-radius: 6px; border: 1px solid rgba(82,183,136,.2); }
+.prefill-hint { font-size: 12px; color: var(--fairway); margin-bottom: 8px; margin-top:8px; padding: 8px 10px; background: rgba(82,183,136,.1); border-radius: 6px; border: 1px solid rgba(82,183,136,.2); }
 .sg-preview { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 14px; margin-bottom: 20px; text-align: center; }
 .sg-preview-val { font-size: 32px; font-weight: 700; letter-spacing: -1px; }
 .sg-preview-label { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
@@ -153,7 +153,7 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
     <div class="section-label">Recent Rounds</div>
     <div id="rounds-list"></div>
   </div>
-  <div id="build-version" style="position:absolute;bottom:0;left:0;right:0;text-align:center;font-size:10px;color:var(--text);padding:4px;">Build: 2026-04-06 21:15</div>
+  <div id="build-version" style="position:absolute;bottom:0;left:0;right:0;text-align:center;font-size:10px;color:var(--text);padding:4px;">Build: 2026-04-06 21:39</div>
 </div>
 
 <!-- COURSE SELECT -->
@@ -248,7 +248,6 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
       </div>
       <div class="form-group">
         <div class="form-label">Starting Lie</div>
-        <div id="prefill-hint" class="prefill-hint" style="display:none"></div>
         <div class="pill-group" id="lie-pills">
           <div class="pill" onclick="selectLie('tee')">Tee</div>
           <div class="pill" onclick="selectLie('fairway')">Fairway</div>
@@ -257,6 +256,7 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
           <div class="pill" onclick="selectLie('recovery')">Recovery</div>
           <div class="pill" onclick="selectLie('green')">Green</div>
         </div>
+      <div id="prefill-hint" class="prefill-hint" style="display:none"></div>
       </div>
       <div class="form-group">
         <div class="form-label">Distance from Pin <span id="dist-from-unit-label" style="color:var(--text-dim);font-weight:400;text-transform:none;letter-spacing:0">(yards)</span></div>
@@ -953,10 +953,9 @@ function selectResultLie(lie,silent){
     if (!silent && lie !== 'holed') {
     setTimeout(() => {
         const el = document.getElementById('shot-dist-result');
-        el.focus();
-        el.select();
         el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 100);
+        el.focus();
+    }, 200);
     }
 }
 function updateResultDistVisibility(){
