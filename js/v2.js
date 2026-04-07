@@ -299,6 +299,14 @@ function selectResultLie(lie,silent){
   });
   updateResultDistVisibility();
   if(!silent){ autoSetCategory(); updateSGPreview(); }
+
+    if (!silent && lie !== 'holed') {
+    setTimeout(() => {
+        const el = document.getElementById('shot-dist-result');
+        el.focus();
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 100);
+    }
 }
 function updateResultDistVisibility(){
   const show=state.shotResultLie&&state.shotResultLie!=='holed';
