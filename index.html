@@ -153,7 +153,7 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
     <div class="section-label">Recent Rounds</div>
     <div id="rounds-list"></div>
   </div>
-  <div id="build-version" style="position:absolute;bottom:0;left:0;right:0;text-align:center;font-size:10px;color:var(--text);padding:4px;">Build: 2026-04-07 20:39</div>
+  <div id="build-version" style="position:absolute;bottom:0;left:0;right:0;text-align:center;font-size:10px;color:var(--text);padding:4px;">Build: 2026-04-07 20:51</div>
 </div>
 
 <!-- COURSE SELECT -->
@@ -282,6 +282,15 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
           <input class="num-input" type="number" id="shot-dist-result" inputmode="numeric" placeholder="0" oninput="onShotFormChange()">
           <span class="num-unit" id="dist-result-unit">yds</span>
         </div>
+      </div>
+
+      <div class="form-group">
+        <div class="form-label">Miss Direction <span style="font-size:10px;color:var(--text-dim);font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></div>
+        <div class="pill-group" id="miss-depth-pills">
+          <div class="pill" onclick="selectMissDepth('short')">Short</div>
+          <div class="pill" onclick="selectMissDepth('long')">Long</div>
+        </div>
+        <div class="pill-group" id="miss-side-pills" style="margin-top:8px"></div>
       </div>
 
       <div class="sg-preview">
@@ -682,7 +691,7 @@ const QUALITY_BANDS = {
 // ═══════════════════════════════════════════════════════════════
 // STATE
 // ═══════════════════════════════════════════════════════════════
-let state = { currentRoundId:null, currentHole:1, editingShotIndex:null, excludedCategories:new Set(), shotLie:null, shotResultLie:null, shotCategory:null };
+let state = { currentRoundId:null, currentHole:1, editingShotIndex:null, excludedCategories:new Set(), shotLie:null, shotResultLie:null, shotCategory:null, shotMissDepth:null, shotMissSide:null };
 
 // ═══════════════════════════════════════════════════════════════
 // STORAGE
@@ -849,11 +858,13 @@ function renderShotList(hd) {
     const distStr=s.lie==='green'?s.distFrom+' ft':s.distFrom+' yds';
     const resLabel=s.resultLie==='holed'?'Holed ⛳':s.resultLie.charAt(0).toUpperCase()+s.resultLie.slice(1);
     const resDist=s.resultLie==='holed'?'':(s.resultLie==='green'?(s.resultDist!=null?s.resultDist+' ft':''):(s.resultDist!=null?s.resultDist+' yds':''));
+    const missParts=[s.missDepth,s.missSide].filter(Boolean).map(v=>v.charAt(0).toUpperCase()+v.slice(1));
+    const missStr=missParts.length?` · ${missParts.join('-')}`:'';
     return `<div class="shot-row" onclick="editShot(${i})">
       <div class="shot-num">${i+1}</div>
       <div class="shot-info">
         <div class="shot-info-main">${s.lie.charAt(0).toUpperCase()+s.lie.slice(1)} · ${distStr} <span class="category-badge cat-${s.category}">${catLabel(s.category)}</span></div>
-        <div class="shot-info-sub">→ ${resLabel}${resDist?' · '+resDist:''}</div>
+        <div class="shot-info-sub">→ ${resLabel}${resDist?' · '+resDist:''}${missStr}</div>
       </div>
       <div class="shot-sg"><div class="shot-sg-val" style="color:${sgColor}">${sgStr}</div>${quality?`<div class="shot-quality-dot" style="background:${quality.color}"></div>`:''}</div>
       <div class="shot-del" onclick="event.stopPropagation();deleteShot(${i})">×</div>
@@ -895,13 +906,13 @@ function toggleTally(cat){ if(cat==='total') return; if(state.excludedCategories
 // ═══════════════════════════════════════════════════════════════
 function openShotSheet(editIndex) {
   state.editingShotIndex = editIndex!==undefined ? editIndex : null;
-  state.shotLie=null; state.shotResultLie=null; state.shotCategory=null;
+  state.shotLie=null; state.shotResultLie=null; state.shotCategory=null; state.shotMissDepth=null; state.shotMissSide=null;
   document.getElementById('shot-sheet-title').textContent = editIndex!==undefined?'Edit Shot':'Add Shot';
   document.getElementById('shot-dist-from').value='';
   document.getElementById('shot-dist-result').value='';
   document.getElementById('result-dist-group').style.display='none';
   document.getElementById('prefill-hint').style.display='none';
-  document.querySelectorAll('#lie-pills .pill,#result-lie-pills .pill,#category-pills .pill').forEach(p=>p.classList.remove('selected'));
+  document.querySelectorAll('#lie-pills .pill,#result-lie-pills .pill,#category-pills .pill,#miss-depth-pills .pill,#miss-side-pills .pill').forEach(p=>p.classList.remove('selected'));
 
   const hd=currentHoleData();
   if(editIndex!==undefined){
@@ -911,6 +922,8 @@ function openShotSheet(editIndex) {
     selectResultLie(s.resultLie,true);
     if(s.resultDist!=null) document.getElementById('shot-dist-result').value=s.resultDist;
     selectCategory(s.category,true);
+    if(s.missDepth) selectMissDepth(s.missDepth,true);
+    if(s.missSide) selectMissSide(s.missSide,true);
   } else {
     const sug=getSuggestion(hd);
     if(sug){
@@ -974,6 +987,27 @@ function selectCategory(cat,silent){
   state.shotCategory=cat;
   const map={'Drive':'drive','Approach':'approach','Short Game':'shortgame','Putt':'putt'};
   document.querySelectorAll('#category-pills .pill').forEach(p=>p.classList.toggle('selected',map[p.textContent.trim()]===cat));
+  updateMissSidePills(cat);
+}
+function updateMissSidePills(cat){
+  const opts=cat==='putt'
+    ?[['low','Low'],['center','Center'],['high','High']]
+    :[['left','Left'],['middle','Middle'],['right','Right']];
+  const container=document.getElementById('miss-side-pills');
+  if(!container) return;
+  // Clear missSide state if it no longer applies to the new option set
+  if(state.shotMissSide && !opts.some(([v])=>v===state.shotMissSide)) state.shotMissSide=null;
+  container.innerHTML=opts.map(([v,l])=>`<div class="pill${state.shotMissSide===v?' selected':''}" onclick="selectMissSide('${v}')">${l}</div>`).join('');
+}
+function selectMissDepth(val,silent){
+  if(!silent && state.shotMissDepth===val){ state.shotMissDepth=null; }
+  else { state.shotMissDepth=val; }
+  document.querySelectorAll('#miss-depth-pills .pill').forEach(p=>p.classList.toggle('selected',p.textContent.trim().toLowerCase()===state.shotMissDepth));
+}
+function selectMissSide(val,silent){
+  if(!silent && state.shotMissSide===val){ state.shotMissSide=null; }
+  else { state.shotMissSide=val; }
+  document.querySelectorAll('#miss-side-pills .pill').forEach(p=>p.classList.toggle('selected',p.textContent.trim().toLowerCase()===state.shotMissSide));
 }
 function autoSetCategory(){
   if(!state.shotLie) return;
@@ -1005,7 +1039,7 @@ function saveShot(){
   const sg=calcSG(lie,dFrom,rLie,isNaN(dRes)?0:dRes);
   const hd=currentHoleData(), idx=state.editingShotIndex!==null?state.editingShotIndex:hd.shots.length;
   const cat=state.shotCategory||autoCategory(lie,dFrom,idx,hd.par);
-  const shot={ lie, distFrom:dFrom, resultLie:rLie, resultDist:(rLie!=='holed'&&!isNaN(dRes))?dRes:null, category:cat, sg };
+  const shot={ lie, distFrom:dFrom, resultLie:rLie, resultDist:(rLie!=='holed'&&!isNaN(dRes))?dRes:null, category:cat, sg, missDepth:state.shotMissDepth||null, missSide:state.shotMissSide||null };
   const round=currentRound();
   if(state.editingShotIndex!==null) round.holes[state.currentHole-1].shots[state.editingShotIndex]=shot;
   else round.holes[state.currentHole-1].shots.push(shot);
@@ -1117,11 +1151,11 @@ function showExportModal(text){
 }
 function exportCSV(){
   const round=currentRound(); if(!round) return;
-  const rows=[['Hole','Par','Yardage','Shot#','Lie','Dist From','Dist Unit','Result Lie','Result Dist','Result Unit','Category','SG']];
+  const rows=[['Hole','Par','Yardage','Shot#','Lie','Dist From','Dist Unit','Result Lie','Result Dist','Result Unit','Category','SG','Miss Depth','Miss Side']];
   for(const hole of round.holes) for(let i=0;i<(hole.shots||[]).length;i++){
     const s=hole.shots[i];
     const fu=s.lie==='green'?'ft':'yds', ru=s.resultLie==='green'?'ft':'yds';
-    rows.push([hole.hole,hole.par,hole.yardsOverride||hole.yards,i+1,s.lie,s.distFrom,fu,s.resultLie,s.resultDist!=null?s.resultDist:'',s.resultLie!=='holed'?ru:'',s.category,s.sg!=null?s.sg.toFixed(4):'']);
+    rows.push([hole.hole,hole.par,hole.yardsOverride||hole.yards,i+1,s.lie,s.distFrom,fu,s.resultLie,s.resultDist!=null?s.resultDist:'',s.resultLie!=='holed'?ru:'',s.category,s.sg!=null?s.sg.toFixed(4):'',s.missDepth||'',s.missSide||'']);
   }
   const csv=rows.map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\r\n');
   copyToClipboard(csv,'CSV copied to clipboard!');
