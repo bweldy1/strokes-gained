@@ -1,0 +1,21 @@
+<!-- ROUND SUMMARY -->
+<div class="screen" id="screen-summary">
+  <div class="topbar">
+    <button class="btn-icon" onclick="showScreen('hole')">‹</button>
+    <div><div class="topbar-title">Round Summary</div></div>
+    <button class="btn-icon" onclick="exportCSV()">↑</button>
+  </div>
+  <div class="scroll-body">
+    <div class="card" id="summary-totals"></div>
+    <div class="section-label">By Hole</div>
+    <div class="card" id="summary-holes"></div>
+    <div class="section-label">Export</div>
+    <button class="btn btn-secondary" onclick="exportCSV()" style="margin-bottom:10px">📋 Copy Full CSV</button>
+    <button class="btn btn-secondary" onclick="exportSummaryCSV()">📊 Copy Summary Row</button>
+    <div style="margin-top:12px;padding:12px;background:var(--card);border-radius:var(--radius-sm);border:1px solid var(--border)">
+      <p style="font-size:12px;color:var(--text-muted);line-height:1.6">Google Sheets: open a sheet → tap cell A1 → long-press and Paste.<br>If clipboard doesn't work, a text box will appear to copy manually.</p>
+    </div>
+    <div style="height:20px"></div>
+    <button class="btn btn-ghost" onclick="showScreen('home')">Done</button>
+  </div>
+</div>

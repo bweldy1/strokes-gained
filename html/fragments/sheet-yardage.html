@@ -1,0 +1,17 @@
+<!-- YARDAGE SHEET -->
+<div class="sheet-overlay" id="yardage-sheet" onclick="handleYardageOverlayClick(event)">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">Override Hole Yardage</div>
+    <div class="sheet-body">
+      <div class="form-group">
+        <div class="form-label">Yardage from Tee</div>
+        <div class="num-input-wrap">
+          <input class="num-input" type="number" id="yardage-override-input" inputmode="numeric" placeholder="0">
+          <span class="num-unit">yds</span>
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="saveYardageOverride()">Save</button>
+    </div>
+  </div>
+</div>

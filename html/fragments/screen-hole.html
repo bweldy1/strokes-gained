@@ -1,0 +1,35 @@
+<!-- HOLE ENTRY -->
+<div class="screen" id="screen-hole">
+  <div class="topbar">
+    <button class="btn-icon" onclick="showScreen('home')">‹</button>
+    <div style="text-align:center">
+      <div class="topbar-title" id="hole-course-name">Course</div>
+      <div class="topbar-sub" id="hole-round-date" style="cursor:pointer" onclick="openDateEdit()"></div>
+    </div>
+    <button class="btn-icon" onclick="showScreen('summary')">⊞</button>
+  </div>
+  <div class="hole-nav">
+    <button class="hole-nav-btn" id="hole-prev-btn" onclick="prevHole()">‹</button>
+    <div class="hole-num-block">
+      <div class="hole-num-label">Hole</div>
+      <div class="hole-num" id="hole-num-display">1</div>
+      <div class="hole-info">
+        <span id="hole-par-display">Par 4</span> ·
+        <span class="hole-yardage-edit" onclick="editYardage()">
+          <span id="hole-yards-display">400 yds</span>
+          <span style="font-size:10px;color:var(--text-dim)">✎</span>
+        </span>
+      </div>
+    </div>
+    <button class="hole-nav-btn" id="hole-next-btn" onclick="nextHole()">›</button>
+  </div>
+  <div class="tally-bar">
+    <div class="tally-chip active" id="tally-total" onclick="toggleTally('total')"><span class="tally-chip-val" id="tv-total">—</span><span class="tally-chip-lbl">Total</span></div>
+    <div class="tally-chip active" id="tally-drive" onclick="toggleTally('drive')"><span class="tally-chip-val" id="tv-drive">—</span><span class="tally-chip-lbl">Drive</span></div>
+    <div class="tally-chip active" id="tally-approach" onclick="toggleTally('approach')"><span class="tally-chip-val" id="tv-approach">—</span><span class="tally-chip-lbl">Approach</span></div>
+    <div class="tally-chip active" id="tally-shortgame" onclick="toggleTally('shortgame')"><span class="tally-chip-val" id="tv-shortgame">—</span><span class="tally-chip-lbl">Short Game</span></div>
+    <div class="tally-chip active" id="tally-putt" onclick="toggleTally('putt')"><span class="tally-chip-val" id="tv-putt">—</span><span class="tally-chip-lbl">Putt</span></div>
+  </div>
+  <div class="shot-list" id="shot-list"></div>
+  <button class="add-shot-btn" onclick="openShotSheet()"><span style="font-size:20px">+</span> Add Shot</button>
+</div>

@@ -1,0 +1,62 @@
+<!-- SHOT ENTRY SHEET -->
+<div class="sheet-overlay" id="shot-sheet" onclick="handleSheetOverlayClick(event)">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title" id="shot-sheet-title">Add Shot</div>
+    <div class="sheet-body">
+      <div class="form-group">
+        <div class="form-label">Category <span style="font-size:10px;color:var(--text-dim);font-weight:400;text-transform:none;letter-spacing:0">(auto · tap to override)</span></div>
+        <div class="pill-group" id="category-pills">
+          <div class="pill" onclick="selectCategory('drive')">Drive</div>
+          <div class="pill" onclick="selectCategory('approach')">Approach</div>
+          <div class="pill" onclick="selectCategory('shortgame')">Short Game</div>
+          <div class="pill" onclick="selectCategory('putt')">Putt</div>
+        </div>
+      </div>
+      <div class="form-group">
+        <div class="form-label">Starting Lie</div>
+        <div class="pill-group" id="lie-pills">
+          <div class="pill" onclick="selectLie('tee')">Tee</div>
+          <div class="pill" onclick="selectLie('fairway')">Fairway</div>
+          <div class="pill" onclick="selectLie('rough')">Rough</div>
+          <div class="pill" onclick="selectLie('sand')">Sand</div>
+          <div class="pill" onclick="selectLie('recovery')">Recovery</div>
+          <div class="pill" onclick="selectLie('green')">Green</div>
+        </div>
+      <div id="prefill-hint" class="prefill-hint" style="display:none"></div>
+      </div>
+      <div class="form-group">
+        <div class="form-label">Distance from Pin <span id="dist-from-unit-label" style="color:var(--text-dim);font-weight:400;text-transform:none;letter-spacing:0">(yards)</span></div>
+        <div class="num-input-wrap">
+          <input class="num-input" type="number" id="shot-dist-from" inputmode="numeric" placeholder="0" oninput="onShotFormChange()">
+          <span class="num-unit" id="dist-from-unit">yds</span>
+        </div>
+      </div>
+      <div class="form-group">
+        <div class="form-label">Result — Next Lie</div>
+        <div class="pill-group" id="result-lie-pills">
+          <div class="pill" onclick="selectResultLie('fairway')">Fairway</div>
+          <div class="pill" onclick="selectResultLie('rough')">Rough</div>
+          <div class="pill" onclick="selectResultLie('sand')">Sand</div>
+          <div class="pill" onclick="selectResultLie('recovery')">Recovery</div>
+          <div class="pill" onclick="selectResultLie('green')">Green</div>
+          <div class="pill" onclick="selectResultLie('holed')">Holed ⛳</div>
+        </div>
+      </div>
+      <div class="form-group" id="result-dist-group" style="display:none">
+        <div class="form-label">Result Distance <span id="result-dist-unit-label" style="color:var(--text-dim);font-weight:400;text-transform:none;letter-spacing:0"></span></div>
+        <div class="num-input-wrap">
+          <input class="num-input" type="number" id="shot-dist-result" inputmode="numeric" placeholder="0" oninput="onShotFormChange()">
+          <span class="num-unit" id="dist-result-unit">yds</span>
+        </div>
+      </div>
+
+      <div class="sg-preview">
+        <div class="sg-preview-val" id="sg-preview-val">—</div>
+        <div class="sg-preview-label" id="sg-preview-label">Enter shot details for SG</div>
+        <div class="sg-quality-bar"><div class="sg-quality-marker" id="sg-quality-marker" style="left:50%"></div></div>
+      </div>
+      <button class="btn btn-primary" id="save-shot-btn" onclick="saveShot()">Save Shot</button>
+    </div>
+  </div>
+</div>

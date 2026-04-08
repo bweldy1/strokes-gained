@@ -16,6 +16,18 @@ def get_attr_value(attrs: str, name: str) -> str | None:
     return match.group(1) or match.group(2) if match else None
 
 
+def resolve_includes(html: str) -> str:
+    def replace(match: re.Match) -> str:
+        path = match.group(1).strip()
+        fragment_path = (SOURCE_HTML.parent / path).resolve()
+        if not fragment_path.exists():
+            raise FileNotFoundError(f'Include not found: {fragment_path}')
+        return fragment_path.read_text(encoding='utf-8')
+
+    pattern = re.compile(r'<!--\s*INCLUDE:\s*(.+?)\s*-->', re.I)
+    return pattern.sub(replace, html)
+
+
 def inline_styles(html: str) -> str:
     def replace(match: re.Match) -> str:
         attrs = match.group(1)
@@ -54,6 +66,7 @@ def build() -> None:
         raise FileNotFoundError(f'Input HTML not found: {SOURCE_HTML}')
 
     html = SOURCE_HTML.read_text(encoding='utf-8')
+    html = resolve_includes(html)
     html = inline_styles(html)
     html = inline_scripts(html)
     build_date = datetime.now().strftime('%Y-%m-%d %H:%M')
