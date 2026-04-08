@@ -36,7 +36,8 @@ body { font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-se
 .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 12px; }
 .section-label { font-size: 11px; font-weight: 600; letter-spacing: 1px; color: var(--text-dim); text-transform: uppercase; margin: 20px 0 10px; }
 .home-header { padding: 80px 24px 32px; background: linear-gradient(180deg,var(--green-dark) 0%,var(--sky) 100%); text-align: center; }
-.home-logo { font-size: 13px; font-weight: 700; letter-spacing: 3px; color: var(--fairway); text-transform: uppercase; margin-bottom: 8px; }
+.home-logo { margin-bottom: 16px; }
+.home-logo-img { width: 88px; height: 88px; border-radius: 20px; display: block; margin: 0 auto; }
 .home-title { font-size: 34px; font-weight: 700; letter-spacing: -1px; line-height: 1.1; }
 .home-sub { font-size: 15px; color: var(--text-muted); margin-top: 8px; }
 .round-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 10px; display: flex; align-items: center; gap: 12px; cursor: pointer; }
@@ -147,14 +148,14 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
 .lie-chip { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; background: var(--input-bg); border: 1px solid var(--input-border); color: var(--text); }
 
 </style>
-<link rel="apple-touch-icon" href="./images/sg-logo.png">
+<link rel="apple-touch-icon" href="./images/sg_logo.png">
 </head>
 <body>
 
 <!-- HOME -->
 <div class="screen active" id="screen-home" style="position: relative;">
   <div class="home-header">
-    <div class="home-logo">⛳ SG Tracker</div>
+    <div class="home-logo"><img src="images/SG_logo.png" class="home-logo-img" alt="SG Tracker"></div>
     <div class="home-title">Strokes<br>Gained</div>
     <div class="home-sub">Track every shot. Improve every round.</div>
   </div>
@@ -163,7 +164,7 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
     <div class="section-label">Recent Rounds</div>
     <div id="rounds-list"></div>
   </div>
-  <div id="build-version" style="position:absolute;bottom:0;left:0;right:0;text-align:center;font-size:10px;color:var(--text);padding:4px;">Build: 2026-04-07 22:39</div>
+  <div id="build-version" style="position:absolute;bottom:0;left:0;right:0;text-align:center;font-size:10px;color:var(--text);padding:4px;">Build: 2026-04-07 22:44</div>
 </div>
 
 <!-- COURSE SELECT -->

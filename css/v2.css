@@ -27,7 +27,8 @@ body { font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-se
 .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 12px; }
 .section-label { font-size: 11px; font-weight: 600; letter-spacing: 1px; color: var(--text-dim); text-transform: uppercase; margin: 20px 0 10px; }
 .home-header { padding: 80px 24px 32px; background: linear-gradient(180deg,var(--green-dark) 0%,var(--sky) 100%); text-align: center; }
-.home-logo { font-size: 13px; font-weight: 700; letter-spacing: 3px; color: var(--fairway); text-transform: uppercase; margin-bottom: 8px; }
+.home-logo { margin-bottom: 16px; }
+.home-logo-img { width: 88px; height: 88px; border-radius: 20px; display: block; margin: 0 auto; }
 .home-title { font-size: 34px; font-weight: 700; letter-spacing: -1px; line-height: 1.1; }
 .home-sub { font-size: 15px; color: var(--text-muted); margin-top: 8px; }
 .round-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 10px; display: flex; align-items: center; gap: 12px; cursor: pointer; }
