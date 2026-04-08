@@ -294,6 +294,7 @@ function selectLie(lie,silent){
   document.querySelectorAll('#lie-pills .pill,#lie-pills-secondary .pill').forEach(p=>p.classList.toggle('selected',p.textContent.trim().toLowerCase()===lie));
   renderLieChip(lie);
   updateDistFromUnit();
+  if(lie==='green' && !state.shotResultLie) selectResultLie('green',true);
   if(!silent){
     const exp=document.getElementById('lie-pills-expand'); if(exp) exp.style.display='none';
     autoSetCategory(); updateSGPreview();
