@@ -127,3 +127,12 @@ textarea.json-input:focus { border-color: var(--fairway); }
 .toast.show { transform: translateX(-50%) translateY(0); }
 input[type="date"].date-input { background: var(--input-bg); border: 1px solid var(--input-border); border-radius: var(--radius-sm); color: var(--text); font-size: 16px; padding: 14px 16px; width: 100%; outline: none; -webkit-appearance: none; color-scheme: dark; }
 input[type="date"].date-input:focus { border-color: var(--fairway); }
+.pill-group-secondary { margin-top: 6px; }
+.pill-sm { padding: 7px 12px; font-size: 13px; color: var(--text-dim); border-color: rgba(255,255,255,.07); }
+.pill-sm.selected { background: var(--green-light); border-color: var(--green-light); color: #fff; }
+.miss-row { display: flex; align-items: center; gap: 10px; }
+.miss-label { font-size: 11px; font-weight: 600; color: var(--text-dim); text-transform: uppercase; letter-spacing: .5px; flex-shrink: 0; }
+.category-override-row { display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 2px 0; }
+.category-override-row:active { opacity: .7; }
+.category-override-hint { font-size: 11px; color: var(--text-dim); margin-left: auto; }
+.lie-chip { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; background: var(--input-bg); border: 1px solid var(--input-border); color: var(--text); }

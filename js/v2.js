@@ -251,8 +251,13 @@ function openShotSheet(editIndex) {
   document.getElementById('shot-dist-from').value='';
   document.getElementById('shot-dist-result').value='';
   document.getElementById('result-dist-group').style.display='none';
+  document.getElementById('miss-dir-group').style.display='none';
   document.getElementById('prefill-hint').style.display='none';
-  document.querySelectorAll('#lie-pills .pill,#result-lie-pills .pill,#category-pills .pill,#miss-depth-pills .pill,#miss-side-pills .pill').forEach(p=>p.classList.remove('selected'));
+  document.getElementById('category-pills-expand').style.display='none';
+  document.getElementById('lie-pills-expand').style.display='none';
+  renderCategoryChip(null);
+  renderLieChip(null);
+  document.querySelectorAll('#lie-pills .pill,#lie-pills-secondary .pill,#result-lie-pills .pill,#result-lie-pills-secondary .pill,#category-pills .pill,#miss-depth-pills .pill').forEach(p=>p.classList.remove('selected'));
 
   const hd=currentHoleData();
   if(editIndex!==undefined){
@@ -286,9 +291,23 @@ function handleSheetOverlayClick(e){ if(e.target===document.getElementById('shot
 
 function selectLie(lie,silent){
   state.shotLie=lie;
-  document.querySelectorAll('#lie-pills .pill').forEach(p=>p.classList.toggle('selected',p.textContent.trim().toLowerCase()===lie));
+  document.querySelectorAll('#lie-pills .pill,#lie-pills-secondary .pill').forEach(p=>p.classList.toggle('selected',p.textContent.trim().toLowerCase()===lie));
+  renderLieChip(lie);
   updateDistFromUnit();
-  if(!silent){ autoSetCategory(); updateSGPreview(); }
+  if(!silent){
+    const exp=document.getElementById('lie-pills-expand'); if(exp) exp.style.display='none';
+    autoSetCategory(); updateSGPreview();
+  }
+}
+function renderLieChip(lie){
+  const el=document.getElementById('lie-chip'); if(!el) return;
+  const labels={tee:'Tee',fairway:'Fairway',rough:'Rough',green:'Green',sand:'Sand',recovery:'Recovery'};
+  el.textContent=labels[lie]||'—';
+  el.className=lie?'lie-chip':'';
+}
+function toggleLieOverride(){
+  const exp=document.getElementById('lie-pills-expand'); if(!exp) return;
+  exp.style.display=exp.style.display==='none'?'block':'none';
 }
 function updateDistFromUnit(){
   const green=state.shotLie==='green';
@@ -297,7 +316,7 @@ function updateDistFromUnit(){
 }
 function selectResultLie(lie,silent){
   state.shotResultLie=lie;
-  document.querySelectorAll('#result-lie-pills .pill').forEach(p=>{
+  document.querySelectorAll('#result-lie-pills .pill,#result-lie-pills-secondary .pill').forEach(p=>{
     const t=p.textContent.toLowerCase().replace(/[^a-z]/g,'');
     p.classList.toggle('selected',t===lie||(lie==='holed'&&t==='holed'));
   });
@@ -335,7 +354,21 @@ function selectCategory(cat,silent){
   state.shotCategory=cat;
   const map={'Drive':'drive','Approach':'approach','Short Game':'shortgame','Putt':'putt'};
   document.querySelectorAll('#category-pills .pill').forEach(p=>p.classList.toggle('selected',map[p.textContent.trim()]===cat));
+  renderCategoryChip(cat);
   updateMissSidePills(cat);
+  if(!silent){
+    const exp=document.getElementById('category-pills-expand'); if(exp) exp.style.display='none';
+  }
+}
+function renderCategoryChip(cat){
+  const el=document.getElementById('category-chip'); if(!el) return;
+  const labels={drive:'Drive',approach:'Approach',shortgame:'Short Game',putt:'Putt'};
+  el.textContent=labels[cat]||'—';
+  el.className=cat?`category-badge cat-${cat}`:'';
+}
+function toggleCategoryOverride(){
+  const exp=document.getElementById('category-pills-expand'); if(!exp) return;
+  exp.style.display=exp.style.display==='none'?'block':'none';
 }
 function updateMissSidePills(cat){
   const opts=cat==='putt'
@@ -345,7 +378,7 @@ function updateMissSidePills(cat){
   if(!container) return;
   // Clear missSide state if it no longer applies to the new option set
   if(state.shotMissSide && !opts.some(([v])=>v===state.shotMissSide)) state.shotMissSide=null;
-  container.innerHTML=opts.map(([v,l])=>`<div class="pill${state.shotMissSide===v?' selected':''}" onclick="selectMissSide('${v}')">${l}</div>`).join('');
+  container.innerHTML=opts.map(([v,l])=>`<div class="pill pill-sm${state.shotMissSide===v?' selected':''}" onclick="selectMissSide('${v}')">${l}</div>`).join('');
 }
 function selectMissDepth(val,silent){
   if(!silent && state.shotMissDepth===val){ state.shotMissDepth=null; }

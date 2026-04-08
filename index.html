@@ -136,6 +136,15 @@ textarea.json-input:focus { border-color: var(--fairway); }
 .toast.show { transform: translateX(-50%) translateY(0); }
 input[type="date"].date-input { background: var(--input-bg); border: 1px solid var(--input-border); border-radius: var(--radius-sm); color: var(--text); font-size: 16px; padding: 14px 16px; width: 100%; outline: none; -webkit-appearance: none; color-scheme: dark; }
 input[type="date"].date-input:focus { border-color: var(--fairway); }
+.pill-group-secondary { margin-top: 6px; }
+.pill-sm { padding: 7px 12px; font-size: 13px; color: var(--text-dim); border-color: rgba(255,255,255,.07); }
+.pill-sm.selected { background: var(--green-light); border-color: var(--green-light); color: #fff; }
+.miss-row { display: flex; align-items: center; gap: 10px; }
+.miss-label { font-size: 11px; font-weight: 600; color: var(--text-dim); text-transform: uppercase; letter-spacing: .5px; flex-shrink: 0; }
+.category-override-row { display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 2px 0; }
+.category-override-row:active { opacity: .7; }
+.category-override-hint { font-size: 11px; color: var(--text-dim); margin-left: auto; }
+.lie-chip { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; background: var(--input-bg); border: 1px solid var(--input-border); color: var(--text); }
 
 </style>
 </head>
@@ -153,7 +162,7 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
     <div class="section-label">Recent Rounds</div>
     <div id="rounds-list"></div>
   </div>
-  <div id="build-version" style="position:absolute;bottom:0;left:0;right:0;text-align:center;font-size:10px;color:var(--text);padding:4px;">Build: 2026-04-07 20:57</div>
+  <div id="build-version" style="position:absolute;bottom:0;left:0;right:0;text-align:center;font-size:10px;color:var(--text);padding:4px;">Build: 2026-04-07 21:42</div>
 </div>
 
 <!-- COURSE SELECT -->
@@ -237,27 +246,47 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
     <div class="sheet-handle"></div>
     <div class="sheet-title" id="shot-sheet-title">Add Shot</div>
     <div class="sheet-body">
+
+      <!-- Category (collapsed chip, tap to override) -->
       <div class="form-group">
-        <div class="form-label">Category <span style="font-size:10px;color:var(--text-dim);font-weight:400;text-transform:none;letter-spacing:0">(auto · tap to override)</span></div>
-        <div class="pill-group" id="category-pills">
-          <div class="pill" onclick="selectCategory('drive')">Drive</div>
-          <div class="pill" onclick="selectCategory('approach')">Approach</div>
-          <div class="pill" onclick="selectCategory('shortgame')">Short Game</div>
-          <div class="pill" onclick="selectCategory('putt')">Putt</div>
+        <div class="category-override-row" onclick="toggleCategoryOverride()">
+          <span class="form-label" style="margin:0">Category</span>
+          <span id="category-chip"></span>
+          <span class="category-override-hint">tap to override ›</span>
+        </div>
+        <div id="category-pills-expand" style="display:none;margin-top:10px">
+          <div class="pill-group" id="category-pills">
+            <div class="pill" onclick="selectCategory('drive')">Drive</div>
+            <div class="pill" onclick="selectCategory('approach')">Approach</div>
+            <div class="pill" onclick="selectCategory('shortgame')">Short Game</div>
+            <div class="pill" onclick="selectCategory('putt')">Putt</div>
+          </div>
         </div>
       </div>
+
+      <!-- Starting Lie -->
       <div class="form-group">
-        <div class="form-label">Starting Lie</div>
-        <div class="pill-group" id="lie-pills">
-          <div class="pill" onclick="selectLie('tee')">Tee</div>
-          <div class="pill" onclick="selectLie('fairway')">Fairway</div>
-          <div class="pill" onclick="selectLie('rough')">Rough</div>
-          <div class="pill" onclick="selectLie('sand')">Sand</div>
-          <div class="pill" onclick="selectLie('recovery')">Recovery</div>
-          <div class="pill" onclick="selectLie('green')">Green</div>
+        <div class="category-override-row" onclick="toggleLieOverride()">
+          <span class="form-label" style="margin:0">Starting Lie</span>
+          <span id="lie-chip"></span>
+          <span class="category-override-hint">tap to override ›</span>
         </div>
-      <div id="prefill-hint" class="prefill-hint" style="display:none"></div>
+        <div id="lie-pills-expand" style="display:none;margin-top:10px">
+          <div class="pill-group" id="lie-pills">
+            <div class="pill" onclick="selectLie('tee')">Tee</div>
+            <div class="pill" onclick="selectLie('fairway')">Fairway</div>
+            <div class="pill" onclick="selectLie('rough')">Rough</div>
+            <div class="pill" onclick="selectLie('green')">Green</div>
+          </div>
+          <div class="pill-group pill-group-secondary" id="lie-pills-secondary">
+            <div class="pill pill-sm" onclick="selectLie('sand')">Sand</div>
+            <div class="pill pill-sm" onclick="selectLie('recovery')">Recovery</div>
+          </div>
+        </div>
+        <div id="prefill-hint" class="prefill-hint" style="display:none"></div>
       </div>
+
+      <!-- Distance from Pin -->
       <div class="form-group">
         <div class="form-label">Distance from Pin <span id="dist-from-unit-label" style="color:var(--text-dim);font-weight:400;text-transform:none;letter-spacing:0">(yards)</span></div>
         <div class="num-input-wrap">
@@ -265,17 +294,23 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
           <span class="num-unit" id="dist-from-unit">yds</span>
         </div>
       </div>
+
+      <!-- Result Lie -->
       <div class="form-group">
         <div class="form-label">Result — Next Lie</div>
         <div class="pill-group" id="result-lie-pills">
           <div class="pill" onclick="selectResultLie('fairway')">Fairway</div>
           <div class="pill" onclick="selectResultLie('rough')">Rough</div>
-          <div class="pill" onclick="selectResultLie('sand')">Sand</div>
-          <div class="pill" onclick="selectResultLie('recovery')">Recovery</div>
           <div class="pill" onclick="selectResultLie('green')">Green</div>
           <div class="pill" onclick="selectResultLie('holed')">Holed ⛳</div>
         </div>
+        <div class="pill-group pill-group-secondary" id="result-lie-pills-secondary">
+          <div class="pill pill-sm" onclick="selectResultLie('sand')">Sand</div>
+          <div class="pill pill-sm" onclick="selectResultLie('recovery')">Recovery</div>
+        </div>
       </div>
+
+      <!-- Result Distance -->
       <div class="form-group" id="result-dist-group" style="display:none">
         <div class="form-label">Result Distance <span id="result-dist-unit-label" style="color:var(--text-dim);font-weight:400;text-transform:none;letter-spacing:0"></span></div>
         <div class="num-input-wrap">
@@ -284,15 +319,19 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
         </div>
       </div>
 
-      <div class="form-group" id="miss-dir-group" style="display:none">
-        <div class="form-label">Miss Direction <span style="font-size:10px;color:var(--text-dim);font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></div>
-        <div class="pill-group" id="miss-depth-pills">
-          <div class="pill" onclick="selectMissDepth('short')">Short</div>
-          <div class="pill" onclick="selectMissDepth('long')">Long</div>
+      <!-- Miss Direction (compact, conditional) -->
+      <div id="miss-dir-group" style="display:none;margin-bottom:16px">
+        <div class="miss-row">
+          <span class="miss-label">Miss</span>
+          <div class="pill-group" id="miss-depth-pills">
+            <div class="pill pill-sm" onclick="selectMissDepth('short')">Short</div>
+            <div class="pill pill-sm" onclick="selectMissDepth('long')">Long</div>
+          </div>
         </div>
-        <div class="pill-group" id="miss-side-pills" style="margin-top:8px"></div>
+        <div class="pill-group pill-group-secondary" id="miss-side-pills"></div>
       </div>
 
+      <!-- SG Preview -->
       <div class="sg-preview">
         <div class="sg-preview-val" id="sg-preview-val">—</div>
         <div class="sg-preview-label" id="sg-preview-label">Enter shot details for SG</div>
@@ -911,8 +950,13 @@ function openShotSheet(editIndex) {
   document.getElementById('shot-dist-from').value='';
   document.getElementById('shot-dist-result').value='';
   document.getElementById('result-dist-group').style.display='none';
+  document.getElementById('miss-dir-group').style.display='none';
   document.getElementById('prefill-hint').style.display='none';
-  document.querySelectorAll('#lie-pills .pill,#result-lie-pills .pill,#category-pills .pill,#miss-depth-pills .pill,#miss-side-pills .pill').forEach(p=>p.classList.remove('selected'));
+  document.getElementById('category-pills-expand').style.display='none';
+  document.getElementById('lie-pills-expand').style.display='none';
+  renderCategoryChip(null);
+  renderLieChip(null);
+  document.querySelectorAll('#lie-pills .pill,#lie-pills-secondary .pill,#result-lie-pills .pill,#result-lie-pills-secondary .pill,#category-pills .pill,#miss-depth-pills .pill').forEach(p=>p.classList.remove('selected'));
 
   const hd=currentHoleData();
   if(editIndex!==undefined){
@@ -946,9 +990,23 @@ function handleSheetOverlayClick(e){ if(e.target===document.getElementById('shot
 
 function selectLie(lie,silent){
   state.shotLie=lie;
-  document.querySelectorAll('#lie-pills .pill').forEach(p=>p.classList.toggle('selected',p.textContent.trim().toLowerCase()===lie));
+  document.querySelectorAll('#lie-pills .pill,#lie-pills-secondary .pill').forEach(p=>p.classList.toggle('selected',p.textContent.trim().toLowerCase()===lie));
+  renderLieChip(lie);
   updateDistFromUnit();
-  if(!silent){ autoSetCategory(); updateSGPreview(); }
+  if(!silent){
+    const exp=document.getElementById('lie-pills-expand'); if(exp) exp.style.display='none';
+    autoSetCategory(); updateSGPreview();
+  }
+}
+function renderLieChip(lie){
+  const el=document.getElementById('lie-chip'); if(!el) return;
+  const labels={tee:'Tee',fairway:'Fairway',rough:'Rough',green:'Green',sand:'Sand',recovery:'Recovery'};
+  el.textContent=labels[lie]||'—';
+  el.className=lie?'lie-chip':'';
+}
+function toggleLieOverride(){
+  const exp=document.getElementById('lie-pills-expand'); if(!exp) return;
+  exp.style.display=exp.style.display==='none'?'block':'none';
 }
 function updateDistFromUnit(){
   const green=state.shotLie==='green';
@@ -957,7 +1015,7 @@ function updateDistFromUnit(){
 }
 function selectResultLie(lie,silent){
   state.shotResultLie=lie;
-  document.querySelectorAll('#result-lie-pills .pill').forEach(p=>{
+  document.querySelectorAll('#result-lie-pills .pill,#result-lie-pills-secondary .pill').forEach(p=>{
     const t=p.textContent.toLowerCase().replace(/[^a-z]/g,'');
     p.classList.toggle('selected',t===lie||(lie==='holed'&&t==='holed'));
   });
@@ -995,7 +1053,21 @@ function selectCategory(cat,silent){
   state.shotCategory=cat;
   const map={'Drive':'drive','Approach':'approach','Short Game':'shortgame','Putt':'putt'};
   document.querySelectorAll('#category-pills .pill').forEach(p=>p.classList.toggle('selected',map[p.textContent.trim()]===cat));
+  renderCategoryChip(cat);
   updateMissSidePills(cat);
+  if(!silent){
+    const exp=document.getElementById('category-pills-expand'); if(exp) exp.style.display='none';
+  }
+}
+function renderCategoryChip(cat){
+  const el=document.getElementById('category-chip'); if(!el) return;
+  const labels={drive:'Drive',approach:'Approach',shortgame:'Short Game',putt:'Putt'};
+  el.textContent=labels[cat]||'—';
+  el.className=cat?`category-badge cat-${cat}`:'';
+}
+function toggleCategoryOverride(){
+  const exp=document.getElementById('category-pills-expand'); if(!exp) return;
+  exp.style.display=exp.style.display==='none'?'block':'none';
 }
 function updateMissSidePills(cat){
   const opts=cat==='putt'
@@ -1005,7 +1077,7 @@ function updateMissSidePills(cat){
   if(!container) return;
   // Clear missSide state if it no longer applies to the new option set
   if(state.shotMissSide && !opts.some(([v])=>v===state.shotMissSide)) state.shotMissSide=null;
-  container.innerHTML=opts.map(([v,l])=>`<div class="pill${state.shotMissSide===v?' selected':''}" onclick="selectMissSide('${v}')">${l}</div>`).join('');
+  container.innerHTML=opts.map(([v,l])=>`<div class="pill pill-sm${state.shotMissSide===v?' selected':''}" onclick="selectMissSide('${v}')">${l}</div>`).join('');
 }
 function selectMissDepth(val,silent){
   if(!silent && state.shotMissDepth===val){ state.shotMissDepth=null; }

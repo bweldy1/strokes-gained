@@ -4,27 +4,47 @@
     <div class="sheet-handle"></div>
     <div class="sheet-title" id="shot-sheet-title">Add Shot</div>
     <div class="sheet-body">
+
+      <!-- Category (collapsed chip, tap to override) -->
       <div class="form-group">
-        <div class="form-label">Category <span style="font-size:10px;color:var(--text-dim);font-weight:400;text-transform:none;letter-spacing:0">(auto · tap to override)</span></div>
-        <div class="pill-group" id="category-pills">
-          <div class="pill" onclick="selectCategory('drive')">Drive</div>
-          <div class="pill" onclick="selectCategory('approach')">Approach</div>
-          <div class="pill" onclick="selectCategory('shortgame')">Short Game</div>
-          <div class="pill" onclick="selectCategory('putt')">Putt</div>
+        <div class="category-override-row" onclick="toggleCategoryOverride()">
+          <span class="form-label" style="margin:0">Category</span>
+          <span id="category-chip"></span>
+          <span class="category-override-hint">tap to override ›</span>
+        </div>
+        <div id="category-pills-expand" style="display:none;margin-top:10px">
+          <div class="pill-group" id="category-pills">
+            <div class="pill" onclick="selectCategory('drive')">Drive</div>
+            <div class="pill" onclick="selectCategory('approach')">Approach</div>
+            <div class="pill" onclick="selectCategory('shortgame')">Short Game</div>
+            <div class="pill" onclick="selectCategory('putt')">Putt</div>
+          </div>
         </div>
       </div>
+
+      <!-- Starting Lie -->
       <div class="form-group">
-        <div class="form-label">Starting Lie</div>
-        <div class="pill-group" id="lie-pills">
-          <div class="pill" onclick="selectLie('tee')">Tee</div>
-          <div class="pill" onclick="selectLie('fairway')">Fairway</div>
-          <div class="pill" onclick="selectLie('rough')">Rough</div>
-          <div class="pill" onclick="selectLie('sand')">Sand</div>
-          <div class="pill" onclick="selectLie('recovery')">Recovery</div>
-          <div class="pill" onclick="selectLie('green')">Green</div>
+        <div class="category-override-row" onclick="toggleLieOverride()">
+          <span class="form-label" style="margin:0">Starting Lie</span>
+          <span id="lie-chip"></span>
+          <span class="category-override-hint">tap to override ›</span>
         </div>
-      <div id="prefill-hint" class="prefill-hint" style="display:none"></div>
+        <div id="lie-pills-expand" style="display:none;margin-top:10px">
+          <div class="pill-group" id="lie-pills">
+            <div class="pill" onclick="selectLie('tee')">Tee</div>
+            <div class="pill" onclick="selectLie('fairway')">Fairway</div>
+            <div class="pill" onclick="selectLie('rough')">Rough</div>
+            <div class="pill" onclick="selectLie('green')">Green</div>
+          </div>
+          <div class="pill-group pill-group-secondary" id="lie-pills-secondary">
+            <div class="pill pill-sm" onclick="selectLie('sand')">Sand</div>
+            <div class="pill pill-sm" onclick="selectLie('recovery')">Recovery</div>
+          </div>
+        </div>
+        <div id="prefill-hint" class="prefill-hint" style="display:none"></div>
       </div>
+
+      <!-- Distance from Pin -->
       <div class="form-group">
         <div class="form-label">Distance from Pin <span id="dist-from-unit-label" style="color:var(--text-dim);font-weight:400;text-transform:none;letter-spacing:0">(yards)</span></div>
         <div class="num-input-wrap">
@@ -32,17 +52,23 @@
           <span class="num-unit" id="dist-from-unit">yds</span>
         </div>
       </div>
+
+      <!-- Result Lie -->
       <div class="form-group">
         <div class="form-label">Result — Next Lie</div>
         <div class="pill-group" id="result-lie-pills">
           <div class="pill" onclick="selectResultLie('fairway')">Fairway</div>
           <div class="pill" onclick="selectResultLie('rough')">Rough</div>
-          <div class="pill" onclick="selectResultLie('sand')">Sand</div>
-          <div class="pill" onclick="selectResultLie('recovery')">Recovery</div>
           <div class="pill" onclick="selectResultLie('green')">Green</div>
           <div class="pill" onclick="selectResultLie('holed')">Holed ⛳</div>
         </div>
+        <div class="pill-group pill-group-secondary" id="result-lie-pills-secondary">
+          <div class="pill pill-sm" onclick="selectResultLie('sand')">Sand</div>
+          <div class="pill pill-sm" onclick="selectResultLie('recovery')">Recovery</div>
+        </div>
       </div>
+
+      <!-- Result Distance -->
       <div class="form-group" id="result-dist-group" style="display:none">
         <div class="form-label">Result Distance <span id="result-dist-unit-label" style="color:var(--text-dim);font-weight:400;text-transform:none;letter-spacing:0"></span></div>
         <div class="num-input-wrap">
@@ -51,15 +77,19 @@
         </div>
       </div>
 
-      <div class="form-group" id="miss-dir-group" style="display:none">
-        <div class="form-label">Miss Direction <span style="font-size:10px;color:var(--text-dim);font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></div>
-        <div class="pill-group" id="miss-depth-pills">
-          <div class="pill" onclick="selectMissDepth('short')">Short</div>
-          <div class="pill" onclick="selectMissDepth('long')">Long</div>
+      <!-- Miss Direction (compact, conditional) -->
+      <div id="miss-dir-group" style="display:none;margin-bottom:16px">
+        <div class="miss-row">
+          <span class="miss-label">Miss</span>
+          <div class="pill-group" id="miss-depth-pills">
+            <div class="pill pill-sm" onclick="selectMissDepth('short')">Short</div>
+            <div class="pill pill-sm" onclick="selectMissDepth('long')">Long</div>
+          </div>
         </div>
-        <div class="pill-group" id="miss-side-pills" style="margin-top:8px"></div>
+        <div class="pill-group pill-group-secondary" id="miss-side-pills"></div>
       </div>
 
+      <!-- SG Preview -->
       <div class="sg-preview">
         <div class="sg-preview-val" id="sg-preview-val">—</div>
         <div class="sg-preview-label" id="sg-preview-label">Enter shot details for SG</div>
