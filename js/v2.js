@@ -302,6 +302,14 @@ function selectResultLie(lie,silent){
     p.classList.toggle('selected',t===lie||(lie==='holed'&&t==='holed'));
   });
   updateResultDistVisibility();
+  const missGroup=document.getElementById('miss-dir-group');
+  if(lie==='holed'){
+    missGroup.style.display='none';
+    state.shotMissDepth=null; state.shotMissSide=null;
+    document.querySelectorAll('#miss-depth-pills .pill,#miss-side-pills .pill').forEach(p=>p.classList.remove('selected'));
+  } else {
+    missGroup.style.display='block';
+  }
   if(!silent){ autoSetCategory(); updateSGPreview(); }
 
     if (!silent && lie !== 'holed') {

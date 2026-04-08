@@ -153,7 +153,7 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
     <div class="section-label">Recent Rounds</div>
     <div id="rounds-list"></div>
   </div>
-  <div id="build-version" style="position:absolute;bottom:0;left:0;right:0;text-align:center;font-size:10px;color:var(--text);padding:4px;">Build: 2026-04-07 20:51</div>
+  <div id="build-version" style="position:absolute;bottom:0;left:0;right:0;text-align:center;font-size:10px;color:var(--text);padding:4px;">Build: 2026-04-07 20:57</div>
 </div>
 
 <!-- COURSE SELECT -->
@@ -284,7 +284,7 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
         </div>
       </div>
 
-      <div class="form-group">
+      <div class="form-group" id="miss-dir-group" style="display:none">
         <div class="form-label">Miss Direction <span style="font-size:10px;color:var(--text-dim);font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></div>
         <div class="pill-group" id="miss-depth-pills">
           <div class="pill" onclick="selectMissDepth('short')">Short</div>
@@ -962,6 +962,14 @@ function selectResultLie(lie,silent){
     p.classList.toggle('selected',t===lie||(lie==='holed'&&t==='holed'));
   });
   updateResultDistVisibility();
+  const missGroup=document.getElementById('miss-dir-group');
+  if(lie==='holed'){
+    missGroup.style.display='none';
+    state.shotMissDepth=null; state.shotMissSide=null;
+    document.querySelectorAll('#miss-depth-pills .pill,#miss-side-pills .pill').forEach(p=>p.classList.remove('selected'));
+  } else {
+    missGroup.style.display='block';
+  }
   if(!silent){ autoSetCategory(); updateSGPreview(); }
 
     if (!silent && lie !== 'holed') {
