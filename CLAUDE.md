@@ -41,11 +41,11 @@ Each shot stored in `round.holes[n].shots[]`:
 ```js
 {
   lie: 'tee'|'fairway'|'rough'|'sand'|'recovery'|'green',
-  distFrom: Number,           // yards (feet if lie=green)
-  resultLie: 'fairway'|'rough'|'sand'|'recovery'|'green'|'holed',
-  resultDist: Number|null,    // yards (feet if resultLie=green); null if holed
+  distFrom: Number,                    // yards (feet if lie=green)
+  resultLie: 'fairway'|'rough'|'sand'|'recovery'|'green'|'holed'|'penalty',
+  resultDist: Number|null,             // yards (feet if resultLie=green); null if holed
   category: 'drive'|'approach'|'shortgame'|'putt',
-  sg: Number|null,            // strokes gained value
+  sg: Number|null,                     // strokes gained value
   missDepth: 'short'|'long'|null,
   missSide: 'left'|'middle'|'right'|null,  // OR 'low'|'center'|'high' for putts
 }
@@ -80,7 +80,16 @@ When `lie='green'`, `selectLie` also auto-sets `resultLie='green'` if no result 
 - `selectMissDepth(val)` / `selectMissSide(val)` — toggle behavior (tap selected → deselects)
 - Side options swap based on category: putts use Low/Center/High, all others use Left/Middle/Right
 - `updateMissSidePills(cat)` rebuilds the side pills and is called from `selectCategory`
-- Miss direction group is hidden when result is 'Holed', shown for all other results
+- Miss direction group is hidden when result is 'Holed', shown for all other results (including Penalty)
+
+### Penalty Shots
+`resultLie: 'penalty'` is a secondary result pill (alongside Sand and Recovery). Behavior:
+- Result distance and miss direction are required/shown (same as any non-holed result)
+- SG = `getExpected(startLie, startDist) - getExpected('rough', resultDist) - 2` — uses `rough` table as proxy for drop position, subtracts an extra stroke for the penalty
+- Shows a red `+1 stroke` badge (`.penalty-badge`) in the shot list row
+- `countStrokes(shots)` — helper that returns `shots.length + penalty count`; used everywhere strokes are displayed (home card, summary header, hole rows)
+- No auto-fill for the next shot's lie (drop location varies), but result distance carries forward as the distance pre-fill
+- `getSuggestion` returns `{ lie: null, dist, hint }` after a penalty; `openShotSheet` guards `selectLie`/`selectCategory` with `if(sug.lie)`
 
 ### SG Calculation
 `calcSG(startLie, startDist, resultLie, resultDist)` uses `sg_tables.js` lookup tables with linear interpolation. Result is added to each shot on save.
@@ -97,10 +106,11 @@ Category badge colors: `.cat-drive` (gold), `.cat-approach` (green), `.cat-short
 
 ## Lie Hierarchy (UI)
 
-Sand and Recovery are infrequent. In lie pill rows, they appear as secondary pills (`.pill-sm`, `.pill-group-secondary`) below the primary row:
-- **Primary lies**: Tee · Fairway · Rough · Green
-- **Secondary lies**: Sand · Recovery
-- Same pattern for result lie pills
+Sand, Recovery, and Penalty are infrequent. In lie pill rows, they appear as secondary pills (`.pill-sm`, `.pill-group-secondary`) below the primary row:
+- **Primary result lies**: Fairway · Rough · Green · Holed
+- **Secondary result lies**: Sand · Recovery · Penalty
+- **Primary starting lies**: Tee · Fairway · Rough · Green
+- **Secondary starting lies**: Sand · Recovery
 
 ## Screen Navigation
 
