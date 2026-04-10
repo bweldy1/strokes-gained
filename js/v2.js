@@ -32,6 +32,7 @@ const QUALITY_BANDS = {
 // STATE
 // ═══════════════════════════════════════════════════════════════
 let state = { currentRoundId:null, currentHole:1, editingShotIndex:null, excludedCategories:new Set(), shotLie:null, shotResultLie:null, shotCategory:null, shotMissDepth:null, shotMissSide:null };
+let editingCourseId=null;
 
 // ═══════════════════════════════════════════════════════════════
 // STORAGE
@@ -151,7 +152,38 @@ function formatDate(iso){ if(!iso) return ''; const d=new Date(iso); return d.to
 function renderCourses() {
   const courses=getCourses(), el=document.getElementById('courses-list');
   if(courses.length===0){ el.innerHTML=`<div class="empty-state" style="padding:24px 0"><div class="empty-state-icon">🏌️</div><div class="empty-state-text">No courses saved yet.<br>Add one below.</div></div>`; return; }
-  el.innerHTML=courses.map(c=>`<div class="course-card" onclick="startRound('${c.id}')"><div class="course-icon">⛳</div><div class="course-info"><div class="course-name">${c.name}</div><div class="course-meta">${c.tees?c.tees+' tees · ':''}${c.holes.length} holes</div></div><div style="color:var(--text-dim);font-size:20px">›</div></div>`).join('');
+  el.innerHTML=courses.map(c=>`<div class="course-card" onclick="startRound('${c.id}')"><div class="course-icon">⛳</div><div class="course-info"><div class="course-name">${c.name}</div><div class="course-meta">${c.tees?c.tees+' tees · ':''}${c.holes.length} holes</div></div><button class="course-action-btn" onclick="event.stopPropagation();openCourseEdit('${c.id}')">✎</button><button class="course-action-btn course-del-btn" onclick="event.stopPropagation();deleteCourse('${c.id}')">×</button></div>`).join('');
+}
+function openCourseEdit(id) {
+  const c=getCourses().find(x=>x.id===id); if(!c) return;
+  editingCourseId=id;
+  document.getElementById('course-edit-name').value=c.name||'';
+  document.getElementById('course-edit-tees').value=c.tees||'';
+  document.getElementById('course-edit-sheet').classList.add('open');
+}
+function saveCourseEdit() {
+  if(!editingCourseId) return;
+  const courses=getCourses(), idx=courses.findIndex(c=>c.id===editingCourseId); if(idx===-1) return;
+  courses[idx].name=document.getElementById('course-edit-name').value.trim()||courses[idx].name;
+  courses[idx].tees=document.getElementById('course-edit-tees').value.trim();
+  saveCourses(courses); editingCourseId=null;
+  document.getElementById('course-edit-sheet').classList.remove('open');
+  renderCourses(); showToast('Course updated!');
+}
+function loadCourseHolesJSON() {
+  if(!editingCourseId) return;
+  const c=getCourses().find(x=>x.id===editingCourseId); if(!c) return;
+  document.getElementById('course-edit-sheet').classList.remove('open');
+  document.getElementById('course-json-input').value=JSON.stringify({name:c.name,tees:c.tees,holes:c.holes},null,2);
+  showToast('JSON loaded — edit and save below');
+}
+function deleteCourse(id) {
+  const c=getCourses().find(x=>x.id===id); if(!c) return;
+  if(!confirm(`Delete "${c.name}"? This cannot be undone.`)) return;
+  saveCourses(getCourses().filter(x=>x.id!==id)); renderCourses(); showToast('Course deleted');
+}
+function handleCourseEditOverlayClick(e) {
+  if(e.target===document.getElementById('course-edit-sheet')){ editingCourseId=null; document.getElementById('course-edit-sheet').classList.remove('open'); }
 }
 function saveCourseJSON() {
   const raw=document.getElementById('course-json-input').value.trim();
@@ -163,7 +195,8 @@ function saveCourseJSON() {
   for(const c of arr){
     if(!c.name||!Array.isArray(c.holes)){ errEl.textContent='Each course needs "name" and "holes".'; errEl.style.display='block'; return; }
     for(const h of c.holes){ if(!h.hole||!h.par||!h.yards){ errEl.textContent='Each hole needs "hole", "par", "yards".'; errEl.style.display='block'; return; } }
-    c.id=c.id||('course_'+Date.now()+'_'+added); courses.push(c); added++;
+    const existIdx=c.id?courses.findIndex(x=>x.id===c.id):-1;
+    if(existIdx>=0){ courses[existIdx]=c; } else { c.id=c.id||('course_'+Date.now()+'_'+added); courses.push(c); added++; }
   }
   saveCourses(courses); document.getElementById('course-json-input').value=''; renderCourses(); showToast('Course saved!');
 }
@@ -458,24 +491,29 @@ function handleYardageOverlayClick(e){ if(e.target===document.getElementById('ya
 // ═══════════════════════════════════════════════════════════════
 // DATE EDIT
 // ═══════════════════════════════════════════════════════════════
-function openDateEdit(){
+function openRoundEdit(){
   const round=currentRound(); if(!round) return;
+  document.getElementById('round-edit-name').value=round.courseName;
   const d=new Date(round.date);
   const yyyy=d.getFullYear(), mm=String(d.getMonth()+1).padStart(2,'0'), dd=String(d.getDate()).padStart(2,'0');
-  document.getElementById('round-date-input').value=`${yyyy}-${mm}-${dd}`;
-  document.getElementById('date-sheet').classList.add('open');
+  document.getElementById('round-edit-date').value=`${yyyy}-${mm}-${dd}`;
+  document.getElementById('round-edit-sheet').classList.add('open');
 }
-function saveRoundDate(){
-  const val=document.getElementById('round-date-input').value;
-  if(!val){ showToast('Select a date'); return; }
+function saveRoundEdit(){
+  const name=document.getElementById('round-edit-name').value.trim();
+  const date=document.getElementById('round-edit-date').value;
+  if(!name){ showToast('Enter a course name'); return; }
+  if(!date){ showToast('Select a date'); return; }
   const round=currentRound();
-  round.date=val+'T12:00:00.000Z';
+  round.courseName=name;
+  round.date=date+'T12:00:00.000Z';
   updateRound(round);
-  document.getElementById('date-sheet').classList.remove('open');
+  document.getElementById('round-edit-sheet').classList.remove('open');
+  document.getElementById('hole-course-name').textContent=name;
   document.getElementById('hole-round-date').textContent=formatDate(round.date)+' ✎';
-  showToast('Date updated');
+  showToast('Round updated');
 }
-function handleDateOverlayClick(e){ if(e.target===document.getElementById('date-sheet')) document.getElementById('date-sheet').classList.remove('open'); }
+function handleRoundEditOverlayClick(e){ if(e.target===document.getElementById('round-edit-sheet')) document.getElementById('round-edit-sheet').classList.remove('open'); }
 
 // ═══════════════════════════════════════════════════════════════
 // SUMMARY

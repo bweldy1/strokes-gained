@@ -1,0 +1,19 @@
+<!-- COURSE EDIT SHEET -->
+<div class="sheet-overlay" id="course-edit-sheet" onclick="handleCourseEditOverlayClick(event)">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">Edit Course</div>
+    <div class="sheet-body">
+      <div class="form-group">
+        <div class="form-label">Name</div>
+        <input type="text" class="num-input" id="course-edit-name" style="font-size:18px" placeholder="Course name">
+      </div>
+      <div class="form-group">
+        <div class="form-label">Tees</div>
+        <input type="text" class="num-input" id="course-edit-tees" style="font-size:18px" placeholder="e.g. Blue">
+      </div>
+      <button class="btn btn-primary" onclick="saveCourseEdit()" style="margin-bottom:12px">Save</button>
+      <button class="btn btn-ghost" onclick="loadCourseHolesJSON()">Edit holes in JSON ›</button>
+    </div>
+  </div>
+</div>

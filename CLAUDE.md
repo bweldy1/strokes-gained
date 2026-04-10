@@ -140,3 +140,24 @@ Both use `countStrokes(shots)` for stroke totals (adds +1 per penalty shot).
 `exportSummaryCSV()` — one row per round with SG totals by category.
 
 Both use a clipboard fallback modal for iOS Safari compatibility.
+
+## Course Management
+
+Courses screen shows each course as a card. Each card has two action buttons (rendered via `renderCourses`):
+- **✎ edit** — calls `openCourseEdit(id)`, opens `#course-edit-sheet` with name + tees inputs
+- **× delete** — calls `deleteCourse(id)`, shows `confirm()` dialog before deleting
+
+Buttons use `event.stopPropagation()` to prevent triggering `startRound`.
+
+### Course Edit Sheet (`sheet-course-edit.html`)
+- Fields: Name, Tees
+- Save: `saveCourseEdit()` — updates course in-place by id, closes sheet
+- "Edit holes in JSON ›": `loadCourseHolesJSON()` — pre-fills the JSON import textarea with current course data and closes sheet; user edits and re-saves via existing JSON flow
+- Overlay click to dismiss: `handleCourseEditOverlayClick(e)`
+- Active course being edited stored in `editingCourseId` (module-level, not in `state`)
+
+### JSON import (`saveCourseJSON`)
+Updated to replace existing course if `c.id` matches an existing entry, rather than always pushing a new one. This supports the "edit holes in JSON" workflow.
+
+### Data safety
+Rounds store `courseName` at creation time — deleting a course does **not** affect existing round data.
