@@ -112,6 +112,23 @@ Sand, Recovery, and Penalty are infrequent. In lie pill rows, they appear as sec
 - **Primary starting lies**: Tee · Fairway · Rough · Green
 - **Secondary starting lies**: Sand · Recovery
 
+## Round Summary
+
+`renderSummary()` builds two cards: `#summary-totals` and `#summary-holes`.
+
+**summary-totals card:**
+- Header row: Total SG + stroke count
+- One row per category (Drive, Approach, Short Game, Putt) — tappable to expand
+- `toggleSummaryCat(cat)` toggles the expand div (`#ssum-{cat}`) and rotates the `›` chevron (`#ssum-icon-{cat}`)
+- Expanded rows show individual shots: `H1  Tee 385y › Fwy 150y Short-Left  +0.32`
+  - Lie abbreviations: Tee, Fwy, Rgh, Sand, Rcv, Grn, Holed, Pen
+  - Miss direction appended in `.ssum-miss` (10px, `--text-dim`) when recorded
+  - Distance in `y` (yards) or `ft` (feet for green)
+
+**summary-holes card:** one row per hole with hole number, par, stroke count, and total SG.
+
+Both use `countStrokes(shots)` for stroke totals (adds +1 per penalty shot).
+
 ## Screen Navigation
 
 `showScreen(name)` — shows `#screen-{name}`, hides all others, calls the matching render function. Screens: `home`, `courses`, `hole`, `summary`.

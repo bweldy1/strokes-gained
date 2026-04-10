@@ -113,7 +113,19 @@ textarea.json-input:focus { border-color: var(--fairway); }
 .cat-shortgame { background: rgba(82,183,136,.2); color: #74c69d; }
 .cat-putt { background: rgba(26,161,221,.2); color: #74b9ff; }
 .summary-stat { display: flex; justify-content: space-between; align-items: center; padding: 14px 0; border-bottom: 1px solid var(--border); }
-.summary-stat:last-child { border-bottom: none; }
+.summary-cat-row { cursor: pointer; }
+.summary-cat-row:active { opacity: .7; }
+.ssum-chevron { color: var(--text-dim); font-size: 16px; display: inline-block; transition: transform .2s; }
+.ssum-expand { border-bottom: 1px solid var(--border); padding: 2px 0 8px; }
+.ssum-shot { display: flex; align-items: center; gap: 6px; padding: 7px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+.ssum-shot:last-child { border-bottom: none; }
+.ssum-hole { color: var(--text-dim); font-size: 11px; width: 22px; flex-shrink: 0; }
+.ssum-from { color: var(--text-muted); flex: 1; white-space: nowrap; }
+.ssum-arrow { color: var(--text-dim); flex-shrink: 0; font-size: 11px; }
+.ssum-to { color: var(--text-muted); flex: 1; white-space: nowrap; }
+.ssum-sg { font-weight: 700; text-align: right; flex-shrink: 0; min-width: 44px; }
+.ssum-miss { color: var(--text-dim); font-size: 10px; }
+.ssum-empty { font-size: 13px; color: var(--text-dim); padding: 6px 0; }
 .summary-stat-label { font-size: 15px; color: var(--text-muted); }
 .summary-stat-val { font-size: 20px; font-weight: 700; }
 .hole-summary-row { display: flex; gap: 8px; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 14px; }

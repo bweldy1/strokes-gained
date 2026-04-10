@@ -487,22 +487,60 @@ function roundTotalSG(round,exc){
   }
   return c>0?t:null;
 }
+function toggleSummaryCat(cat){
+  const el=document.getElementById('ssum-'+cat), icon=document.getElementById('ssum-icon-'+cat);
+  if(!el) return;
+  const open=el.style.display==='none';
+  el.style.display=open?'block':'none';
+  if(icon) icon.style.transform=open?'rotate(90deg)':'';
+}
 function renderSummary(){
   const round=currentRound(); if(!round) return;
   const cats=['drive','approach','shortgame','putt'];
   const cNames={drive:'Drive',approach:'Approach',shortgame:'Short Game',putt:'Putt'};
   const tot={drive:0,approach:0,shortgame:0,putt:0}, cnt={drive:0,approach:0,shortgame:0,putt:0};
+  const catShots={drive:[],approach:[],shortgame:[],putt:[]};
+  const lieAbbr={tee:'Tee',fairway:'Fwy',rough:'Rgh',sand:'Sand',recovery:'Rcv',green:'Grn',holed:'Holed',penalty:'Pen'};
   let gTotal=0,gCount=0,gStrokes=0;
   for(const hole of round.holes){
     const hShots=hole.shots||[];
     gStrokes+=countStrokes(hShots);
-    for(const s of hShots){ if(s.sg==null) continue; tot[s.category]+=s.sg; cnt[s.category]++; gTotal+=s.sg; gCount++; }
+    for(const s of hShots){
+      if(catShots[s.category]) catShots[s.category].push({...s,holeNum:hole.hole});
+      if(s.sg==null) continue; tot[s.category]+=s.sg; cnt[s.category]++; gTotal+=s.sg; gCount++;
+    }
   }
   const fmt=(v,c)=>c===0?'—':(v>=0?'+':'')+v.toFixed(2);
   const col=(v,c)=>c===0?'var(--text-muted)':v>=0?'var(--q-great)':'var(--q-poor)';
+  const catHTML=cats.map(c=>{
+    const rows=catShots[c].map(s=>{
+      const fromDist=s.lie==='green'?s.distFrom+'ft':s.distFrom+'y';
+      const toLabel=lieAbbr[s.resultLie]||s.resultLie;
+      const toDist=s.resultLie==='holed'?'':s.resultLie==='green'?(s.resultDist!=null?s.resultDist+'ft':''):(s.resultDist!=null?s.resultDist+'y':'');
+      const missParts=[s.missDepth,s.missSide].filter(Boolean).map(v=>v.charAt(0).toUpperCase()+v.slice(1));
+      const missStr=missParts.length?missParts.join('-'):'';
+      const sgStr=s.sg!=null?(s.sg>=0?'+':'')+s.sg.toFixed(2):'—';
+      const sgColor=s.sg==null?'var(--text-muted)':s.sg>=0?'var(--q-great)':'var(--q-poor)';
+      return `<div class="ssum-shot">
+        <span class="ssum-hole">H${s.holeNum}</span>
+        <span class="ssum-from">${lieAbbr[s.lie]||s.lie} ${fromDist}</span>
+        <span class="ssum-arrow">›</span>
+        <span class="ssum-to">${toLabel}${toDist?' '+toDist:''}${missStr?`<span class="ssum-miss"> ${missStr}</span>`:''}</span>
+        <span class="ssum-sg" style="color:${sgColor}">${sgStr}</span>
+      </div>`;
+    }).join('');
+    return `<div class="summary-stat summary-cat-row" onclick="toggleSummaryCat('${c}')">
+        <span class="summary-stat-label">${cNames[c]} <span style="font-size:12px;color:var(--text-dim)">(${cnt[c]} shots)</span></span>
+        <span style="display:flex;align-items:center;gap:10px">
+          <span class="summary-stat-val" style="color:${col(tot[c],cnt[c])}">${fmt(tot[c],cnt[c])}</span>
+          <span class="ssum-chevron" id="ssum-icon-${c}">›</span>
+        </span>
+      </div>
+      <div class="ssum-expand" id="ssum-${c}" style="display:none">${rows||'<div class="ssum-empty">No shots recorded</div>'}</div>`;
+  }).join('');
   document.getElementById('summary-totals').innerHTML=`
-    <div class="summary-stat"><span class="summary-stat-label" style="font-size:17px;font-weight:600;color:var(--text)">Total SG <span style="font-size:12px;color:var(--text-dim);font-weight:400">(${gStrokes} stroke${gStrokes!==1?'s':''})</span></span><span class="summary-stat-val" style="font-size:28px;color:${col(gTotal,gCount)}">${fmt(gTotal,gCount)}</span></div>
-    ${cats.map(c=>`<div class="summary-stat"><span class="summary-stat-label">${cNames[c]} <span style="font-size:12px;color:var(--text-dim)">(${cnt[c]} shots)</span></span><span class="summary-stat-val" style="color:${col(tot[c],cnt[c])}">${fmt(tot[c],cnt[c])}</span></div>`).join('')}`;
+    <div class="summary-stat" style="border-bottom:1px solid var(--border)"><span class="summary-stat-label" style="font-size:17px;font-weight:600;color:var(--text)">Total SG <span style="font-size:12px;color:var(--text-dim);font-weight:400">(${gStrokes} stroke${gStrokes!==1?'s':''})</span></span><span class="summary-stat-val" style="font-size:28px;color:${col(gTotal,gCount)}">${fmt(gTotal,gCount)}</span></div>
+    ${catHTML}`;
   document.getElementById('summary-holes').innerHTML=round.holes.map(h=>{
     const shots=h.shots||[]; if(shots.length===0) return '';
     const hsg=shots.reduce((s,sh)=>s+(sh.sg||0),0);
