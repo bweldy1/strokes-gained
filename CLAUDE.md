@@ -120,12 +120,21 @@ Sand, Recovery, and Penalty are infrequent. In lie pill rows, they appear as sec
 - Header row: Total SG + stroke count
 - One row per category (Drive, Approach, Short Game, Putt) — tappable to expand
 - `toggleSummaryCat(cat)` toggles the expand div (`#ssum-{cat}`) and rotates the `›` chevron (`#ssum-icon-{cat}`)
-- Expanded rows show individual shots: `H1  Tee 385y › Fwy 150y Short-Left  +0.32`
+- Expanded rows show individual shots: `H1  Tee 385y · 235y drive › Fwy 150y Short-Left  +0.32`
   - Lie abbreviations: Tee, Fwy, Rgh, Sand, Rcv, Grn, Holed, Pen
   - Miss direction appended in `.ssum-miss` (10px, `--text-dim`) when recorded
   - Distance in `y` (yards) or `ft` (feet for green)
+  - Drive shots include drive distance (`startDist - resultDist`) inline after starting distance in `.ssum-drive` (10px, `--text-dim`)
 
-**summary-holes card:** one row per hole with hole number, par, stroke count, and total SG.
+**summary-holes card:** one row per hole with hole number, par, stroke count, and total SG — tappable to expand.
+- `toggleSummaryHole(holeNum)` toggles `#ssum-hole-{holeNum}` and rotates `#ssum-hole-icon-{holeNum}`
+- Expanded rows use the same shot format as category drill-down, with category name (Drive/Approach/Short Game/Putt) as the label column instead of hole number — uses wider `.ssum-hole-cat` class (62px) to avoid overlap
+- Drive distance shown the same way as in category drill-down
+
+`buildShotRow(s, label, labelClass)` — shared helper used by both drill-downs to render a single shot row.
+
+### Drive Distance (hole screen)
+In `renderShotList`, Drive shots show drive distance inline on the main line: `Tee · 385 yds · 235 yds drive [Drive]`. Rendered in `.shot-drive-dist` (12px, `--text-dim`). Calculated as `distFrom - resultDist`.
 
 Both use `countStrokes(shots)` for stroke totals (adds +1 per penalty shot).
 

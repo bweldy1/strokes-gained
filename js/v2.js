@@ -241,10 +241,12 @@ function renderShotList(hd) {
     const resDist=s.resultLie==='holed'?'':(s.resultLie==='green'?(s.resultDist!=null?s.resultDist+' ft':''):(s.resultDist!=null?s.resultDist+' yds':''));
     const missParts=[s.missDepth,s.missSide].filter(Boolean).map(v=>v.charAt(0).toUpperCase()+v.slice(1));
     const missStr=missParts.length?` · ${missParts.join('-')}`:'';
+    const driveDist=(s.category==='drive'&&s.distFrom!=null&&s.resultDist!=null)?Math.round(s.distFrom-s.resultDist):null;
+    const driveStr=driveDist!=null?` · <span class="shot-drive-dist">${driveDist} yds</span>`:'';
     return `<div class="shot-row" onclick="editShot(${i})">
       <div class="shot-num">${i+1}</div>
       <div class="shot-info">
-        <div class="shot-info-main">${s.lie.charAt(0).toUpperCase()+s.lie.slice(1)} · ${distStr} <span class="category-badge cat-${s.category}">${catLabel(s.category)}</span>${isPenalty?'<span class="penalty-badge">+1 stroke</span>':''}</div>
+        <div class="shot-info-main">${s.lie.charAt(0).toUpperCase()+s.lie.slice(1)} · ${distStr}${driveStr} <span class="category-badge cat-${s.category}">${catLabel(s.category)}</span>${isPenalty?'<span class="penalty-badge">+1 stroke</span>':''}</div>
         <div class="shot-info-sub">→ ${resLabel}${resDist?' · '+resDist:''}${missStr}</div>
       </div>
       <div class="shot-sg"><div class="shot-sg-val" style="color:${sgColor}">${sgStr}</div>${quality?`<div class="shot-quality-dot" style="background:${quality.color}"></div>`:''}</div>
@@ -532,6 +534,13 @@ function toggleSummaryCat(cat){
   el.style.display=open?'block':'none';
   if(icon) icon.style.transform=open?'rotate(90deg)':'';
 }
+function toggleSummaryHole(holeNum){
+  const el=document.getElementById('ssum-hole-'+holeNum), icon=document.getElementById('ssum-hole-icon-'+holeNum);
+  if(!el) return;
+  const open=el.style.display==='none';
+  el.style.display=open?'block':'none';
+  if(icon) icon.style.transform=open?'rotate(90deg)':'';
+}
 function renderSummary(){
   const round=currentRound(); if(!round) return;
   const cats=['drive','approach','shortgame','putt'];
@@ -550,23 +559,28 @@ function renderSummary(){
   }
   const fmt=(v,c)=>c===0?'—':(v>=0?'+':'')+v.toFixed(2);
   const col=(v,c)=>c===0?'var(--text-muted)':v>=0?'var(--q-great)':'var(--q-poor)';
+  const buildShotRow=(s,label,labelClass='ssum-hole')=>{
+    const fromDist=s.lie==='green'?s.distFrom+'ft':s.distFrom+'y';
+    const toLabel=lieAbbr[s.resultLie]||s.resultLie;
+    const toDist=s.resultLie==='holed'?'':s.resultLie==='green'?(s.resultDist!=null?s.resultDist+'ft':''):(s.resultDist!=null?s.resultDist+'y':'');
+    const missParts=[s.missDepth,s.missSide].filter(Boolean).map(v=>v.charAt(0).toUpperCase()+v.slice(1));
+    const missStr=missParts.length?missParts.join('-'):'';
+    const sgStr=s.sg!=null?(s.sg>=0?'+':'')+s.sg.toFixed(2):'—';
+    const sgColor=s.sg==null?'var(--text-muted)':s.sg>=0?'var(--q-great)':'var(--q-poor)';
+    const driveDist=(s.category==='drive'&&s.distFrom!=null&&s.resultDist!=null)?Math.round(s.distFrom-s.resultDist):null;
+    const fromBlock=driveDist!=null
+      ?`${lieAbbr[s.lie]||s.lie} ${fromDist} <span class="ssum-drive">${driveDist}y drive</span>`
+      :`${lieAbbr[s.lie]||s.lie} ${fromDist}`;
+    return `<div class="ssum-shot">
+      <span class="${labelClass}">${label}</span>
+      <span class="ssum-from">${fromBlock}</span>
+      <span class="ssum-arrow">›</span>
+      <span class="ssum-to">${toLabel}${toDist?' '+toDist:''}${missStr?`<span class="ssum-miss"> ${missStr}</span>`:''}</span>
+      <span class="ssum-sg" style="color:${sgColor}">${sgStr}</span>
+    </div>`;
+  };
   const catHTML=cats.map(c=>{
-    const rows=catShots[c].map(s=>{
-      const fromDist=s.lie==='green'?s.distFrom+'ft':s.distFrom+'y';
-      const toLabel=lieAbbr[s.resultLie]||s.resultLie;
-      const toDist=s.resultLie==='holed'?'':s.resultLie==='green'?(s.resultDist!=null?s.resultDist+'ft':''):(s.resultDist!=null?s.resultDist+'y':'');
-      const missParts=[s.missDepth,s.missSide].filter(Boolean).map(v=>v.charAt(0).toUpperCase()+v.slice(1));
-      const missStr=missParts.length?missParts.join('-'):'';
-      const sgStr=s.sg!=null?(s.sg>=0?'+':'')+s.sg.toFixed(2):'—';
-      const sgColor=s.sg==null?'var(--text-muted)':s.sg>=0?'var(--q-great)':'var(--q-poor)';
-      return `<div class="ssum-shot">
-        <span class="ssum-hole">H${s.holeNum}</span>
-        <span class="ssum-from">${lieAbbr[s.lie]||s.lie} ${fromDist}</span>
-        <span class="ssum-arrow">›</span>
-        <span class="ssum-to">${toLabel}${toDist?' '+toDist:''}${missStr?`<span class="ssum-miss"> ${missStr}</span>`:''}</span>
-        <span class="ssum-sg" style="color:${sgColor}">${sgStr}</span>
-      </div>`;
-    }).join('');
+    const rows=catShots[c].map(s=>buildShotRow(s,`H${s.holeNum}`)).join('');
     return `<div class="summary-stat summary-cat-row" onclick="toggleSummaryCat('${c}')">
         <span class="summary-stat-label">${cNames[c]} <span style="font-size:12px;color:var(--text-dim)">(${cnt[c]} shots)</span></span>
         <span style="display:flex;align-items:center;gap:10px">
@@ -583,7 +597,17 @@ function renderSummary(){
     const shots=h.shots||[]; if(shots.length===0) return '';
     const hsg=shots.reduce((s,sh)=>s+(sh.sg||0),0);
     const hStrokes=countStrokes(shots);
-    return `<div class="hole-summary-row"><div class="hsrow-hole">${h.hole}</div><div class="hsrow-par" style="font-size:12px">P${h.par}</div><div class="hsrow-shots">${hStrokes} stroke${hStrokes!==1?'s':''}</div><div class="hsrow-sg" style="color:${hsg>=0?'var(--q-great)':'var(--q-poor)'}">${(hsg>=0?'+':'')+hsg.toFixed(2)}</div></div>`;
+    const rows=shots.map(s=>buildShotRow(s,cNames[s.category]||s.category,'ssum-hole-cat')).join('');
+    return `<div class="hole-summary-row summary-cat-row" onclick="toggleSummaryHole(${h.hole})">
+      <div class="hsrow-hole">${h.hole}</div>
+      <div class="hsrow-par" style="font-size:12px">P${h.par}</div>
+      <div class="hsrow-shots">${hStrokes} stroke${hStrokes!==1?'s':''}</div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div class="hsrow-sg" style="color:${hsg>=0?'var(--q-great)':'var(--q-poor)'}">${(hsg>=0?'+':'')+hsg.toFixed(2)}</div>
+        <span class="ssum-chevron" id="ssum-hole-icon-${h.hole}">›</span>
+      </div>
+    </div>
+    <div class="ssum-expand" id="ssum-hole-${h.hole}" style="display:none">${rows}</div>`;
   }).filter(Boolean).join('')||'<div style="color:var(--text-dim);text-align:center;padding:16px;font-size:14px">No shots recorded yet</div>';
 }
 
