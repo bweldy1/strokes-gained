@@ -107,6 +107,7 @@ textarea.json-input:focus { border-color: var(--fairway); }
 .sg-quality-bar { height: 4px; border-radius: 2px; margin-top: 10px; background: linear-gradient(90deg,var(--q-terrible),var(--q-poor),var(--q-average),var(--q-good),var(--q-great)); position: relative; }
 .sg-quality-marker { position: absolute; top: -4px; width: 12px; height: 12px; border-radius: 50%; background: #fff; border: 2px solid var(--sky); transform: translateX(-50%); transition: left .3s; }
 .category-badge { display: inline-flex; align-items: center; padding: 2px 7px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+.penalty-badge { display: inline-flex; align-items: center; padding: 2px 7px; border-radius: 12px; font-size: 11px; font-weight: 600; background: rgba(233,69,96,.2); color: var(--accent); margin-left: 4px; }
 .cat-drive { background: rgba(244,162,97,.2); color: var(--gold); }
 .cat-approach { background: rgba(64,145,108,.2); color: var(--fairway); }
 .cat-shortgame { background: rgba(82,183,136,.2); color: #74c69d; }

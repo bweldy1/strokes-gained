@@ -60,9 +60,12 @@ function interpolate(table, dist) {
 }
 function getExpected(lie, dist) { return interpolate(SG_TABLES[lie], dist); }
 function calcSG(startLie, startDist, resultLie, resultDist) {
-  if(resultLie==='holed'){ const s=getExpected(startLie,startDist); return s!==null ? s-1 : null; }
-  const s=getExpected(startLie,startDist), e=getExpected(resultLie,resultDist);
-  return (s===null||e===null) ? null : s-e-1;
+  if(resultLie==='holed'){   const s=getExpected(startLie,startDist); return s!==null ? s-1 : null; }
+  // Penalty: use 'rough' table for drop position, subtract extra stroke for the penalty
+  const lookupLie = resultLie==='penalty' ? 'rough' : resultLie;
+  const s=getExpected(startLie,startDist), e=getExpected(lookupLie,resultDist);
+  const penaltyStroke = resultLie==='penalty' ? 1 : 0;
+  return (s===null||e===null) ? null : s-e-1-penaltyStroke;
 }
 function getQuality(sg, category) {
   const bands=QUALITY_BANDS[category]||QUALITY_BANDS.approach;
@@ -91,6 +94,10 @@ function getSuggestion(holeData) {
   }
   const prev = shots[shots.length-1];
   if(!prev.resultLie || prev.resultLie==='holed') return null;
+  if(prev.resultLie==='penalty'){
+    const dist=prev.resultDist;
+    return dist!=null ? { lie:null, dist, hint:'From shot '+shots.length+': penalty drop · '+dist+' yds' } : null;
+  }
   const lie = prev.resultLie;
   const dist = prev.resultDist;
   const distLabel = lie==='green' ? (dist!=null?dist+' ft':'') : (dist!=null?dist+' yds':'');
@@ -121,9 +128,9 @@ function renderHome() {
     const sg=roundTotalSG(r,null);
     const sgStr=sg!==null?(sg>=0?'+':'')+sg.toFixed(1):'—';
     const sgColor=sg===null?'var(--text-muted)':sg>=0?'var(--q-great)':'var(--q-poor)';
-    const shots=r.holes.reduce((s,h)=>s+(h.shots||[]).length,0);
+    const strokes=r.holes.reduce((s,h)=>s+countStrokes(h.shots||[]),0);
     return `<div class="round-card" onclick="resumeRound('${r.id}')">
-      <div class="round-card-info"><div class="round-card-name">${r.courseName}</div><div class="round-card-meta">${formatDate(r.date)} · ${shots} shot${shots!==1?'s':''}</div></div>
+      <div class="round-card-info"><div class="round-card-name">${r.courseName}</div><div class="round-card-meta">${formatDate(r.date)} · ${strokes} stroke${strokes!==1?'s':''}</div></div>
       <div class="round-card-sg"><div class="round-card-sg-val" style="color:${sgColor}">${sgStr}</div><div class="round-card-sg-lbl">Total SG</div></div>
       <div class="round-del-btn" onclick="event.stopPropagation();deleteRound('${r.id}')">×</div>
     </div>`;
@@ -196,6 +203,7 @@ function renderShotList(hd) {
     const sgColor=sg==null?'var(--text-muted)':sg>=0?'var(--q-good)':'var(--q-poor)';
     const quality=sg!=null?getQuality(sg,s.category):null;
     const distStr=s.lie==='green'?s.distFrom+' ft':s.distFrom+' yds';
+    const isPenalty=s.resultLie==='penalty';
     const resLabel=s.resultLie==='holed'?'Holed ⛳':s.resultLie.charAt(0).toUpperCase()+s.resultLie.slice(1);
     const resDist=s.resultLie==='holed'?'':(s.resultLie==='green'?(s.resultDist!=null?s.resultDist+' ft':''):(s.resultDist!=null?s.resultDist+' yds':''));
     const missParts=[s.missDepth,s.missSide].filter(Boolean).map(v=>v.charAt(0).toUpperCase()+v.slice(1));
@@ -203,7 +211,7 @@ function renderShotList(hd) {
     return `<div class="shot-row" onclick="editShot(${i})">
       <div class="shot-num">${i+1}</div>
       <div class="shot-info">
-        <div class="shot-info-main">${s.lie.charAt(0).toUpperCase()+s.lie.slice(1)} · ${distStr} <span class="category-badge cat-${s.category}">${catLabel(s.category)}</span></div>
+        <div class="shot-info-main">${s.lie.charAt(0).toUpperCase()+s.lie.slice(1)} · ${distStr} <span class="category-badge cat-${s.category}">${catLabel(s.category)}</span>${isPenalty?'<span class="penalty-badge">+1 stroke</span>':''}</div>
         <div class="shot-info-sub">→ ${resLabel}${resDist?' · '+resDist:''}${missStr}</div>
       </div>
       <div class="shot-sg"><div class="shot-sg-val" style="color:${sgColor}">${sgStr}</div>${quality?`<div class="shot-quality-dot" style="background:${quality.color}"></div>`:''}</div>
@@ -212,6 +220,7 @@ function renderShotList(hd) {
   }).join('');
 }
 function catLabel(cat){ return {drive:'Drive',approach:'Approach',shortgame:'Short Game',putt:'Putt'}[cat]||cat; }
+function countStrokes(shots){ return shots.length + shots.filter(s=>s.resultLie==='penalty').length; }
 function prevHole(){ if(state.currentHole>1){ state.currentHole--; renderHole(); updateTally(); } }
 function nextHole(){ const r=currentRound(); if(state.currentHole<r.holes.length){ state.currentHole++; renderHole(); updateTally(); } }
 
@@ -272,13 +281,13 @@ function openShotSheet(editIndex) {
   } else {
     const sug=getSuggestion(hd);
     if(sug){
-      selectLie(sug.lie,true);
+      if(sug.lie) selectLie(sug.lie,true);
       if(sug.dist!=='') document.getElementById('shot-dist-from').value=sug.dist;
       const hint=document.getElementById('prefill-hint');
       hint.textContent='↑ Pre-filled: '+sug.hint+' (override freely)';
       hint.style.display='block';
       const idx=hd.shots.length;
-      selectCategory(autoCategory(sug.lie,sug.dist||0,idx,hd.par),true);
+      if(sug.lie) selectCategory(autoCategory(sug.lie,sug.dist||0,idx,hd.par),true);
     }
   }
   updateDistFromUnit(); updateResultDistVisibility(); updateSGPreview();
@@ -483,19 +492,22 @@ function renderSummary(){
   const cats=['drive','approach','shortgame','putt'];
   const cNames={drive:'Drive',approach:'Approach',shortgame:'Short Game',putt:'Putt'};
   const tot={drive:0,approach:0,shortgame:0,putt:0}, cnt={drive:0,approach:0,shortgame:0,putt:0};
-  let gTotal=0,gCount=0;
-  for(const hole of round.holes) for(const s of (hole.shots||[])){
-    if(s.sg==null) continue; tot[s.category]+=s.sg; cnt[s.category]++; gTotal+=s.sg; gCount++;
+  let gTotal=0,gCount=0,gStrokes=0;
+  for(const hole of round.holes){
+    const hShots=hole.shots||[];
+    gStrokes+=countStrokes(hShots);
+    for(const s of hShots){ if(s.sg==null) continue; tot[s.category]+=s.sg; cnt[s.category]++; gTotal+=s.sg; gCount++; }
   }
   const fmt=(v,c)=>c===0?'—':(v>=0?'+':'')+v.toFixed(2);
   const col=(v,c)=>c===0?'var(--text-muted)':v>=0?'var(--q-great)':'var(--q-poor)';
   document.getElementById('summary-totals').innerHTML=`
-    <div class="summary-stat"><span class="summary-stat-label" style="font-size:17px;font-weight:600;color:var(--text)">Total SG</span><span class="summary-stat-val" style="font-size:28px;color:${col(gTotal,gCount)}">${fmt(gTotal,gCount)}</span></div>
+    <div class="summary-stat"><span class="summary-stat-label" style="font-size:17px;font-weight:600;color:var(--text)">Total SG <span style="font-size:12px;color:var(--text-dim);font-weight:400">(${gStrokes} stroke${gStrokes!==1?'s':''})</span></span><span class="summary-stat-val" style="font-size:28px;color:${col(gTotal,gCount)}">${fmt(gTotal,gCount)}</span></div>
     ${cats.map(c=>`<div class="summary-stat"><span class="summary-stat-label">${cNames[c]} <span style="font-size:12px;color:var(--text-dim)">(${cnt[c]} shots)</span></span><span class="summary-stat-val" style="color:${col(tot[c],cnt[c])}">${fmt(tot[c],cnt[c])}</span></div>`).join('')}`;
   document.getElementById('summary-holes').innerHTML=round.holes.map(h=>{
     const shots=h.shots||[]; if(shots.length===0) return '';
     const hsg=shots.reduce((s,sh)=>s+(sh.sg||0),0);
-    return `<div class="hole-summary-row"><div class="hsrow-hole">${h.hole}</div><div class="hsrow-par" style="font-size:12px">P${h.par}</div><div class="hsrow-shots">${shots.length} shot${shots.length!==1?'s':''}</div><div class="hsrow-sg" style="color:${hsg>=0?'var(--q-great)':'var(--q-poor)'}">${(hsg>=0?'+':'')+hsg.toFixed(2)}</div></div>`;
+    const hStrokes=countStrokes(shots);
+    return `<div class="hole-summary-row"><div class="hsrow-hole">${h.hole}</div><div class="hsrow-par" style="font-size:12px">P${h.par}</div><div class="hsrow-shots">${hStrokes} stroke${hStrokes!==1?'s':''}</div><div class="hsrow-sg" style="color:${hsg>=0?'var(--q-great)':'var(--q-poor)'}">${(hsg>=0?'+':'')+hsg.toFixed(2)}</div></div>`;
   }).filter(Boolean).join('')||'<div style="color:var(--text-dim);text-align:center;padding:16px;font-size:14px">No shots recorded yet</div>';
 }
 
