@@ -133,6 +133,8 @@ Both use `countStrokes(shots)` for stroke totals (adds +1 per penalty shot).
 
 `showScreen(name)` — shows `#screen-{name}`, hides all others, calls the matching render function. Screens: `home`, `courses`, `hole`, `summary`.
 
+The hole screen topbar uses a `⌂` home icon (`.btn-icon`) to navigate back to the home screen — intentionally distinct from the `‹ ›` hole navigation arrows.
+
 ## CSV Export
 
 `exportCSV()` — full shot-level CSV with columns: Hole, Par, Yardage, Shot#, Lie, Dist From, Dist Unit, Result Lie, Result Dist, Result Unit, Category, SG, Miss Depth, Miss Side.
