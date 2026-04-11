@@ -121,6 +121,9 @@ Category, Starting Lie, and Distance from Pin all use a chip-based collapsed pat
 
 When `lie='green'`, `selectLie` also auto-sets `resultLie='green'` if no result lie is set yet.
 
+### Short Game definition
+Short Game = any non-putt, non-drive shot from **under 30 yards** (`autoCategory` returns `'shortgame'` when `distYards < 30`). Chips, pitches, and bunker shots within 30 yards. Users can manually override category on any shot.
+
 ### Miss Direction
 - `selectMissDepth(val)` / `selectMissSide(val)` — toggle behavior (tap selected → deselects)
 - Side options swap based on category: putts use Low/Center/High, all others use Left/Middle/Right
@@ -183,7 +186,13 @@ Sand, Recovery, and Penalty are infrequent. In lie pill rows, they appear as sec
 - **Putting** (`group='putt'`): Avg first putt distance (first putt per hole), Avg holed distance, Longest holed (all in feet)
 - Stat rows use `.sstat-row`, `.sstat-label`, `.sstat-val`
 
-`buildShotRow(s, label, labelClass)` — shared helper used by both drill-downs to render a single shot row.
+`buildBucketRows(shots, cat)` — renders the category drill-down as distance-bucket rows (avg SG + total SG per bucket). Empty buckets are skipped. Filter uses `distFrom >= b.min && distFrom <= b.max` (inclusive on both ends). Defined in `state.js` as `SG_BUCKETS`:
+- **Putt** (feet, `distFrom`): 0–3, 4–8, 9–15, 16–25, 26+
+- **Short Game** (yards, `distFrom`): 0–15, 16–30 — upper bound matches `autoCategory` threshold
+- **Approach** (yards, `distFrom`): <75, 76–100, 101–125, 126–150, 151–175, 176+
+- **Drive** (hole yardage, `distFrom`): <350, 351–400, 401+
+
+`buildShotRow(s, label, labelClass)` — used by the hole drill-down (`toggleSummaryHole`) only; category drill-down now uses `buildBucketRows`.
 
 ### Shot List Layout (hole screen)
 `renderShotList` renders each shot with result as primary and starting position as secondary:

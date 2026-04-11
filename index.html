@@ -150,6 +150,12 @@ textarea.json-input:focus { border-color: var(--fairway); }
 .ssum-drive { color: var(--text-dim); font-size: 10px; }
 .shot-drive-dist { color: var(--text-dim); font-size: 12px; }
 .ssum-empty { font-size: 13px; color: var(--text-dim); padding: 6px 0; }
+.ssum-bucket { display: flex; align-items: center; padding: 7px 0; border-bottom: 1px solid var(--border); gap: 8px; font-size: 13px; }
+.ssum-bucket:last-child { border-bottom: none; }
+.ssum-bucket-label { flex: 1; color: var(--text-muted); }
+.ssum-bucket-count { font-size: 11px; color: var(--text-dim); flex-shrink: 0; width: 44px; text-align: right; }
+.ssum-bucket-avg { font-weight: 600; flex-shrink: 0; width: 48px; text-align: right; }
+.ssum-bucket-total { font-size: 15px; font-weight: 700; flex-shrink: 0; width: 48px; text-align: right; }
 .summary-stat-label { font-size: 15px; color: var(--text-muted); }
 .summary-stat-val { font-size: 20px; font-weight: 700; }
 .hole-summary-row { display: flex; gap: 8px; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 14px; }
@@ -200,7 +206,7 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
 .ssum-cat-right { display: flex; align-items: center; gap: 10px; }
 .ssum-cat-avg { display: flex; flex-direction: column; align-items: flex-end; gap: 1px; }
 .ssum-cat-avg-lbl { font-size: 10px; color: var(--text-dim); line-height: 1; }
-.ssum-cat-avg-val { font-size: 13px; font-weight: 600; line-height: 1; }
+.ssum-cat-avg-val { font-size: 16px; font-weight: 700; line-height: 1; }
 .summary-by-hole-row { border-top: 1px solid var(--border); margin-top: 4px; }
 .summary-by-hole-label { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: .5px; color: var(--text-dim); }
 .sstat-header-val { font-size: 12px; color: var(--text-dim); font-weight: 400; }
@@ -246,7 +252,7 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
     <div class="section-label">Recent Rounds</div>
     <div id="rounds-list"></div>
   </div>
-  <div id="build-version">Build: 2026-04-11 10:13</div>
+  <div id="build-version">Build: 2026-04-11 10:54</div>
 </div>
 
 <!-- COURSE SELECT -->
@@ -839,6 +845,37 @@ const QUALITY_BANDS = {
 
 const CAT_LABELS = {drive:'Drive', approach:'Approach', shortgame:'Short Game', putt:'Putt'};
 const LIE_ABBR   = {tee:'Tee', fairway:'Fwy', rough:'Rgh', sand:'Sand', recovery:'Rcv', green:'Grn', holed:'Holed', penalty:'Pen'};
+
+// Distance buckets for category drill-down analysis.
+// distFrom unit: feet for putt, yards for all others.
+// Drive buckets use hole yardage (distFrom on a drive = distance to pin from tee).
+// Short Game upper bound matches autoCategory threshold (< 30 yds).
+const SG_BUCKETS = {
+  putt: [
+    {label:'0–3 ft',   min:0,   max:3},
+    {label:'4–8 ft',   min:4,   max:8},
+    {label:'9–15 ft',  min:9,   max:15},
+    {label:'16–25 ft', min:16,  max:25},
+    {label:'26+ ft',   min:26,  max:Infinity},
+  ],
+  shortgame: [
+    {label:'0–15 yds', min:0,   max:15},
+    {label:'16–30 yds',min:16,  max:Infinity},
+  ],
+  approach: [
+    {label:'< 75 yds',   min:0,   max:75},
+    {label:'76–100 yds', min:76,  max:100},
+    {label:'101–125 yds',min:101, max:125},
+    {label:'126–150 yds',min:126, max:150},
+    {label:'151–175 yds',min:151, max:175},
+    {label:'176+ yds',   min:176, max:Infinity},
+  ],
+  drive: [
+    {label:'< 350 yds',   min:0,   max:350},
+    {label:'351–400 yds', min:351, max:400},
+    {label:'401+ yds',    min:401, max:Infinity},
+  ],
+};
 
 // ═══════════════════════════════════════════════════════════════
 // STATE
@@ -1507,6 +1544,25 @@ function toggleSummaryHole(holeNum) {
   if(icon) icon.style.transform = open ? 'rotate(90deg)' : '';
 }
 
+function buildBucketRows(shots, cat) {
+  const buckets = SG_BUCKETS[cat]; if(!buckets) return '';
+  const fmtSG = v => (v >= 0 ? '+' : '') + v.toFixed(2);
+  const rows = buckets.map(b => {
+    const bs = shots.filter(s => s.distFrom != null && s.distFrom >= b.min && s.distFrom <= b.max);
+    if(bs.length === 0) return '';
+    const bTot = bs.reduce((sum, s) => sum + (s.sg || 0), 0);
+    const bAvg = bTot / bs.length;
+    const cls = (v) => v >= 0 ? 'sg-pos' : 'sg-neg';
+    return `<div class="ssum-bucket">
+      <span class="ssum-bucket-label">${b.label}</span>
+      <span class="ssum-bucket-count">${bs.length} shot${bs.length !== 1 ? 's' : ''}</span>
+      <span class="ssum-bucket-avg ${cls(bAvg)}">${fmtSG(bAvg)}</span>
+      <span class="ssum-bucket-total ${cls(bTot)}">${fmtSG(bTot)}</span>
+    </div>`;
+  }).filter(Boolean).join('');
+  return rows || '<div class="ssum-empty">No shots recorded</div>';
+}
+
 function buildShotRow(s, label, labelClass = 'ssum-hole') {
   const fromDist = s.lie === 'green' ? s.distFrom + 'ft' : s.distFrom + 'y';
   const toLabel = LIE_ABBR[s.resultLie] || s.resultLie;
@@ -1547,7 +1603,7 @@ function renderSummary() {
   const sgCls = (v, c) => c === 0 ? 'sg-null' : v >= 0 ? 'sg-pos' : 'sg-neg';
 
   const catHTML = cats.map(c => {
-    const rows = catShots[c].map(s => buildShotRow(s, `H${s.holeNum}`)).join('');
+    const rows = buildBucketRows(catShots[c], c);
     const avg = fmt(cnt[c] > 0 ? tot[c] / cnt[c] : 0, cnt[c]);
     return `<div class="summary-stat summary-cat-row" onclick="toggleSummaryCat('${c}')">
         <span class="summary-stat-label">${CAT_LABELS[c]} <span class="ssum-cat-meta">(${cnt[c]} shots)</span></span>
@@ -1556,11 +1612,14 @@ function renderSummary() {
             <span class="ssum-cat-avg-lbl">avg</span>
             <span class="ssum-cat-avg-val ${sgCls(tot[c],cnt[c])}">${avg}</span>
           </span>
-          <span class="summary-stat-val ${sgCls(tot[c],cnt[c])}">${fmt(tot[c],cnt[c])}</span>
+          <span class="ssum-cat-avg">
+            <span class="ssum-cat-avg-lbl">total</span>
+            <span class="ssum-cat-avg-val ${sgCls(tot[c],cnt[c])}">${fmt(tot[c],cnt[c])}</span>
+          </span>
           <span class="ssum-chevron" id="ssum-icon-${c}">›</span>
         </span>
       </div>
-      <div class="ssum-expand hidden" id="ssum-${c}">${rows || '<div class="ssum-empty">No shots recorded</div>'}</div>`;
+      <div class="ssum-expand hidden" id="ssum-${c}">${rows}</div>`;
   }).join('');
 
   const holesHTML = round.holes.map(h => {

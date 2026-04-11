@@ -27,6 +27,37 @@ const QUALITY_BANDS = {
 const CAT_LABELS = {drive:'Drive', approach:'Approach', shortgame:'Short Game', putt:'Putt'};
 const LIE_ABBR   = {tee:'Tee', fairway:'Fwy', rough:'Rgh', sand:'Sand', recovery:'Rcv', green:'Grn', holed:'Holed', penalty:'Pen'};
 
+// Distance buckets for category drill-down analysis.
+// distFrom unit: feet for putt, yards for all others.
+// Drive buckets use hole yardage (distFrom on a drive = distance to pin from tee).
+// Short Game upper bound matches autoCategory threshold (< 30 yds).
+const SG_BUCKETS = {
+  putt: [
+    {label:'0–3 ft',   min:0,   max:3},
+    {label:'4–8 ft',   min:4,   max:8},
+    {label:'9–15 ft',  min:9,   max:15},
+    {label:'16–25 ft', min:16,  max:25},
+    {label:'26+ ft',   min:26,  max:Infinity},
+  ],
+  shortgame: [
+    {label:'0–15 yds', min:0,   max:15},
+    {label:'16–30 yds',min:16,  max:Infinity},
+  ],
+  approach: [
+    {label:'< 75 yds',   min:0,   max:75},
+    {label:'76–100 yds', min:76,  max:100},
+    {label:'101–125 yds',min:101, max:125},
+    {label:'126–150 yds',min:126, max:150},
+    {label:'151–175 yds',min:151, max:175},
+    {label:'176+ yds',   min:176, max:Infinity},
+  ],
+  drive: [
+    {label:'< 350 yds',   min:0,   max:350},
+    {label:'351–400 yds', min:351, max:400},
+    {label:'401+ yds',    min:401, max:Infinity},
+  ],
+};
+
 // ═══════════════════════════════════════════════════════════════
 // STATE
 // ═══════════════════════════════════════════════════════════════

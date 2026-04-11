@@ -44,6 +44,25 @@ function toggleSummaryHole(holeNum) {
   if(icon) icon.style.transform = open ? 'rotate(90deg)' : '';
 }
 
+function buildBucketRows(shots, cat) {
+  const buckets = SG_BUCKETS[cat]; if(!buckets) return '';
+  const fmtSG = v => (v >= 0 ? '+' : '') + v.toFixed(2);
+  const rows = buckets.map(b => {
+    const bs = shots.filter(s => s.distFrom != null && s.distFrom >= b.min && s.distFrom <= b.max);
+    if(bs.length === 0) return '';
+    const bTot = bs.reduce((sum, s) => sum + (s.sg || 0), 0);
+    const bAvg = bTot / bs.length;
+    const cls = (v) => v >= 0 ? 'sg-pos' : 'sg-neg';
+    return `<div class="ssum-bucket">
+      <span class="ssum-bucket-label">${b.label}</span>
+      <span class="ssum-bucket-count">${bs.length} shot${bs.length !== 1 ? 's' : ''}</span>
+      <span class="ssum-bucket-avg ${cls(bAvg)}">${fmtSG(bAvg)}</span>
+      <span class="ssum-bucket-total ${cls(bTot)}">${fmtSG(bTot)}</span>
+    </div>`;
+  }).filter(Boolean).join('');
+  return rows || '<div class="ssum-empty">No shots recorded</div>';
+}
+
 function buildShotRow(s, label, labelClass = 'ssum-hole') {
   const fromDist = s.lie === 'green' ? s.distFrom + 'ft' : s.distFrom + 'y';
   const toLabel = LIE_ABBR[s.resultLie] || s.resultLie;
@@ -84,7 +103,7 @@ function renderSummary() {
   const sgCls = (v, c) => c === 0 ? 'sg-null' : v >= 0 ? 'sg-pos' : 'sg-neg';
 
   const catHTML = cats.map(c => {
-    const rows = catShots[c].map(s => buildShotRow(s, `H${s.holeNum}`)).join('');
+    const rows = buildBucketRows(catShots[c], c);
     const avg = fmt(cnt[c] > 0 ? tot[c] / cnt[c] : 0, cnt[c]);
     return `<div class="summary-stat summary-cat-row" onclick="toggleSummaryCat('${c}')">
         <span class="summary-stat-label">${CAT_LABELS[c]} <span class="ssum-cat-meta">(${cnt[c]} shots)</span></span>
@@ -93,11 +112,14 @@ function renderSummary() {
             <span class="ssum-cat-avg-lbl">avg</span>
             <span class="ssum-cat-avg-val ${sgCls(tot[c],cnt[c])}">${avg}</span>
           </span>
-          <span class="summary-stat-val ${sgCls(tot[c],cnt[c])}">${fmt(tot[c],cnt[c])}</span>
+          <span class="ssum-cat-avg">
+            <span class="ssum-cat-avg-lbl">total</span>
+            <span class="ssum-cat-avg-val ${sgCls(tot[c],cnt[c])}">${fmt(tot[c],cnt[c])}</span>
+          </span>
           <span class="ssum-chevron" id="ssum-icon-${c}">›</span>
         </span>
       </div>
-      <div class="ssum-expand hidden" id="ssum-${c}">${rows || '<div class="ssum-empty">No shots recorded</div>'}</div>`;
+      <div class="ssum-expand hidden" id="ssum-${c}">${rows}</div>`;
   }).join('');
 
   const holesHTML = round.holes.map(h => {

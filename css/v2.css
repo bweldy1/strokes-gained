@@ -141,6 +141,12 @@ textarea.json-input:focus { border-color: var(--fairway); }
 .ssum-drive { color: var(--text-dim); font-size: 10px; }
 .shot-drive-dist { color: var(--text-dim); font-size: 12px; }
 .ssum-empty { font-size: 13px; color: var(--text-dim); padding: 6px 0; }
+.ssum-bucket { display: flex; align-items: center; padding: 7px 0; border-bottom: 1px solid var(--border); gap: 8px; font-size: 13px; }
+.ssum-bucket:last-child { border-bottom: none; }
+.ssum-bucket-label { flex: 1; color: var(--text-muted); }
+.ssum-bucket-count { font-size: 11px; color: var(--text-dim); flex-shrink: 0; width: 44px; text-align: right; }
+.ssum-bucket-avg { font-weight: 600; flex-shrink: 0; width: 48px; text-align: right; }
+.ssum-bucket-total { font-size: 15px; font-weight: 700; flex-shrink: 0; width: 48px; text-align: right; }
 .summary-stat-label { font-size: 15px; color: var(--text-muted); }
 .summary-stat-val { font-size: 20px; font-weight: 700; }
 .hole-summary-row { display: flex; gap: 8px; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 14px; }
@@ -191,7 +197,7 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
 .ssum-cat-right { display: flex; align-items: center; gap: 10px; }
 .ssum-cat-avg { display: flex; flex-direction: column; align-items: flex-end; gap: 1px; }
 .ssum-cat-avg-lbl { font-size: 10px; color: var(--text-dim); line-height: 1; }
-.ssum-cat-avg-val { font-size: 13px; font-weight: 600; line-height: 1; }
+.ssum-cat-avg-val { font-size: 16px; font-weight: 700; line-height: 1; }
 .summary-by-hole-row { border-top: 1px solid var(--border); margin-top: 4px; }
 .summary-by-hole-label { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: .5px; color: var(--text-dim); }
 .sstat-header-val { font-size: 12px; color: var(--text-dim); font-weight: 400; }
