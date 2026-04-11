@@ -198,6 +198,9 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
 .summary-total-val { font-size: 28px; font-weight: 700; }
 .ssum-cat-meta { font-size: 12px; color: var(--text-dim); }
 .ssum-cat-right { display: flex; align-items: center; gap: 10px; }
+.ssum-cat-avg { display: flex; flex-direction: column; align-items: flex-end; gap: 1px; }
+.ssum-cat-avg-lbl { font-size: 10px; color: var(--text-dim); line-height: 1; }
+.ssum-cat-avg-val { font-size: 13px; font-weight: 600; line-height: 1; }
 .summary-by-hole-row { border-top: 1px solid var(--border); margin-top: 4px; }
 .summary-by-hole-label { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: .5px; color: var(--text-dim); }
 .sstat-header-val { font-size: 12px; color: var(--text-dim); font-weight: 400; }
@@ -243,7 +246,7 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
     <div class="section-label">Recent Rounds</div>
     <div id="rounds-list"></div>
   </div>
-  <div id="build-version">Build: 2026-04-11 08:32</div>
+  <div id="build-version">Build: 2026-04-11 10:13</div>
 </div>
 
 <!-- COURSE SELECT -->
@@ -1545,9 +1548,14 @@ function renderSummary() {
 
   const catHTML = cats.map(c => {
     const rows = catShots[c].map(s => buildShotRow(s, `H${s.holeNum}`)).join('');
+    const avg = fmt(cnt[c] > 0 ? tot[c] / cnt[c] : 0, cnt[c]);
     return `<div class="summary-stat summary-cat-row" onclick="toggleSummaryCat('${c}')">
         <span class="summary-stat-label">${CAT_LABELS[c]} <span class="ssum-cat-meta">(${cnt[c]} shots)</span></span>
         <span class="ssum-cat-right">
+          <span class="ssum-cat-avg">
+            <span class="ssum-cat-avg-lbl">avg</span>
+            <span class="ssum-cat-avg-val ${sgCls(tot[c],cnt[c])}">${avg}</span>
+          </span>
           <span class="summary-stat-val ${sgCls(tot[c],cnt[c])}">${fmt(tot[c],cnt[c])}</span>
           <span class="ssum-chevron" id="ssum-icon-${c}">›</span>
         </span>

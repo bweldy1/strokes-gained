@@ -189,6 +189,9 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
 .summary-total-val { font-size: 28px; font-weight: 700; }
 .ssum-cat-meta { font-size: 12px; color: var(--text-dim); }
 .ssum-cat-right { display: flex; align-items: center; gap: 10px; }
+.ssum-cat-avg { display: flex; flex-direction: column; align-items: flex-end; gap: 1px; }
+.ssum-cat-avg-lbl { font-size: 10px; color: var(--text-dim); line-height: 1; }
+.ssum-cat-avg-val { font-size: 13px; font-weight: 600; line-height: 1; }
 .summary-by-hole-row { border-top: 1px solid var(--border); margin-top: 4px; }
 .summary-by-hole-label { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: .5px; color: var(--text-dim); }
 .sstat-header-val { font-size: 12px; color: var(--text-dim); font-weight: 400; }

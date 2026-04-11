@@ -85,9 +85,14 @@ function renderSummary() {
 
   const catHTML = cats.map(c => {
     const rows = catShots[c].map(s => buildShotRow(s, `H${s.holeNum}`)).join('');
+    const avg = fmt(cnt[c] > 0 ? tot[c] / cnt[c] : 0, cnt[c]);
     return `<div class="summary-stat summary-cat-row" onclick="toggleSummaryCat('${c}')">
         <span class="summary-stat-label">${CAT_LABELS[c]} <span class="ssum-cat-meta">(${cnt[c]} shots)</span></span>
         <span class="ssum-cat-right">
+          <span class="ssum-cat-avg">
+            <span class="ssum-cat-avg-lbl">avg</span>
+            <span class="ssum-cat-avg-val ${sgCls(tot[c],cnt[c])}">${avg}</span>
+          </span>
           <span class="summary-stat-val ${sgCls(tot[c],cnt[c])}">${fmt(tot[c],cnt[c])}</span>
           <span class="ssum-chevron" id="ssum-icon-${c}">›</span>
         </span>
