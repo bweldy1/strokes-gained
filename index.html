@@ -224,6 +224,15 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
 .export-hint-text { font-size: 12px; color: var(--text-muted); line-height: 1.6; }
 .btn-mb { margin-bottom: 12px; }
 
+/* ── Trends screen ── */
+.trends-filter-row { display: flex; gap: 8px; margin-bottom: 16px; }
+.trends-cat-card { padding: 14px 16px; }
+.trends-cat-header { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+.trends-cat-header:active { opacity: .7; }
+.trends-cat-name { font-size: 15px; font-weight: 600; flex: 1; }
+.trends-cat-meta { font-size: 12px; color: var(--text-dim); }
+.trends-cat-avg { font-size: 20px; font-weight: 700; }
+
 /* ── Utility ── */
 .hidden { display: none !important; }
 .sg-pos { color: var(--q-great); }
@@ -248,11 +257,12 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
     <div class="home-sub">Track every shot. Improve every round.</div>
   </div>
   <div class="scroll-body">
-    <button class="btn btn-primary" onclick="goToNewRound()" style="margin-bottom:24px"><span>+</span> Start New Round</button>
+    <button class="btn btn-primary" onclick="goToNewRound()" style="margin-bottom:10px"><span>+</span> Start New Round</button>
+    <button class="btn btn-secondary" onclick="showScreen('trends')" style="margin-bottom:24px">Trends</button>
     <div class="section-label">Recent Rounds</div>
     <div id="rounds-list"></div>
   </div>
-  <div id="build-version">Build: 2026-04-11 10:54</div>
+  <div id="build-version">Build: 2026-04-11 11:04</div>
 </div>
 
 <!-- COURSE SELECT -->
@@ -327,6 +337,23 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
     </div>
     <div class="spacer-sm"></div>
     <button class="btn btn-ghost" onclick="showScreen('home')">Done</button>
+  </div>
+</div>
+
+<!-- TRENDS -->
+<div class="screen" id="screen-trends">
+  <div class="topbar">
+    <button class="btn-icon" onclick="showScreen('home')">‹</button>
+    <div><div class="topbar-title">Trends</div></div>
+    <div class="topbar-spacer"></div>
+  </div>
+  <div class="scroll-body">
+    <div class="trends-filter-row">
+      <button class="pill pill-sm" id="tf-5"  onclick="setTrendsFilter(5)">Last 5</button>
+      <button class="pill pill-sm" id="tf-10" onclick="setTrendsFilter(10)">Last 10</button>
+      <button class="pill pill-sm" id="tf-0"  onclick="setTrendsFilter(0)">All</button>
+    </div>
+    <div id="trends-cats"></div>
   </div>
 </div>
 
@@ -891,7 +918,8 @@ let state = {
   shotResultLie: null,
   shotCategory: null,
   shotMissDepth: null,
-  shotMissSide: null
+  shotMissSide: null,
+  trendsFilter: 10
 };
 
 // ═══════════════════════════════════════════════════════════════
@@ -1771,6 +1799,73 @@ function exportSummaryCSV() {
 </script>
 <script>
 // ═══════════════════════════════════════════════════════════════
+// TRENDS SCREEN
+// ═══════════════════════════════════════════════════════════════
+
+function renderTrends() {
+  const allRounds = getRounds();
+  const n = state.trendsFilter;
+  const rounds = n === 0 ? allRounds : allRounds.slice(0, n);
+
+  [5, 10, 0].forEach(k => {
+    document.getElementById('tf-' + k).classList.toggle('selected', state.trendsFilter === k);
+  });
+
+  const el = document.getElementById('trends-cats');
+  if(rounds.length === 0) {
+    el.innerHTML = `<div class="empty-state"><div class="empty-state-icon">⛳</div><div class="empty-state-text">No rounds yet.<br>Start a new round to begin tracking.</div></div>`;
+    return;
+  }
+
+  const catShots = {drive:[], approach:[], shortgame:[], putt:[]};
+  for(const r of rounds) {
+    for(const h of r.holes) {
+      for(const s of (h.shots || [])) {
+        if(catShots[s.category]) catShots[s.category].push(s);
+      }
+    }
+  }
+
+  const cats = ['drive', 'approach', 'shortgame', 'putt'];
+  const roundLabel = `${rounds.length} round${rounds.length !== 1 ? 's' : ''}`;
+
+  el.innerHTML = cats.map(cat => {
+    const shots = catShots[cat];
+    const valid = shots.filter(s => s.sg != null);
+    const cnt = valid.length;
+    const tot = valid.reduce((sum, s) => sum + s.sg, 0);
+    const avg = cnt > 0 ? tot / cnt : null;
+    const avgStr = avg !== null ? (avg >= 0 ? '+' : '') + avg.toFixed(2) : '—';
+    const bucketRows = buildBucketRows(shots, cat);
+
+    return `<div class="card trends-cat-card">
+      <div class="trends-cat-header" onclick="toggleTrendsCat('${cat}')">
+        <div class="trends-cat-name">${CAT_LABELS[cat]}</div>
+        <div class="trends-cat-meta">${cnt} shots · ${roundLabel}</div>
+        <div class="trends-cat-avg ${sgClass(avg)}">${avgStr}</div>
+        <span class="ssum-chevron" id="tcat-icon-${cat}">›</span>
+      </div>
+      <div class="ssum-expand hidden" id="tcat-${cat}">${bucketRows}</div>
+    </div>`;
+  }).join('');
+}
+
+function setTrendsFilter(n) {
+  state.trendsFilter = n;
+  renderTrends();
+}
+
+function toggleTrendsCat(cat) {
+  const el = document.getElementById('tcat-' + cat);
+  const icon = document.getElementById('tcat-icon-' + cat);
+  const open = el.classList.contains('hidden');
+  el.classList.toggle('hidden');
+  if(icon) icon.style.transform = open ? 'rotate(90deg)' : '';
+}
+
+</script>
+<script>
+// ═══════════════════════════════════════════════════════════════
 // NAVIGATION
 // ═══════════════════════════════════════════════════════════════
 
@@ -1782,6 +1877,7 @@ function showScreen(name) {
   if(name === 'courses') renderCourses();
   if(name === 'hole')    renderHoleScreen();
   if(name === 'summary') renderSummary();
+  if(name === 'trends')  renderTrends();
 }
 
 // ═══════════════════════════════════════════════════════════════

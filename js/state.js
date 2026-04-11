@@ -72,7 +72,8 @@ let state = {
   shotResultLie: null,
   shotCategory: null,
   shotMissDepth: null,
-  shotMissSide: null
+  shotMissSide: null,
+  trendsFilter: 10
 };
 
 // ═══════════════════════════════════════════════════════════════
