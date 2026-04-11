@@ -26,11 +26,10 @@ function renderHome() {
   el.innerHTML = rounds.map(r => {
     const sg = roundTotalSG(r, null);
     const sgStr = sg !== null ? (sg >= 0 ? '+' : '') + sg.toFixed(1) : '—';
-    const sgColor = sg === null ? 'var(--text-muted)' : sg >= 0 ? 'var(--q-great)' : 'var(--q-poor)';
     const strokes = r.holes.reduce((s, h) => s + countStrokes(h.shots || []), 0);
     return `<div class="round-card" onclick="resumeRound('${r.id}')">
       <div class="round-card-info"><div class="round-card-name">${r.courseName}</div><div class="round-card-meta">${formatDate(r.date)} · ${strokes} stroke${strokes !== 1 ? 's' : ''}</div></div>
-      <div class="round-card-sg"><div class="round-card-sg-val" style="color:${sgColor}">${sgStr}</div><div class="round-card-sg-lbl">Total SG</div></div>
+      <div class="round-card-sg"><div class="round-card-sg-val ${sgClass(sg)}">${sgStr}</div><div class="round-card-sg-lbl">Total SG</div></div>
       <div class="round-del-btn" onclick="event.stopPropagation();deleteRound('${r.id}')">×</div>
     </div>`;
   }).join('');

@@ -28,12 +28,11 @@ function renderShotList(hd) {
   }
   el.innerHTML = shots.map((s, i) => {
     const sg = s.sg, sgStr = sg != null ? (sg >= 0 ? '+' : '') + sg.toFixed(2) : '—';
-    const sgColor = sg == null ? 'var(--text-muted)' : sg >= 0 ? 'var(--q-good)' : 'var(--q-poor)';
     const quality = sg != null ? getQuality(sg, s.category) : null;
-    const distStr = s.lie === 'green' ? s.distFrom + ' ft' : s.distFrom + ' yds';
+    const distStr = formatDist(s.distFrom, s.lie);
     const isPenalty = s.resultLie === 'penalty';
     const resLabel = s.resultLie === 'holed' ? 'Holed ⛳' : s.resultLie.charAt(0).toUpperCase() + s.resultLie.slice(1);
-    const resDist = s.resultLie === 'holed' ? '' : (s.resultLie === 'green' ? (s.resultDist != null ? s.resultDist + ' ft' : '') : (s.resultDist != null ? s.resultDist + ' yds' : ''));
+    const resDist = s.resultLie === 'holed' ? '' : formatDist(s.resultDist, s.resultLie);
     const missParts = [s.missDepth, s.missSide].filter(Boolean).map(v => v.charAt(0).toUpperCase() + v.slice(1));
     const missStr = missParts.length ? ` · ${missParts.join('-')}` : '';
     const driveDist = (s.category === 'drive' && s.distFrom != null && s.resultDist != null) ? Math.round(s.distFrom - s.resultDist) : null;
@@ -45,13 +44,13 @@ function renderShotList(hd) {
         <div class="shot-info-main"><span class="category-badge cat-${s.category}">${catLabel(s.category)}</span>  ${mainResult}${isPenalty ? ' <span class="penalty-badge">+1 stroke</span>' : ''}</div>
         <div class="shot-info-sub">${s.lie.charAt(0).toUpperCase() + s.lie.slice(1)} · ${distStr}${driveStr}${missStr}</div>
       </div>
-      <div class="shot-sg"><div class="shot-sg-val" style="color:${sgColor}">${sgStr}</div>${quality ? `<div class="shot-quality-dot" style="background:${quality.color}"></div>` : ''}</div>
+      <div class="shot-sg"><div class="shot-sg-val ${sgClass(sg)}">${sgStr}</div>${quality ? `<div class="shot-quality-dot" style="background:${quality.color}"></div>` : ''}</div>
       <div class="shot-del" onclick="event.stopPropagation();deleteShot(${i})">×</div>
     </div>`;
   }).join('');
 }
 
-function catLabel(cat) { return {drive:'Drive', approach:'Approach', shortgame:'Short Game', putt:'Putt'}[cat] || cat; }
+function catLabel(cat) { return CAT_LABELS[cat] || cat; }
 function countStrokes(shots) { return shots.length + shots.filter(s => s.resultLie === 'penalty').length; }
 function prevHole() { if(state.currentHole > 1) { state.currentHole--; renderHole(); updateTally(); } }
 function nextHole() { const r = currentRound(); if(state.currentHole < r.holes.length) { state.currentHole++; renderHole(); updateTally(); } }

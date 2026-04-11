@@ -8,11 +8,11 @@ function openShotSheet(editIndex) {
   document.getElementById('shot-sheet-title').textContent = editIndex !== undefined ? 'Edit Shot' : 'Add Shot';
   document.getElementById('shot-dist-from').value = '';
   document.getElementById('shot-dist-result').value = '';
-  document.getElementById('result-dist-group').style.display = 'none';
-  document.getElementById('miss-dir-group').style.display = 'none';
-  document.getElementById('category-pills-expand').style.display = 'none';
-  document.getElementById('lie-pills-expand').style.display = 'none';
-  document.getElementById('dist-from-expand').style.display = 'none';
+  document.getElementById('result-dist-group').classList.add('hidden');
+  document.getElementById('miss-dir-group').classList.add('hidden');
+  document.getElementById('category-pills-expand').classList.add('hidden');
+  document.getElementById('lie-pills-expand').classList.add('hidden');
+  document.getElementById('dist-from-expand').classList.add('hidden');
   renderCategoryChip(null);
   renderLieChip(null);
   renderDistChip('', 'yds');
@@ -52,7 +52,7 @@ function selectLie(lie, silent) {
   updateDistFromUnit();
   if(lie === 'green' && !state.shotResultLie) selectResultLie('green', true);
   if(!silent) {
-    const exp = document.getElementById('lie-pills-expand'); if(exp) exp.style.display = 'none';
+    const exp = document.getElementById('lie-pills-expand'); if(exp) exp.classList.add('hidden');
     autoSetCategory(); updateSGPreview();
   }
 }
@@ -66,7 +66,7 @@ function renderLieChip(lie) {
 
 function toggleLieOverride() {
   const exp = document.getElementById('lie-pills-expand'); if(!exp) return;
-  exp.style.display = exp.style.display === 'none' ? 'block' : 'none';
+  exp.classList.toggle('hidden');
 }
 
 function updateDistFromUnit() {
@@ -87,11 +87,11 @@ function selectResultLie(lie, silent) {
   updateResultDistVisibility();
   const missGroup = document.getElementById('miss-dir-group');
   if(lie === 'holed') {
-    missGroup.style.display = 'none';
+    missGroup.classList.add('hidden');
     state.shotMissDepth = null; state.shotMissSide = null;
     document.querySelectorAll('#miss-depth-pills .pill,#miss-side-pills .pill').forEach(p => p.classList.remove('selected'));
   } else {
-    missGroup.style.display = 'block';
+    missGroup.classList.remove('hidden');
   }
   if(!silent) { autoSetCategory(); updateSGPreview(); }
   if(!silent && lie !== 'holed') {
@@ -106,7 +106,7 @@ function selectResultLie(lie, silent) {
 
 function updateResultDistVisibility() {
   const show = state.shotResultLie && state.shotResultLie !== 'holed';
-  document.getElementById('result-dist-group').style.display = show ? 'block' : 'none';
+  document.getElementById('result-dist-group').classList.toggle('hidden', !show);
   if(show) {
     const green = state.shotResultLie === 'green';
     document.getElementById('dist-result-unit').textContent = green ? 'ft' : 'yds';
@@ -121,20 +121,19 @@ function selectCategory(cat, silent) {
   renderCategoryChip(cat);
   updateMissSidePills(cat);
   if(!silent) {
-    const exp = document.getElementById('category-pills-expand'); if(exp) exp.style.display = 'none';
+    const exp = document.getElementById('category-pills-expand'); if(exp) exp.classList.add('hidden');
   }
 }
 
 function renderCategoryChip(cat) {
   const el = document.getElementById('category-chip'); if(!el) return;
-  const labels = {drive:'Drive', approach:'Approach', shortgame:'Short Game', putt:'Putt'};
-  el.textContent = labels[cat] || '—';
+  el.textContent = CAT_LABELS[cat] || '—';
   el.className = cat ? `category-badge cat-${cat}` : '';
 }
 
 function toggleCategoryOverride() {
   const exp = document.getElementById('category-pills-expand'); if(!exp) return;
-  exp.style.display = exp.style.display === 'none' ? 'block' : 'none';
+  exp.classList.toggle('hidden');
 }
 
 function renderDistChip(val, unit) {
@@ -144,8 +143,8 @@ function renderDistChip(val, unit) {
 
 function toggleDistOverride() {
   const exp = document.getElementById('dist-from-expand'); if(!exp) return;
-  const opening = exp.style.display === 'none';
-  exp.style.display = opening ? 'block' : 'none';
+  const opening = exp.classList.contains('hidden');
+  exp.classList.toggle('hidden');
   if(opening) setTimeout(() => document.getElementById('shot-dist-from').focus(), 50);
 }
 
@@ -207,7 +206,8 @@ function saveShot() {
   if(isNaN(dFrom) || dFrom <= 0) { showToast('Enter distance from pin'); return; }
   if(!rLie) { showToast('Select result location'); return; }
   if(rLie !== 'holed' && (isNaN(dRes) || dRes <= 0)) { showToast('Enter result distance'); return; }
-  const sg = calcSG(lie, dFrom, rLie, isNaN(dRes) ? 0 : dRes);
+  const sgRaw = calcSG(lie, dFrom, rLie, isNaN(dRes) ? 0 : dRes);
+  const sg = sgRaw !== null ? Math.round(sgRaw * 10000) / 10000 : null;
   const hd = currentHoleData(), idx = state.editingShotIndex !== null ? state.editingShotIndex : hd.shots.length;
   const cat = state.shotCategory || autoCategory(lie, dFrom, idx, hd.par);
   const shot = { lie, distFrom:dFrom, resultLie:rLie, resultDist:(rLie !== 'holed' && !isNaN(dRes)) ? dRes : null, category:cat, sg, missDepth:state.shotMissDepth || null, missSide:state.shotMissSide || null };

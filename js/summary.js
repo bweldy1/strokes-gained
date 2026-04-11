@@ -15,61 +15,58 @@ function roundTotalSG(round, exc) {
 function toggleSummaryCat(cat) {
   const el = document.getElementById('ssum-' + cat), icon = document.getElementById('ssum-icon-' + cat);
   if(!el) return;
-  const open = el.style.display === 'none';
-  el.style.display = open ? 'block' : 'none';
+  const open = el.classList.contains('hidden');
+  el.classList.toggle('hidden');
   if(icon) icon.style.transform = open ? 'rotate(90deg)' : '';
 }
 
 function toggleHolesSection() {
   const wrap = document.getElementById('summary-holes-wrap'), icon = document.getElementById('holes-section-chevron');
   if(!wrap) return;
-  const open = wrap.style.display === 'none';
-  wrap.style.display = open ? 'block' : 'none';
+  const open = wrap.classList.contains('hidden');
+  wrap.classList.toggle('hidden');
   if(icon) icon.style.transform = open ? 'rotate(90deg)' : '';
 }
 
 function toggleStatGroup(group) {
   const el = document.getElementById('sstat-' + group), icon = document.getElementById('sstat-icon-' + group);
   if(!el) return;
-  const open = el.style.display === 'none';
-  el.style.display = open ? 'block' : 'none';
+  const open = el.classList.contains('hidden');
+  el.classList.toggle('hidden');
   if(icon) icon.style.transform = open ? 'rotate(90deg)' : '';
 }
 
 function toggleSummaryHole(holeNum) {
   const el = document.getElementById('ssum-hole-' + holeNum), icon = document.getElementById('ssum-hole-icon-' + holeNum);
   if(!el) return;
-  const open = el.style.display === 'none';
-  el.style.display = open ? 'block' : 'none';
+  const open = el.classList.contains('hidden');
+  el.classList.toggle('hidden');
   if(icon) icon.style.transform = open ? 'rotate(90deg)' : '';
 }
 
 function buildShotRow(s, label, labelClass = 'ssum-hole') {
-  const lieAbbr = {tee:'Tee', fairway:'Fwy', rough:'Rgh', sand:'Sand', recovery:'Rcv', green:'Grn', holed:'Holed', penalty:'Pen'};
   const fromDist = s.lie === 'green' ? s.distFrom + 'ft' : s.distFrom + 'y';
-  const toLabel = lieAbbr[s.resultLie] || s.resultLie;
+  const toLabel = LIE_ABBR[s.resultLie] || s.resultLie;
   const toDist = s.resultLie === 'holed' ? '' : s.resultLie === 'green' ? (s.resultDist != null ? s.resultDist + 'ft' : '') : (s.resultDist != null ? s.resultDist + 'y' : '');
   const missParts = [s.missDepth, s.missSide].filter(Boolean).map(v => v.charAt(0).toUpperCase() + v.slice(1));
   const missStr = missParts.length ? missParts.join('-') : '';
   const sgStr = s.sg != null ? (s.sg >= 0 ? '+' : '') + s.sg.toFixed(2) : '—';
-  const sgColor = s.sg == null ? 'var(--text-muted)' : s.sg >= 0 ? 'var(--q-great)' : 'var(--q-poor)';
   const driveDist = (s.category === 'drive' && s.distFrom != null && s.resultDist != null) ? Math.round(s.distFrom - s.resultDist) : null;
   const fromBlock = driveDist != null
-    ? `${lieAbbr[s.lie] || s.lie} ${fromDist} <span class="ssum-drive">${driveDist}y drive</span>`
-    : `${lieAbbr[s.lie] || s.lie} ${fromDist}`;
+    ? `${LIE_ABBR[s.lie] || s.lie} ${fromDist} <span class="ssum-drive">${driveDist}y drive</span>`
+    : `${LIE_ABBR[s.lie] || s.lie} ${fromDist}`;
   return `<div class="ssum-shot">
     <span class="${labelClass}">${label}</span>
     <span class="ssum-from">${fromBlock}</span>
     <span class="ssum-arrow">›</span>
     <span class="ssum-to">${toLabel}${toDist ? ' ' + toDist : ''}${missStr ? `<span class="ssum-miss"> ${missStr}</span>` : ''}</span>
-    <span class="ssum-sg" style="color:${sgColor}">${sgStr}</span>
+    <span class="ssum-sg ${sgClass(s.sg)}">${sgStr}</span>
   </div>`;
 }
 
 function renderSummary() {
   const round = currentRound(); if(!round) return;
   const cats = ['drive', 'approach', 'shortgame', 'putt'];
-  const cNames = {drive:'Drive', approach:'Approach', shortgame:'Short Game', putt:'Putt'};
   const tot = {drive:0, approach:0, shortgame:0, putt:0}, cnt = {drive:0, approach:0, shortgame:0, putt:0};
   const catShots = {drive:[], approach:[], shortgame:[], putt:[]};
   let gTotal = 0, gCount = 0, gStrokes = 0;
@@ -84,35 +81,35 @@ function renderSummary() {
   }
 
   const fmt = (v, c) => c === 0 ? '—' : (v >= 0 ? '+' : '') + v.toFixed(2);
-  const col = (v, c) => c === 0 ? 'var(--text-muted)' : v >= 0 ? 'var(--q-great)' : 'var(--q-poor)';
+  const sgCls = (v, c) => c === 0 ? 'sg-null' : v >= 0 ? 'sg-pos' : 'sg-neg';
 
   const catHTML = cats.map(c => {
     const rows = catShots[c].map(s => buildShotRow(s, `H${s.holeNum}`)).join('');
     return `<div class="summary-stat summary-cat-row" onclick="toggleSummaryCat('${c}')">
-        <span class="summary-stat-label">${cNames[c]} <span class="ssum-cat-meta">(${cnt[c]} shots)</span></span>
+        <span class="summary-stat-label">${CAT_LABELS[c]} <span class="ssum-cat-meta">(${cnt[c]} shots)</span></span>
         <span class="ssum-cat-right">
-          <span class="summary-stat-val" style="color:${col(tot[c],cnt[c])}">${fmt(tot[c],cnt[c])}</span>
+          <span class="summary-stat-val ${sgCls(tot[c],cnt[c])}">${fmt(tot[c],cnt[c])}</span>
           <span class="ssum-chevron" id="ssum-icon-${c}">›</span>
         </span>
       </div>
-      <div class="ssum-expand" id="ssum-${c}" style="display:none">${rows || '<div class="ssum-empty">No shots recorded</div>'}</div>`;
+      <div class="ssum-expand hidden" id="ssum-${c}">${rows || '<div class="ssum-empty">No shots recorded</div>'}</div>`;
   }).join('');
 
   const holesHTML = round.holes.map(h => {
     const shots = h.shots || []; if(shots.length === 0) return '';
     const hsg = shots.reduce((s, sh) => s + (sh.sg || 0), 0);
     const hStrokes = countStrokes(shots);
-    const rows = shots.map(s => buildShotRow(s, cNames[s.category] || s.category, 'ssum-hole-cat')).join('');
+    const rows = shots.map(s => buildShotRow(s, CAT_LABELS[s.category] || s.category, 'ssum-hole-cat')).join('');
     return `<div class="hole-summary-row summary-cat-row" onclick="toggleSummaryHole(${h.hole})">
       <div class="hsrow-hole">${h.hole}</div>
       <div class="hsrow-par">P${h.par}</div>
       <div class="hsrow-shots">${hStrokes} stroke${hStrokes !== 1 ? 's' : ''}</div>
       <div class="hsrow-right">
-        <div class="hsrow-sg" style="color:${hsg >= 0 ? 'var(--q-great)' : 'var(--q-poor)'}">${(hsg >= 0 ? '+' : '') + hsg.toFixed(2)}</div>
+        <div class="hsrow-sg ${sgClass(hsg)}">${(hsg >= 0 ? '+' : '') + hsg.toFixed(2)}</div>
         <span class="ssum-chevron" id="ssum-hole-icon-${h.hole}">›</span>
       </div>
     </div>
-    <div class="ssum-expand" id="ssum-hole-${h.hole}" style="display:none">${rows}</div>`;
+    <div class="ssum-expand hidden" id="ssum-hole-${h.hole}">${rows}</div>`;
   }).filter(Boolean).join('') || '<div class="list-empty">No shots recorded yet</div>';
 
   const byHoleSection = `
@@ -120,10 +117,10 @@ function renderSummary() {
       <span class="summary-by-hole-label">SG by Hole</span>
       <span class="ssum-chevron" id="holes-section-chevron">›</span>
     </div>
-    <div id="summary-holes-wrap" style="display:none">${holesHTML}</div>`;
+    <div id="summary-holes-wrap" class="hidden">${holesHTML}</div>`;
 
   document.getElementById('summary-totals').innerHTML = `
-    <div class="summary-stat"><span class="summary-total-label">Total SG <span class="summary-total-sub">(${gStrokes} stroke${gStrokes !== 1 ? 's' : ''})</span></span><span class="summary-total-val" style="color:${col(gTotal,gCount)}">${fmt(gTotal,gCount)}</span></div>
+    <div class="summary-stat"><span class="summary-total-label">Total SG <span class="summary-total-sub">(${gStrokes} stroke${gStrokes !== 1 ? 's' : ''})</span></span><span class="summary-total-val ${sgCls(gTotal,gCount)}">${fmt(gTotal,gCount)}</span></div>
     ${catHTML}${byHoleSection}`;
 
   // Statistics
@@ -137,7 +134,7 @@ function renderSummary() {
       <span class="summary-stat-label">${title}${headerVal ? ` <span class="sstat-header-val">${headerVal}</span>` : ''}</span>
       <span class="ssum-chevron" id="sstat-icon-${id}">›</span>
     </div>
-    <div class="ssum-expand" id="sstat-${id}" style="display:none">${rows}</div>`;
+    <div class="ssum-expand hidden" id="sstat-${id}">${rows}</div>`;
 
   // Driving
   const drives = allShots.filter(s => s.category === 'drive' && s.distFrom != null && s.resultDist != null);
@@ -154,8 +151,7 @@ function renderSummary() {
   const holesPlayed = round.holes.filter(h => (h.shots || []).length > 0);
   const girHoles = holesPlayed.filter(h => {
     const regIdx = h.par - 3;
-    const s = (h.shots || [])[regIdx];
-    return s && (s.resultLie === 'green' || s.resultLie === 'holed');
+    return (h.shots || []).slice(0, regIdx + 1).some(s => s.resultLie === 'green' || s.resultLie === 'holed');
   });
   const girStr = holesPlayed.length ? `${girHoles.length}/${holesPlayed.length} (${Math.round(girHoles.length / holesPlayed.length * 100)}%)` : '—';
   const approachStats = statRow('Avg distance', fmtYd(avg(approaches.map(s => s.distFrom))))

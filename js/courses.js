@@ -18,28 +18,28 @@ function renderCourses() {
 
 function openCourseEdit(id) {
   const c = getCourses().find(x => x.id === id); if(!c) return;
-  editingCourseId = id;
+  state.editingCourseId = id;
   document.getElementById('course-edit-name').value = c.name || '';
   document.getElementById('course-edit-tees').value = c.tees || '';
   document.getElementById('course-edit-sheet').classList.add('open');
 }
 
 function saveCourseEdit() {
-  if(!editingCourseId) return;
-  const courses = getCourses(), idx = courses.findIndex(c => c.id === editingCourseId);
+  if(!state.editingCourseId) return;
+  const courses = getCourses(), idx = courses.findIndex(c => c.id === state.editingCourseId);
   if(idx === -1) return;
   courses[idx].name = document.getElementById('course-edit-name').value.trim() || courses[idx].name;
   courses[idx].tees = document.getElementById('course-edit-tees').value.trim();
   saveCourses(courses);
-  editingCourseId = null;
+  state.editingCourseId = null;
   document.getElementById('course-edit-sheet').classList.remove('open');
   renderCourses();
   showToast('Course updated!');
 }
 
 function loadCourseHolesJSON() {
-  if(!editingCourseId) return;
-  const c = getCourses().find(x => x.id === editingCourseId); if(!c) return;
+  if(!state.editingCourseId) return;
+  const c = getCourses().find(x => x.id === state.editingCourseId); if(!c) return;
   document.getElementById('course-edit-sheet').classList.remove('open');
   document.getElementById('course-json-input').value = JSON.stringify({name:c.name, tees:c.tees, holes:c.holes}, null, 2);
   showToast('JSON loaded — edit and save below');
@@ -55,22 +55,22 @@ function deleteCourse(id) {
 
 function handleCourseEditOverlayClick(e) {
   if(e.target === document.getElementById('course-edit-sheet')) {
-    editingCourseId = null;
+    state.editingCourseId = null;
     document.getElementById('course-edit-sheet').classList.remove('open');
   }
 }
 
 function saveCourseJSON() {
   const raw = document.getElementById('course-json-input').value.trim();
-  const errEl = document.getElementById('json-error'); errEl.style.display = 'none';
-  if(!raw) { errEl.textContent = 'Please paste course JSON.'; errEl.style.display = 'block'; return; }
+  const errEl = document.getElementById('json-error'); errEl.classList.add('hidden');
+  if(!raw) { errEl.textContent = 'Please paste course JSON.'; errEl.classList.remove('hidden'); return; }
   let parsed;
-  try { parsed = JSON.parse(raw); } catch(e) { errEl.textContent = 'Invalid JSON: ' + e.message; errEl.style.display = 'block'; return; }
+  try { parsed = JSON.parse(raw); } catch(e) { errEl.textContent = 'Invalid JSON: ' + e.message; errEl.classList.remove('hidden'); return; }
   const arr = Array.isArray(parsed) ? parsed : [parsed];
   const courses = getCourses(); let added = 0;
   for(const c of arr) {
-    if(!c.name || !Array.isArray(c.holes)) { errEl.textContent = 'Each course needs "name" and "holes".'; errEl.style.display = 'block'; return; }
-    for(const h of c.holes) { if(!h.hole || !h.par || !h.yards) { errEl.textContent = 'Each hole needs "hole", "par", "yards".'; errEl.style.display = 'block'; return; } }
+    if(!c.name || !Array.isArray(c.holes)) { errEl.textContent = 'Each course needs "name" and "holes".'; errEl.classList.remove('hidden'); return; }
+    for(const h of c.holes) { if(!h.hole || !h.par || !h.yards) { errEl.textContent = 'Each hole needs "hole", "par", "yards".'; errEl.classList.remove('hidden'); return; } }
     const existIdx = c.id ? courses.findIndex(x => x.id === c.id) : -1;
     if(existIdx >= 0) { courses[existIdx] = c; } else { c.id = c.id || ('course_' + Date.now() + '_' + added); courses.push(c); added++; }
   }

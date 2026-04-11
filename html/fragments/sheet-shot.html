@@ -12,7 +12,7 @@
           <span id="category-chip"></span>
           <span class="category-override-hint">tap to override ›</span>
         </div>
-        <div id="category-pills-expand" style="display:none" class="pill-expand">
+        <div id="category-pills-expand" class="pill-expand hidden">
           <div class="pill-group" id="category-pills">
             <div class="pill" onclick="selectCategory('drive')">Drive</div>
             <div class="pill" onclick="selectCategory('approach')">Approach</div>
@@ -29,7 +29,7 @@
           <span id="lie-chip"></span>
           <span class="category-override-hint">tap to override ›</span>
         </div>
-        <div id="lie-pills-expand" style="display:none" class="pill-expand">
+        <div id="lie-pills-expand" class="pill-expand hidden">
           <div class="pill-group" id="lie-pills">
             <div class="pill" onclick="selectLie('tee')">Tee</div>
             <div class="pill" onclick="selectLie('fairway')">Fairway</div>
@@ -50,7 +50,7 @@
           <span id="dist-chip" class="lie-chip"></span>
           <span class="category-override-hint">tap to override ›</span>
         </div>
-        <div id="dist-from-expand" style="display:none" class="pill-expand">
+        <div id="dist-from-expand" class="pill-expand hidden">
           <div class="num-input-wrap">
             <input class="num-input" type="number" id="shot-dist-from" inputmode="numeric" placeholder="0" oninput="onDistInput()">
             <span class="num-unit" id="dist-from-unit">yds</span>
@@ -75,7 +75,7 @@
       </div>
 
       <!-- Result Distance -->
-      <div class="form-group" id="result-dist-group" style="display:none">
+      <div class="form-group hidden" id="result-dist-group">
         <div class="form-label">Result Distance <span id="result-dist-unit-label" class="form-unit-label"></span></div>
         <div class="num-input-wrap">
           <input class="num-input" type="number" id="shot-dist-result" inputmode="numeric" placeholder="0" oninput="onShotFormChange()">
@@ -84,7 +84,7 @@
       </div>
 
       <!-- Miss Direction (compact, conditional) -->
-      <div id="miss-dir-group" style="display:none;margin-bottom:16px">
+      <div id="miss-dir-group" class="hidden">
         <div class="miss-row">
           <span class="miss-label">Miss</span>
           <div class="pill-group" id="miss-depth-pills">

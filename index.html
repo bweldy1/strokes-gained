@@ -213,9 +213,16 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
 .export-hint-text { font-size: 12px; color: var(--text-muted); line-height: 1.6; }
 .btn-mb { margin-bottom: 12px; }
 
+/* ── Utility ── */
+.hidden { display: none !important; }
+.sg-pos { color: var(--q-great); }
+.sg-neg { color: var(--q-poor); }
+.sg-null { color: var(--text-muted); }
+
 /* ── Misc IDs ── */
 #build-version { position: absolute; bottom: 0; left: 0; right: 0; text-align: center; font-size: 10px; color: var(--text); padding: 4px; }
-#json-error { color: var(--accent); font-size: 13px; margin-top: 8px; display: none; }
+#json-error { color: var(--accent); font-size: 13px; margin-top: 8px; }
+#miss-dir-group { margin-bottom: 16px; }
 
 </style>
 <link rel="apple-touch-icon" href="images/SG_logo.png">
@@ -234,7 +241,7 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
     <div class="section-label">Recent Rounds</div>
     <div id="rounds-list"></div>
   </div>
-  <div id="build-version">Build: 2026-04-10 22:20</div>
+  <div id="build-version">Build: 2026-04-10 22:38</div>
 </div>
 
 <!-- COURSE SELECT -->
@@ -250,7 +257,7 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
     <p class="course-json-hint">Paste course JSON. <span class="link-fairway" onclick="showSampleJSON()">Load Wild Wood example ›</span></p>
     <textarea class="json-input" id="course-json-input" placeholder='[{"name":"My Club","tees":"Blue","holes":[{"hole":1,"par":4,"yards":385},...]}]'></textarea>
     <button class="btn btn-primary" style="margin-top:10px" onclick="saveCourseJSON()">Save Course</button>
-    <div id="json-error"></div>
+    <div id="json-error" class="hidden"></div>
   </div>
 </div>
 
@@ -326,7 +333,7 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
           <span id="category-chip"></span>
           <span class="category-override-hint">tap to override ›</span>
         </div>
-        <div id="category-pills-expand" style="display:none" class="pill-expand">
+        <div id="category-pills-expand" class="pill-expand hidden">
           <div class="pill-group" id="category-pills">
             <div class="pill" onclick="selectCategory('drive')">Drive</div>
             <div class="pill" onclick="selectCategory('approach')">Approach</div>
@@ -343,7 +350,7 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
           <span id="lie-chip"></span>
           <span class="category-override-hint">tap to override ›</span>
         </div>
-        <div id="lie-pills-expand" style="display:none" class="pill-expand">
+        <div id="lie-pills-expand" class="pill-expand hidden">
           <div class="pill-group" id="lie-pills">
             <div class="pill" onclick="selectLie('tee')">Tee</div>
             <div class="pill" onclick="selectLie('fairway')">Fairway</div>
@@ -364,7 +371,7 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
           <span id="dist-chip" class="lie-chip"></span>
           <span class="category-override-hint">tap to override ›</span>
         </div>
-        <div id="dist-from-expand" style="display:none" class="pill-expand">
+        <div id="dist-from-expand" class="pill-expand hidden">
           <div class="num-input-wrap">
             <input class="num-input" type="number" id="shot-dist-from" inputmode="numeric" placeholder="0" oninput="onDistInput()">
             <span class="num-unit" id="dist-from-unit">yds</span>
@@ -389,7 +396,7 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
       </div>
 
       <!-- Result Distance -->
-      <div class="form-group" id="result-dist-group" style="display:none">
+      <div class="form-group hidden" id="result-dist-group">
         <div class="form-label">Result Distance <span id="result-dist-unit-label" class="form-unit-label"></span></div>
         <div class="num-input-wrap">
           <input class="num-input" type="number" id="shot-dist-result" inputmode="numeric" placeholder="0" oninput="onShotFormChange()">
@@ -398,7 +405,7 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
       </div>
 
       <!-- Miss Direction (compact, conditional) -->
-      <div id="miss-dir-group" style="display:none;margin-bottom:16px">
+      <div id="miss-dir-group" class="hidden">
         <div class="miss-row">
           <span class="miss-label">Miss</span>
           <div class="pill-group" id="miss-depth-pills">
@@ -821,6 +828,13 @@ const QUALITY_BANDS = {
 };
 
 // ═══════════════════════════════════════════════════════════════
+// SHARED CONSTANTS
+// ═══════════════════════════════════════════════════════════════
+
+const CAT_LABELS = {drive:'Drive', approach:'Approach', shortgame:'Short Game', putt:'Putt'};
+const LIE_ABBR   = {tee:'Tee', fairway:'Fwy', rough:'Rgh', sand:'Sand', recovery:'Rcv', green:'Grn', holed:'Holed', penalty:'Pen'};
+
+// ═══════════════════════════════════════════════════════════════
 // STATE
 // ═══════════════════════════════════════════════════════════════
 
@@ -828,6 +842,7 @@ let state = {
   currentRoundId: null,
   currentHole: 1,
   editingShotIndex: null,
+  editingCourseId: null,
   excludedCategories: new Set(),
   shotLie: null,
   shotResultLie: null,
@@ -836,11 +851,20 @@ let state = {
   shotMissSide: null
 };
 
-let editingCourseId = null;
-
 // ═══════════════════════════════════════════════════════════════
 // SHARED UTILITIES
 // ═══════════════════════════════════════════════════════════════
+
+// Full-unit distance string: "385 yds" or "12 ft"
+function formatDist(dist, lie) {
+  if(dist == null) return '';
+  return lie === 'green' ? dist + ' ft' : dist + ' yds';
+}
+
+// CSS class for SG value coloring
+function sgClass(sg) {
+  return sg == null ? 'sg-null' : sg >= 0 ? 'sg-pos' : 'sg-neg';
+}
 
 function formatDate(iso) {
   if(!iso) return '';
@@ -979,12 +1003,11 @@ function renderShotList(hd) {
   }
   el.innerHTML = shots.map((s, i) => {
     const sg = s.sg, sgStr = sg != null ? (sg >= 0 ? '+' : '') + sg.toFixed(2) : '—';
-    const sgColor = sg == null ? 'var(--text-muted)' : sg >= 0 ? 'var(--q-good)' : 'var(--q-poor)';
     const quality = sg != null ? getQuality(sg, s.category) : null;
-    const distStr = s.lie === 'green' ? s.distFrom + ' ft' : s.distFrom + ' yds';
+    const distStr = formatDist(s.distFrom, s.lie);
     const isPenalty = s.resultLie === 'penalty';
     const resLabel = s.resultLie === 'holed' ? 'Holed ⛳' : s.resultLie.charAt(0).toUpperCase() + s.resultLie.slice(1);
-    const resDist = s.resultLie === 'holed' ? '' : (s.resultLie === 'green' ? (s.resultDist != null ? s.resultDist + ' ft' : '') : (s.resultDist != null ? s.resultDist + ' yds' : ''));
+    const resDist = s.resultLie === 'holed' ? '' : formatDist(s.resultDist, s.resultLie);
     const missParts = [s.missDepth, s.missSide].filter(Boolean).map(v => v.charAt(0).toUpperCase() + v.slice(1));
     const missStr = missParts.length ? ` · ${missParts.join('-')}` : '';
     const driveDist = (s.category === 'drive' && s.distFrom != null && s.resultDist != null) ? Math.round(s.distFrom - s.resultDist) : null;
@@ -996,13 +1019,13 @@ function renderShotList(hd) {
         <div class="shot-info-main"><span class="category-badge cat-${s.category}">${catLabel(s.category)}</span>  ${mainResult}${isPenalty ? ' <span class="penalty-badge">+1 stroke</span>' : ''}</div>
         <div class="shot-info-sub">${s.lie.charAt(0).toUpperCase() + s.lie.slice(1)} · ${distStr}${driveStr}${missStr}</div>
       </div>
-      <div class="shot-sg"><div class="shot-sg-val" style="color:${sgColor}">${sgStr}</div>${quality ? `<div class="shot-quality-dot" style="background:${quality.color}"></div>` : ''}</div>
+      <div class="shot-sg"><div class="shot-sg-val ${sgClass(sg)}">${sgStr}</div>${quality ? `<div class="shot-quality-dot" style="background:${quality.color}"></div>` : ''}</div>
       <div class="shot-del" onclick="event.stopPropagation();deleteShot(${i})">×</div>
     </div>`;
   }).join('');
 }
 
-function catLabel(cat) { return {drive:'Drive', approach:'Approach', shortgame:'Short Game', putt:'Putt'}[cat] || cat; }
+function catLabel(cat) { return CAT_LABELS[cat] || cat; }
 function countStrokes(shots) { return shots.length + shots.filter(s => s.resultLie === 'penalty').length; }
 function prevHole() { if(state.currentHole > 1) { state.currentHole--; renderHole(); updateTally(); } }
 function nextHole() { const r = currentRound(); if(state.currentHole < r.holes.length) { state.currentHole++; renderHole(); updateTally(); } }
@@ -1109,11 +1132,11 @@ function openShotSheet(editIndex) {
   document.getElementById('shot-sheet-title').textContent = editIndex !== undefined ? 'Edit Shot' : 'Add Shot';
   document.getElementById('shot-dist-from').value = '';
   document.getElementById('shot-dist-result').value = '';
-  document.getElementById('result-dist-group').style.display = 'none';
-  document.getElementById('miss-dir-group').style.display = 'none';
-  document.getElementById('category-pills-expand').style.display = 'none';
-  document.getElementById('lie-pills-expand').style.display = 'none';
-  document.getElementById('dist-from-expand').style.display = 'none';
+  document.getElementById('result-dist-group').classList.add('hidden');
+  document.getElementById('miss-dir-group').classList.add('hidden');
+  document.getElementById('category-pills-expand').classList.add('hidden');
+  document.getElementById('lie-pills-expand').classList.add('hidden');
+  document.getElementById('dist-from-expand').classList.add('hidden');
   renderCategoryChip(null);
   renderLieChip(null);
   renderDistChip('', 'yds');
@@ -1153,7 +1176,7 @@ function selectLie(lie, silent) {
   updateDistFromUnit();
   if(lie === 'green' && !state.shotResultLie) selectResultLie('green', true);
   if(!silent) {
-    const exp = document.getElementById('lie-pills-expand'); if(exp) exp.style.display = 'none';
+    const exp = document.getElementById('lie-pills-expand'); if(exp) exp.classList.add('hidden');
     autoSetCategory(); updateSGPreview();
   }
 }
@@ -1167,7 +1190,7 @@ function renderLieChip(lie) {
 
 function toggleLieOverride() {
   const exp = document.getElementById('lie-pills-expand'); if(!exp) return;
-  exp.style.display = exp.style.display === 'none' ? 'block' : 'none';
+  exp.classList.toggle('hidden');
 }
 
 function updateDistFromUnit() {
@@ -1188,11 +1211,11 @@ function selectResultLie(lie, silent) {
   updateResultDistVisibility();
   const missGroup = document.getElementById('miss-dir-group');
   if(lie === 'holed') {
-    missGroup.style.display = 'none';
+    missGroup.classList.add('hidden');
     state.shotMissDepth = null; state.shotMissSide = null;
     document.querySelectorAll('#miss-depth-pills .pill,#miss-side-pills .pill').forEach(p => p.classList.remove('selected'));
   } else {
-    missGroup.style.display = 'block';
+    missGroup.classList.remove('hidden');
   }
   if(!silent) { autoSetCategory(); updateSGPreview(); }
   if(!silent && lie !== 'holed') {
@@ -1207,7 +1230,7 @@ function selectResultLie(lie, silent) {
 
 function updateResultDistVisibility() {
   const show = state.shotResultLie && state.shotResultLie !== 'holed';
-  document.getElementById('result-dist-group').style.display = show ? 'block' : 'none';
+  document.getElementById('result-dist-group').classList.toggle('hidden', !show);
   if(show) {
     const green = state.shotResultLie === 'green';
     document.getElementById('dist-result-unit').textContent = green ? 'ft' : 'yds';
@@ -1222,20 +1245,19 @@ function selectCategory(cat, silent) {
   renderCategoryChip(cat);
   updateMissSidePills(cat);
   if(!silent) {
-    const exp = document.getElementById('category-pills-expand'); if(exp) exp.style.display = 'none';
+    const exp = document.getElementById('category-pills-expand'); if(exp) exp.classList.add('hidden');
   }
 }
 
 function renderCategoryChip(cat) {
   const el = document.getElementById('category-chip'); if(!el) return;
-  const labels = {drive:'Drive', approach:'Approach', shortgame:'Short Game', putt:'Putt'};
-  el.textContent = labels[cat] || '—';
+  el.textContent = CAT_LABELS[cat] || '—';
   el.className = cat ? `category-badge cat-${cat}` : '';
 }
 
 function toggleCategoryOverride() {
   const exp = document.getElementById('category-pills-expand'); if(!exp) return;
-  exp.style.display = exp.style.display === 'none' ? 'block' : 'none';
+  exp.classList.toggle('hidden');
 }
 
 function renderDistChip(val, unit) {
@@ -1245,8 +1267,8 @@ function renderDistChip(val, unit) {
 
 function toggleDistOverride() {
   const exp = document.getElementById('dist-from-expand'); if(!exp) return;
-  const opening = exp.style.display === 'none';
-  exp.style.display = opening ? 'block' : 'none';
+  const opening = exp.classList.contains('hidden');
+  exp.classList.toggle('hidden');
   if(opening) setTimeout(() => document.getElementById('shot-dist-from').focus(), 50);
 }
 
@@ -1308,7 +1330,8 @@ function saveShot() {
   if(isNaN(dFrom) || dFrom <= 0) { showToast('Enter distance from pin'); return; }
   if(!rLie) { showToast('Select result location'); return; }
   if(rLie !== 'holed' && (isNaN(dRes) || dRes <= 0)) { showToast('Enter result distance'); return; }
-  const sg = calcSG(lie, dFrom, rLie, isNaN(dRes) ? 0 : dRes);
+  const sgRaw = calcSG(lie, dFrom, rLie, isNaN(dRes) ? 0 : dRes);
+  const sg = sgRaw !== null ? Math.round(sgRaw * 10000) / 10000 : null;
   const hd = currentHoleData(), idx = state.editingShotIndex !== null ? state.editingShotIndex : hd.shots.length;
   const cat = state.shotCategory || autoCategory(lie, dFrom, idx, hd.par);
   const shot = { lie, distFrom:dFrom, resultLie:rLie, resultDist:(rLie !== 'holed' && !isNaN(dRes)) ? dRes : null, category:cat, sg, missDepth:state.shotMissDepth || null, missSide:state.shotMissSide || null };
@@ -1348,28 +1371,28 @@ function renderCourses() {
 
 function openCourseEdit(id) {
   const c = getCourses().find(x => x.id === id); if(!c) return;
-  editingCourseId = id;
+  state.editingCourseId = id;
   document.getElementById('course-edit-name').value = c.name || '';
   document.getElementById('course-edit-tees').value = c.tees || '';
   document.getElementById('course-edit-sheet').classList.add('open');
 }
 
 function saveCourseEdit() {
-  if(!editingCourseId) return;
-  const courses = getCourses(), idx = courses.findIndex(c => c.id === editingCourseId);
+  if(!state.editingCourseId) return;
+  const courses = getCourses(), idx = courses.findIndex(c => c.id === state.editingCourseId);
   if(idx === -1) return;
   courses[idx].name = document.getElementById('course-edit-name').value.trim() || courses[idx].name;
   courses[idx].tees = document.getElementById('course-edit-tees').value.trim();
   saveCourses(courses);
-  editingCourseId = null;
+  state.editingCourseId = null;
   document.getElementById('course-edit-sheet').classList.remove('open');
   renderCourses();
   showToast('Course updated!');
 }
 
 function loadCourseHolesJSON() {
-  if(!editingCourseId) return;
-  const c = getCourses().find(x => x.id === editingCourseId); if(!c) return;
+  if(!state.editingCourseId) return;
+  const c = getCourses().find(x => x.id === state.editingCourseId); if(!c) return;
   document.getElementById('course-edit-sheet').classList.remove('open');
   document.getElementById('course-json-input').value = JSON.stringify({name:c.name, tees:c.tees, holes:c.holes}, null, 2);
   showToast('JSON loaded — edit and save below');
@@ -1385,22 +1408,22 @@ function deleteCourse(id) {
 
 function handleCourseEditOverlayClick(e) {
   if(e.target === document.getElementById('course-edit-sheet')) {
-    editingCourseId = null;
+    state.editingCourseId = null;
     document.getElementById('course-edit-sheet').classList.remove('open');
   }
 }
 
 function saveCourseJSON() {
   const raw = document.getElementById('course-json-input').value.trim();
-  const errEl = document.getElementById('json-error'); errEl.style.display = 'none';
-  if(!raw) { errEl.textContent = 'Please paste course JSON.'; errEl.style.display = 'block'; return; }
+  const errEl = document.getElementById('json-error'); errEl.classList.add('hidden');
+  if(!raw) { errEl.textContent = 'Please paste course JSON.'; errEl.classList.remove('hidden'); return; }
   let parsed;
-  try { parsed = JSON.parse(raw); } catch(e) { errEl.textContent = 'Invalid JSON: ' + e.message; errEl.style.display = 'block'; return; }
+  try { parsed = JSON.parse(raw); } catch(e) { errEl.textContent = 'Invalid JSON: ' + e.message; errEl.classList.remove('hidden'); return; }
   const arr = Array.isArray(parsed) ? parsed : [parsed];
   const courses = getCourses(); let added = 0;
   for(const c of arr) {
-    if(!c.name || !Array.isArray(c.holes)) { errEl.textContent = 'Each course needs "name" and "holes".'; errEl.style.display = 'block'; return; }
-    for(const h of c.holes) { if(!h.hole || !h.par || !h.yards) { errEl.textContent = 'Each hole needs "hole", "par", "yards".'; errEl.style.display = 'block'; return; } }
+    if(!c.name || !Array.isArray(c.holes)) { errEl.textContent = 'Each course needs "name" and "holes".'; errEl.classList.remove('hidden'); return; }
+    for(const h of c.holes) { if(!h.hole || !h.par || !h.yards) { errEl.textContent = 'Each hole needs "hole", "par", "yards".'; errEl.classList.remove('hidden'); return; } }
     const existIdx = c.id ? courses.findIndex(x => x.id === c.id) : -1;
     if(existIdx >= 0) { courses[existIdx] = c; } else { c.id = c.id || ('course_' + Date.now() + '_' + added); courses.push(c); added++; }
   }
@@ -1449,61 +1472,58 @@ function roundTotalSG(round, exc) {
 function toggleSummaryCat(cat) {
   const el = document.getElementById('ssum-' + cat), icon = document.getElementById('ssum-icon-' + cat);
   if(!el) return;
-  const open = el.style.display === 'none';
-  el.style.display = open ? 'block' : 'none';
+  const open = el.classList.contains('hidden');
+  el.classList.toggle('hidden');
   if(icon) icon.style.transform = open ? 'rotate(90deg)' : '';
 }
 
 function toggleHolesSection() {
   const wrap = document.getElementById('summary-holes-wrap'), icon = document.getElementById('holes-section-chevron');
   if(!wrap) return;
-  const open = wrap.style.display === 'none';
-  wrap.style.display = open ? 'block' : 'none';
+  const open = wrap.classList.contains('hidden');
+  wrap.classList.toggle('hidden');
   if(icon) icon.style.transform = open ? 'rotate(90deg)' : '';
 }
 
 function toggleStatGroup(group) {
   const el = document.getElementById('sstat-' + group), icon = document.getElementById('sstat-icon-' + group);
   if(!el) return;
-  const open = el.style.display === 'none';
-  el.style.display = open ? 'block' : 'none';
+  const open = el.classList.contains('hidden');
+  el.classList.toggle('hidden');
   if(icon) icon.style.transform = open ? 'rotate(90deg)' : '';
 }
 
 function toggleSummaryHole(holeNum) {
   const el = document.getElementById('ssum-hole-' + holeNum), icon = document.getElementById('ssum-hole-icon-' + holeNum);
   if(!el) return;
-  const open = el.style.display === 'none';
-  el.style.display = open ? 'block' : 'none';
+  const open = el.classList.contains('hidden');
+  el.classList.toggle('hidden');
   if(icon) icon.style.transform = open ? 'rotate(90deg)' : '';
 }
 
 function buildShotRow(s, label, labelClass = 'ssum-hole') {
-  const lieAbbr = {tee:'Tee', fairway:'Fwy', rough:'Rgh', sand:'Sand', recovery:'Rcv', green:'Grn', holed:'Holed', penalty:'Pen'};
   const fromDist = s.lie === 'green' ? s.distFrom + 'ft' : s.distFrom + 'y';
-  const toLabel = lieAbbr[s.resultLie] || s.resultLie;
+  const toLabel = LIE_ABBR[s.resultLie] || s.resultLie;
   const toDist = s.resultLie === 'holed' ? '' : s.resultLie === 'green' ? (s.resultDist != null ? s.resultDist + 'ft' : '') : (s.resultDist != null ? s.resultDist + 'y' : '');
   const missParts = [s.missDepth, s.missSide].filter(Boolean).map(v => v.charAt(0).toUpperCase() + v.slice(1));
   const missStr = missParts.length ? missParts.join('-') : '';
   const sgStr = s.sg != null ? (s.sg >= 0 ? '+' : '') + s.sg.toFixed(2) : '—';
-  const sgColor = s.sg == null ? 'var(--text-muted)' : s.sg >= 0 ? 'var(--q-great)' : 'var(--q-poor)';
   const driveDist = (s.category === 'drive' && s.distFrom != null && s.resultDist != null) ? Math.round(s.distFrom - s.resultDist) : null;
   const fromBlock = driveDist != null
-    ? `${lieAbbr[s.lie] || s.lie} ${fromDist} <span class="ssum-drive">${driveDist}y drive</span>`
-    : `${lieAbbr[s.lie] || s.lie} ${fromDist}`;
+    ? `${LIE_ABBR[s.lie] || s.lie} ${fromDist} <span class="ssum-drive">${driveDist}y drive</span>`
+    : `${LIE_ABBR[s.lie] || s.lie} ${fromDist}`;
   return `<div class="ssum-shot">
     <span class="${labelClass}">${label}</span>
     <span class="ssum-from">${fromBlock}</span>
     <span class="ssum-arrow">›</span>
     <span class="ssum-to">${toLabel}${toDist ? ' ' + toDist : ''}${missStr ? `<span class="ssum-miss"> ${missStr}</span>` : ''}</span>
-    <span class="ssum-sg" style="color:${sgColor}">${sgStr}</span>
+    <span class="ssum-sg ${sgClass(s.sg)}">${sgStr}</span>
   </div>`;
 }
 
 function renderSummary() {
   const round = currentRound(); if(!round) return;
   const cats = ['drive', 'approach', 'shortgame', 'putt'];
-  const cNames = {drive:'Drive', approach:'Approach', shortgame:'Short Game', putt:'Putt'};
   const tot = {drive:0, approach:0, shortgame:0, putt:0}, cnt = {drive:0, approach:0, shortgame:0, putt:0};
   const catShots = {drive:[], approach:[], shortgame:[], putt:[]};
   let gTotal = 0, gCount = 0, gStrokes = 0;
@@ -1518,35 +1538,35 @@ function renderSummary() {
   }
 
   const fmt = (v, c) => c === 0 ? '—' : (v >= 0 ? '+' : '') + v.toFixed(2);
-  const col = (v, c) => c === 0 ? 'var(--text-muted)' : v >= 0 ? 'var(--q-great)' : 'var(--q-poor)';
+  const sgCls = (v, c) => c === 0 ? 'sg-null' : v >= 0 ? 'sg-pos' : 'sg-neg';
 
   const catHTML = cats.map(c => {
     const rows = catShots[c].map(s => buildShotRow(s, `H${s.holeNum}`)).join('');
     return `<div class="summary-stat summary-cat-row" onclick="toggleSummaryCat('${c}')">
-        <span class="summary-stat-label">${cNames[c]} <span class="ssum-cat-meta">(${cnt[c]} shots)</span></span>
+        <span class="summary-stat-label">${CAT_LABELS[c]} <span class="ssum-cat-meta">(${cnt[c]} shots)</span></span>
         <span class="ssum-cat-right">
-          <span class="summary-stat-val" style="color:${col(tot[c],cnt[c])}">${fmt(tot[c],cnt[c])}</span>
+          <span class="summary-stat-val ${sgCls(tot[c],cnt[c])}">${fmt(tot[c],cnt[c])}</span>
           <span class="ssum-chevron" id="ssum-icon-${c}">›</span>
         </span>
       </div>
-      <div class="ssum-expand" id="ssum-${c}" style="display:none">${rows || '<div class="ssum-empty">No shots recorded</div>'}</div>`;
+      <div class="ssum-expand hidden" id="ssum-${c}">${rows || '<div class="ssum-empty">No shots recorded</div>'}</div>`;
   }).join('');
 
   const holesHTML = round.holes.map(h => {
     const shots = h.shots || []; if(shots.length === 0) return '';
     const hsg = shots.reduce((s, sh) => s + (sh.sg || 0), 0);
     const hStrokes = countStrokes(shots);
-    const rows = shots.map(s => buildShotRow(s, cNames[s.category] || s.category, 'ssum-hole-cat')).join('');
+    const rows = shots.map(s => buildShotRow(s, CAT_LABELS[s.category] || s.category, 'ssum-hole-cat')).join('');
     return `<div class="hole-summary-row summary-cat-row" onclick="toggleSummaryHole(${h.hole})">
       <div class="hsrow-hole">${h.hole}</div>
       <div class="hsrow-par">P${h.par}</div>
       <div class="hsrow-shots">${hStrokes} stroke${hStrokes !== 1 ? 's' : ''}</div>
       <div class="hsrow-right">
-        <div class="hsrow-sg" style="color:${hsg >= 0 ? 'var(--q-great)' : 'var(--q-poor)'}">${(hsg >= 0 ? '+' : '') + hsg.toFixed(2)}</div>
+        <div class="hsrow-sg ${sgClass(hsg)}">${(hsg >= 0 ? '+' : '') + hsg.toFixed(2)}</div>
         <span class="ssum-chevron" id="ssum-hole-icon-${h.hole}">›</span>
       </div>
     </div>
-    <div class="ssum-expand" id="ssum-hole-${h.hole}" style="display:none">${rows}</div>`;
+    <div class="ssum-expand hidden" id="ssum-hole-${h.hole}">${rows}</div>`;
   }).filter(Boolean).join('') || '<div class="list-empty">No shots recorded yet</div>';
 
   const byHoleSection = `
@@ -1554,10 +1574,10 @@ function renderSummary() {
       <span class="summary-by-hole-label">SG by Hole</span>
       <span class="ssum-chevron" id="holes-section-chevron">›</span>
     </div>
-    <div id="summary-holes-wrap" style="display:none">${holesHTML}</div>`;
+    <div id="summary-holes-wrap" class="hidden">${holesHTML}</div>`;
 
   document.getElementById('summary-totals').innerHTML = `
-    <div class="summary-stat"><span class="summary-total-label">Total SG <span class="summary-total-sub">(${gStrokes} stroke${gStrokes !== 1 ? 's' : ''})</span></span><span class="summary-total-val" style="color:${col(gTotal,gCount)}">${fmt(gTotal,gCount)}</span></div>
+    <div class="summary-stat"><span class="summary-total-label">Total SG <span class="summary-total-sub">(${gStrokes} stroke${gStrokes !== 1 ? 's' : ''})</span></span><span class="summary-total-val ${sgCls(gTotal,gCount)}">${fmt(gTotal,gCount)}</span></div>
     ${catHTML}${byHoleSection}`;
 
   // Statistics
@@ -1571,7 +1591,7 @@ function renderSummary() {
       <span class="summary-stat-label">${title}${headerVal ? ` <span class="sstat-header-val">${headerVal}</span>` : ''}</span>
       <span class="ssum-chevron" id="sstat-icon-${id}">›</span>
     </div>
-    <div class="ssum-expand" id="sstat-${id}" style="display:none">${rows}</div>`;
+    <div class="ssum-expand hidden" id="sstat-${id}">${rows}</div>`;
 
   // Driving
   const drives = allShots.filter(s => s.category === 'drive' && s.distFrom != null && s.resultDist != null);
@@ -1588,8 +1608,7 @@ function renderSummary() {
   const holesPlayed = round.holes.filter(h => (h.shots || []).length > 0);
   const girHoles = holesPlayed.filter(h => {
     const regIdx = h.par - 3;
-    const s = (h.shots || [])[regIdx];
-    return s && (s.resultLie === 'green' || s.resultLie === 'holed');
+    return (h.shots || []).slice(0, regIdx + 1).some(s => s.resultLie === 'green' || s.resultLie === 'holed');
   });
   const girStr = holesPlayed.length ? `${girHoles.length}/${holesPlayed.length} (${Math.round(girHoles.length / holesPlayed.length * 100)}%)` : '—';
   const approachStats = statRow('Avg distance', fmtYd(avg(approaches.map(s => s.distFrom))))
@@ -1706,11 +1725,10 @@ function renderHome() {
   el.innerHTML = rounds.map(r => {
     const sg = roundTotalSG(r, null);
     const sgStr = sg !== null ? (sg >= 0 ? '+' : '') + sg.toFixed(1) : '—';
-    const sgColor = sg === null ? 'var(--text-muted)' : sg >= 0 ? 'var(--q-great)' : 'var(--q-poor)';
     const strokes = r.holes.reduce((s, h) => s + countStrokes(h.shots || []), 0);
     return `<div class="round-card" onclick="resumeRound('${r.id}')">
       <div class="round-card-info"><div class="round-card-name">${r.courseName}</div><div class="round-card-meta">${formatDate(r.date)} · ${strokes} stroke${strokes !== 1 ? 's' : ''}</div></div>
-      <div class="round-card-sg"><div class="round-card-sg-val" style="color:${sgColor}">${sgStr}</div><div class="round-card-sg-lbl">Total SG</div></div>
+      <div class="round-card-sg"><div class="round-card-sg-val ${sgClass(sg)}">${sgStr}</div><div class="round-card-sg-lbl">Total SG</div></div>
       <div class="round-del-btn" onclick="event.stopPropagation();deleteRound('${r.id}')">×</div>
     </div>`;
   }).join('');

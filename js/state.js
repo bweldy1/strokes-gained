@@ -20,6 +20,13 @@ const QUALITY_BANDS = {
 };
 
 // ═══════════════════════════════════════════════════════════════
+// SHARED CONSTANTS
+// ═══════════════════════════════════════════════════════════════
+
+const CAT_LABELS = {drive:'Drive', approach:'Approach', shortgame:'Short Game', putt:'Putt'};
+const LIE_ABBR   = {tee:'Tee', fairway:'Fwy', rough:'Rgh', sand:'Sand', recovery:'Rcv', green:'Grn', holed:'Holed', penalty:'Pen'};
+
+// ═══════════════════════════════════════════════════════════════
 // STATE
 // ═══════════════════════════════════════════════════════════════
 
@@ -27,6 +34,7 @@ let state = {
   currentRoundId: null,
   currentHole: 1,
   editingShotIndex: null,
+  editingCourseId: null,
   excludedCategories: new Set(),
   shotLie: null,
   shotResultLie: null,
@@ -35,11 +43,20 @@ let state = {
   shotMissSide: null
 };
 
-let editingCourseId = null;
-
 // ═══════════════════════════════════════════════════════════════
 // SHARED UTILITIES
 // ═══════════════════════════════════════════════════════════════
+
+// Full-unit distance string: "385 yds" or "12 ft"
+function formatDist(dist, lie) {
+  if(dist == null) return '';
+  return lie === 'green' ? dist + ' ft' : dist + ' yds';
+}
+
+// CSS class for SG value coloring
+function sgClass(sg) {
+  return sg == null ? 'sg-null' : sg >= 0 ? 'sg-pos' : 'sg-neg';
+}
 
 function formatDate(iso) {
   if(!iso) return '';
