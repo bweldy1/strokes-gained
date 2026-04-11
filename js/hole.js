@@ -28,7 +28,7 @@ function renderShotList(hd) {
   }
   el.innerHTML = shots.map((s, i) => {
     const sg = s.sg, sgStr = sg != null ? (sg >= 0 ? '+' : '') + sg.toFixed(2) : '—';
-    const quality = sg != null ? getQuality(sg, s.category) : null;
+    const sgColor = sg != null ? getQuality(sg, s.category).color : 'var(--text-muted)';
     const distStr = formatDist(s.distFrom, s.lie);
     const isPenalty = s.resultLie === 'penalty';
     const resLabel = s.resultLie === 'holed' ? 'Holed ⛳' : s.resultLie.charAt(0).toUpperCase() + s.resultLie.slice(1);
@@ -44,7 +44,7 @@ function renderShotList(hd) {
         <div class="shot-info-main"><span class="category-badge cat-${s.category}">${catLabel(s.category)}</span>  ${mainResult}${isPenalty ? ' <span class="penalty-badge">+1 stroke</span>' : ''}</div>
         <div class="shot-info-sub">${s.lie.charAt(0).toUpperCase() + s.lie.slice(1)} · ${distStr}${driveStr}${missStr}</div>
       </div>
-      <div class="shot-sg"><div class="shot-sg-val" style="color:${quality ? quality.color : 'var(--text-muted)'}">${sgStr}</div>${quality ? `<div class="shot-quality-dot" style="background:${quality.color}"></div>` : ''}</div>
+      <div class="shot-sg"><div class="shot-sg-val" style="color:${sgColor}">${sgStr}</div></div>
       <div class="shot-del" onclick="event.stopPropagation();deleteShot(${i})">×</div>
     </div>`;
   }).join('');

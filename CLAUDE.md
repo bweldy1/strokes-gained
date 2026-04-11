@@ -93,12 +93,16 @@ All conditional visibility uses the `.hidden` CSS utility class (`display: none 
 Elements that start hidden in HTML use `class="hidden"` (not `style="display:none"`).
 
 ### SG Value Colors
-Three CSS classes cover all SG value coloring — never use inline `style="color:..."` for SG values:
-- `.sg-pos` → `var(--q-great)` (green, positive SG)
-- `.sg-neg` → `var(--q-poor)` (red, negative SG)
-- `.sg-null` → `var(--text-muted)` (grey, no data)
+Two tiers of coloring:
 
-Use `sgClass(sg)` helper to get the right class from a raw SG value (or null).
+**Individual shot SG values** (shot list, summary drill-downs): use `getQuality(sg, category).color` as inline style — full 7-band color from `quality_band_global`. The SG number color always matches the quality band. Null SG uses `var(--text-muted)`.
+
+**Aggregate SG values** (category totals, hole totals, round total on home screen): use `sgClass(sg)` / `sgCls(v, c)` which return CSS classes:
+- `.sg-pos` → `var(--q-great)`
+- `.sg-neg` → `var(--q-poor)`
+- `.sg-null` → `var(--text-muted)`
+
+Quality bands and CSS variables are aligned — each band color has a matching CSS var (`--q-exceptional`, `--q-great`, `--q-good`, `--q-average`, `--q-below-avg`, `--q-poor`, `--q-terrible`). The quality dot has been removed from the shot list — the SG number color alone conveys quality.
 
 ### Collapsed chip UI (Category, Starting Lie, Distance)
 Category, Starting Lie, and Distance from Pin all use a chip-based collapsed pattern:
@@ -187,6 +191,7 @@ Sand, Recovery, and Penalty are infrequent. In lie pill rows, they appear as sec
 - **Sub line:** `Tee · 385 yds · 235 yds drive · Short-Left` — start lie, start dist, drive distance (Drive shots only, `.shot-drive-dist`), miss direction
 - Holed example: `[Drive]  Holed ⛳` / `Tee · 385 yds · 235 yds drive`
 - Drive distance calculated as `distFrom - resultDist`, shown in `.shot-drive-dist` (12px, `--text-dim`)
+- SG value colored using `getQuality(sg, category).color` (7-band); no quality dot
 
 Both use `countStrokes(shots)` for stroke totals (adds +1 per penalty shot).
 
