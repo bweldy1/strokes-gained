@@ -117,22 +117,25 @@ Sand, Recovery, and Penalty are infrequent. In lie pill rows, they appear as sec
 
 ## Round Summary
 
-`renderSummary()` builds two cards: `#summary-totals` and `#summary-holes`.
+`renderSummary()` builds two cards: `#summary-totals` and `#summary-stats`. Layout order: SG card → Statistics card → Export.
 
-**summary-totals card:**
-- Header row: Total SG + stroke count
-- One row per category (Drive, Approach, Short Game, Putt) — tappable to expand
-- `toggleSummaryCat(cat)` toggles the expand div (`#ssum-{cat}`) and rotates the `›` chevron (`#ssum-icon-{cat}`)
-- Expanded rows show individual shots: `H1  Tee 385y · 235y drive › Fwy 150y Short-Left  +0.32`
-  - Lie abbreviations: Tee, Fwy, Rgh, Sand, Rcv, Grn, Holed, Pen
-  - Miss direction appended in `.ssum-miss` (10px, `--text-dim`) when recorded
-  - Distance in `y` (yards) or `ft` (feet for green)
-  - Drive shots include drive distance (`startDist - resultDist`) inline after starting distance in `.ssum-drive` (10px, `--text-dim`)
+**summary-totals card** contains three sections:
+1. Header row: Total SG + stroke count
+2. Category rows (Drive, Approach, Short Game, Putt) — tappable to expand via `toggleSummaryCat(cat)` → `#ssum-{cat}` / `#ssum-icon-{cat}`
+   - Expanded rows show: `H1  Tee 385y · 235y drive › Fwy 150y Short-Left  +0.32`
+   - Lie abbreviations: Tee, Fwy, Rgh, Sand, Rcv, Grn, Holed, Pen
+   - Miss in `.ssum-miss` (10px, `--text-dim`); drive distance in `.ssum-drive` (10px, `--text-dim`)
+3. **SG by Hole** — collapsible section at the bottom of the card, collapsed by default
+   - Toggle row styled as a section divider; `toggleHolesSection()` shows/hides `#summary-holes-wrap` and rotates `#holes-section-chevron`
+   - Each hole row shows number, par, stroke count, total SG — tappable to expand via `toggleSummaryHole(holeNum)` → `#ssum-hole-{holeNum}`
+   - Expanded hole rows use category name as label (`.ssum-hole-cat`, 62px wide)
 
-**summary-holes card:** one row per hole with hole number, par, stroke count, and total SG — tappable to expand.
-- `toggleSummaryHole(holeNum)` toggles `#ssum-hole-{holeNum}` and rotates `#ssum-hole-icon-{holeNum}`
-- Expanded rows use the same shot format as category drill-down, with category name (Drive/Approach/Short Game/Putt) as the label column instead of hole number — uses wider `.ssum-hole-cat` class (62px) to avoid overlap
-- Drive distance shown the same way as in category drill-down
+**summary-stats card:** three expandable groups — `toggleStatGroup(group)` toggles `#sstat-{group}` / `#sstat-icon-{group}`.
+- **Putting** (`group='putt'`): Avg first putt distance (first putt per hole), Avg holed distance, Longest holed (all in feet)
+- **Driving** (`group='drive'`): Avg drive distance, Longest drive (yards; `distFrom - resultDist`)
+- **Approach** (`group='approach'`): Avg approach distance (yards)
+- **Short Game** (`group='shortgame'`): Avg distance to hole (yards; `distFrom` of shortgame shots)
+- Stat rows use `.sstat-row`, `.sstat-label`, `.sstat-val`
 
 `buildShotRow(s, label, labelClass)` — shared helper used by both drill-downs to render a single shot row.
 

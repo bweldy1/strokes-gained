@@ -551,6 +551,20 @@ function toggleSummaryCat(cat){
   el.style.display=open?'block':'none';
   if(icon) icon.style.transform=open?'rotate(90deg)':'';
 }
+function toggleHolesSection(){
+  const wrap=document.getElementById('summary-holes-wrap'), icon=document.getElementById('holes-section-chevron');
+  if(!wrap) return;
+  const open=wrap.style.display==='none';
+  wrap.style.display=open?'block':'none';
+  if(icon) icon.style.transform=open?'rotate(90deg)':'';
+}
+function toggleStatGroup(group){
+  const el=document.getElementById('sstat-'+group), icon=document.getElementById('sstat-icon-'+group);
+  if(!el) return;
+  const open=el.style.display==='none';
+  el.style.display=open?'block':'none';
+  if(icon) icon.style.transform=open?'rotate(90deg)':'';
+}
 function toggleSummaryHole(holeNum){
   const el=document.getElementById('ssum-hole-'+holeNum), icon=document.getElementById('ssum-hole-icon-'+holeNum);
   if(!el) return;
@@ -607,10 +621,7 @@ function renderSummary(){
       </div>
       <div class="ssum-expand" id="ssum-${c}" style="display:none">${rows||'<div class="ssum-empty">No shots recorded</div>'}</div>`;
   }).join('');
-  document.getElementById('summary-totals').innerHTML=`
-    <div class="summary-stat" style="border-bottom:1px solid var(--border)"><span class="summary-stat-label" style="font-size:17px;font-weight:600;color:var(--text)">Total SG <span style="font-size:12px;color:var(--text-dim);font-weight:400">(${gStrokes} stroke${gStrokes!==1?'s':''})</span></span><span class="summary-stat-val" style="font-size:28px;color:${col(gTotal,gCount)}">${fmt(gTotal,gCount)}</span></div>
-    ${catHTML}`;
-  document.getElementById('summary-holes').innerHTML=round.holes.map(h=>{
+  const holesHTML=round.holes.map(h=>{
     const shots=h.shots||[]; if(shots.length===0) return '';
     const hsg=shots.reduce((s,sh)=>s+(sh.sg||0),0);
     const hStrokes=countStrokes(shots);
@@ -626,6 +637,56 @@ function renderSummary(){
     </div>
     <div class="ssum-expand" id="ssum-hole-${h.hole}" style="display:none">${rows}</div>`;
   }).filter(Boolean).join('')||'<div style="color:var(--text-dim);text-align:center;padding:16px;font-size:14px">No shots recorded yet</div>';
+  const byHoleSection=`
+    <div class="summary-stat summary-cat-row" style="border-top:1px solid var(--border);margin-top:4px" onclick="toggleHolesSection()">
+      <span class="summary-stat-label" style="font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text-dim)">SG by Hole</span>
+      <span class="ssum-chevron" id="holes-section-chevron">›</span>
+    </div>
+    <div id="summary-holes-wrap" style="display:none">${holesHTML}</div>`;
+  document.getElementById('summary-totals').innerHTML=`
+    <div class="summary-stat" style="border-bottom:1px solid var(--border)"><span class="summary-stat-label" style="font-size:17px;font-weight:600;color:var(--text)">Total SG <span style="font-size:12px;color:var(--text-dim);font-weight:400">(${gStrokes} stroke${gStrokes!==1?'s':''})</span></span><span class="summary-stat-val" style="font-size:28px;color:${col(gTotal,gCount)}">${fmt(gTotal,gCount)}</span></div>
+    ${catHTML}${byHoleSection}`;
+
+  // Statistics
+  const allShots=round.holes.flatMap(h=>(h.shots||[]).map((s,i)=>({...s,holeNum:h.hole,shotIdx:i})));
+  const avg=arr=>arr.length?arr.reduce((a,b)=>a+b,0)/arr.length:null;
+  const fmtFt=v=>v!=null?Math.round(v)+' ft':'—';
+  const fmtYd=v=>v!=null?Math.round(v)+' yds':'—';
+  const statRow=(label,val)=>`<div class="sstat-row"><span class="sstat-label">${label}</span><span class="sstat-val">${val}</span></div>`;
+  const statGroup=(id,title,rows)=>`
+    <div class="summary-stat summary-cat-row" onclick="toggleStatGroup('${id}')">
+      <span class="summary-stat-label">${title}</span>
+      <span class="ssum-chevron" id="sstat-icon-${id}">›</span>
+    </div>
+    <div class="ssum-expand" id="sstat-${id}" style="display:none">${rows}</div>`;
+
+  // Putting
+  const putts=allShots.filter(s=>s.category==='putt');
+  const firstPutts=round.holes.map(h=>(h.shots||[]).find(s=>s.category==='putt')).filter(Boolean);
+  const holedPutts=putts.filter(s=>s.resultLie==='holed');
+  const puttStats=statRow('Avg first putt',fmtFt(avg(firstPutts.map(s=>s.distFrom))))
+    +statRow('Avg holed',fmtFt(avg(holedPutts.map(s=>s.distFrom))))
+    +statRow('Longest holed',fmtFt(holedPutts.length?Math.max(...holedPutts.map(s=>s.distFrom)):null));
+
+  // Driving
+  const drives=allShots.filter(s=>s.category==='drive'&&s.distFrom!=null&&s.resultDist!=null);
+  const driveDists=drives.map(s=>s.distFrom-s.resultDist);
+  const driveStats=statRow('Avg distance',fmtYd(avg(driveDists)))
+    +statRow('Longest',fmtYd(driveDists.length?Math.max(...driveDists):null));
+
+  // Approach
+  const approaches=allShots.filter(s=>s.category==='approach'&&s.distFrom!=null);
+  const approachStats=statRow('Avg distance',fmtYd(avg(approaches.map(s=>s.distFrom))));
+
+  // Short Game
+  const shortgame=allShots.filter(s=>s.category==='shortgame'&&s.distFrom!=null);
+  const shortgameStats=statRow('Avg distance to hole',fmtYd(avg(shortgame.map(s=>s.distFrom))));
+
+  document.getElementById('summary-stats').innerHTML=
+    statGroup('drive','Driving',driveStats)
+    +statGroup('approach','Approach',approachStats)
+    +statGroup('shortgame','Short Game',shortgameStats)
+    +statGroup('putt','Putting',puttStats);
 }
 
 // ═══════════════════════════════════════════════════════════════

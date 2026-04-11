@@ -26,6 +26,8 @@ body { font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-se
 .btn-ghost { background: transparent; color: var(--text-muted); border: 1px solid var(--border); }
 .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 12px; }
 .section-label { font-size: 11px; font-weight: 600; letter-spacing: 1px; color: var(--text-dim); text-transform: uppercase; margin: 20px 0 10px; }
+.section-label-toggle { display: flex; align-items: center; justify-content: space-between; cursor: pointer; user-select: none; }
+.section-label-toggle:active { opacity: .6; }
 .home-header { padding: 80px 24px 32px; background: linear-gradient(180deg,var(--green-dark) 0%,var(--sky) 100%); text-align: center; }
 .home-logo { margin-bottom: 16px; }
 .home-logo-img { width: 88px; height: 88px; border-radius: 20px; display: block; margin: 0 auto; }
@@ -120,6 +122,10 @@ textarea.json-input:focus { border-color: var(--fairway); }
 .summary-cat-row { cursor: pointer; }
 .summary-cat-row:active { opacity: .7; }
 .ssum-chevron { color: var(--text-dim); font-size: 16px; display: inline-block; transition: transform .2s; }
+.sstat-row { display: flex; justify-content: space-between; align-items: center; padding: 7px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+.sstat-row:last-child { border-bottom: none; }
+.sstat-label { color: var(--text-muted); }
+.sstat-val { font-weight: 600; color: var(--text); }
 .ssum-expand { border-bottom: 1px solid var(--border); padding: 2px 0 8px; }
 .ssum-shot { display: flex; align-items: center; gap: 6px; padding: 7px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
 .ssum-shot:last-child { border-bottom: none; }
