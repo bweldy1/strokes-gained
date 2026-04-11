@@ -77,6 +77,7 @@ textarea.json-input:focus { border-color: var(--fairway); }
 .shot-num { width: 22px; height: 22px; border-radius: 50%; background: var(--input-bg); border: 1px solid var(--border2); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; color: var(--text-muted); flex-shrink: 0; }
 .shot-info { flex: 1; }
 .shot-info-main { font-size: 14px; font-weight: 500; }
+.shot-res-lie { color: var(--text-muted); font-weight: 400; }
 .shot-info-sub { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
 .shot-sg { text-align: right; }
 .shot-sg-val { font-size: 16px; font-weight: 700; }

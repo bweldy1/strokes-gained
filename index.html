@@ -86,6 +86,7 @@ textarea.json-input:focus { border-color: var(--fairway); }
 .shot-num { width: 22px; height: 22px; border-radius: 50%; background: var(--input-bg); border: 1px solid var(--border2); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; color: var(--text-muted); flex-shrink: 0; }
 .shot-info { flex: 1; }
 .shot-info-main { font-size: 14px; font-weight: 500; }
+.shot-res-lie { color: var(--text-muted); font-weight: 400; }
 .shot-info-sub { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
 .shot-sg { text-align: right; }
 .shot-sg-val { font-size: 16px; font-weight: 700; }
@@ -183,7 +184,7 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
     <div class="section-label">Recent Rounds</div>
     <div id="rounds-list"></div>
   </div>
-  <div id="build-version" style="position:absolute;bottom:0;left:0;right:0;text-align:center;font-size:10px;color:var(--text);padding:4px;">Build: 2026-04-10 21:00</div>
+  <div id="build-version" style="position:absolute;bottom:0;left:0;right:0;text-align:center;font-size:10px;color:var(--text);padding:4px;">Build: 2026-04-10 21:17</div>
 </div>
 
 <!-- COURSE SELECT -->
@@ -992,12 +993,13 @@ function renderShotList(hd) {
     const missParts=[s.missDepth,s.missSide].filter(Boolean).map(v=>v.charAt(0).toUpperCase()+v.slice(1));
     const missStr=missParts.length?` · ${missParts.join('-')}`:'';
     const driveDist=(s.category==='drive'&&s.distFrom!=null&&s.resultDist!=null)?Math.round(s.distFrom-s.resultDist):null;
-    const driveStr=driveDist!=null?` · <span class="shot-drive-dist">${driveDist} yds</span>`:'';
+    const driveStr=driveDist!=null?` · <span class="shot-drive-dist">${driveDist} yds drive</span>`:'';
+    const mainResult=resDist?`${resDist} <span class="shot-res-lie"> · ${resLabel}</span>`:`<span class="shot-res-lie">${resLabel}</span>`;
     return `<div class="shot-row" onclick="editShot(${i})">
       <div class="shot-num">${i+1}</div>
       <div class="shot-info">
-        <div class="shot-info-main">${s.lie.charAt(0).toUpperCase()+s.lie.slice(1)} · ${distStr}${driveStr} <span class="category-badge cat-${s.category}">${catLabel(s.category)}</span>${isPenalty?'<span class="penalty-badge">+1 stroke</span>':''}</div>
-        <div class="shot-info-sub">→ ${resLabel}${resDist?' · '+resDist:''}${missStr}</div>
+        <div class="shot-info-main"><span class="category-badge cat-${s.category}">${catLabel(s.category)}</span>  ${mainResult}${isPenalty?' <span class="penalty-badge">+1 stroke</span>':''}</div>
+        <div class="shot-info-sub">${s.lie.charAt(0).toUpperCase()+s.lie.slice(1)} · ${distStr}${driveStr}${missStr}</div>
       </div>
       <div class="shot-sg"><div class="shot-sg-val" style="color:${sgColor}">${sgStr}</div>${quality?`<div class="shot-quality-dot" style="background:${quality.color}"></div>`:''}</div>
       <div class="shot-del" onclick="event.stopPropagation();deleteShot(${i})">×</div>

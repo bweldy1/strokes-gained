@@ -136,8 +136,12 @@ Sand, Recovery, and Penalty are infrequent. In lie pill rows, they appear as sec
 
 `buildShotRow(s, label, labelClass)` — shared helper used by both drill-downs to render a single shot row.
 
-### Drive Distance (hole screen)
-In `renderShotList`, Drive shots show drive distance inline on the main line: `Tee · 385 yds · 235 yds drive [Drive]`. Rendered in `.shot-drive-dist` (12px, `--text-dim`). Calculated as `distFrom - resultDist`.
+### Shot List Layout (hole screen)
+`renderShotList` renders each shot with result as primary and starting position as secondary:
+- **Main line:** `[Category badge]  150 yds · Fairway` — result distance + result lie (lie is muted via `.shot-res-lie`, separated by ` · `); penalty badge appended if applicable
+- **Sub line:** `Tee · 385 yds · 235 yds drive · Short-Left` — start lie, start dist, drive distance (Drive shots only, `.shot-drive-dist`), miss direction
+- Holed example: `[Drive]  Holed ⛳` / `Tee · 385 yds · 235 yds drive`
+- Drive distance calculated as `distFrom - resultDist`, shown in `.shot-drive-dist` (12px, `--text-dim`)
 
 Both use `countStrokes(shots)` for stroke totals (adds +1 per penalty shot).
 

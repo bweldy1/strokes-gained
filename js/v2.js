@@ -242,12 +242,13 @@ function renderShotList(hd) {
     const missParts=[s.missDepth,s.missSide].filter(Boolean).map(v=>v.charAt(0).toUpperCase()+v.slice(1));
     const missStr=missParts.length?` · ${missParts.join('-')}`:'';
     const driveDist=(s.category==='drive'&&s.distFrom!=null&&s.resultDist!=null)?Math.round(s.distFrom-s.resultDist):null;
-    const driveStr=driveDist!=null?` · <span class="shot-drive-dist">${driveDist} yds</span>`:'';
+    const driveStr=driveDist!=null?` · <span class="shot-drive-dist">${driveDist} yds drive</span>`:'';
+    const mainResult=resDist?`${resDist} <span class="shot-res-lie"> · ${resLabel}</span>`:`<span class="shot-res-lie">${resLabel}</span>`;
     return `<div class="shot-row" onclick="editShot(${i})">
       <div class="shot-num">${i+1}</div>
       <div class="shot-info">
-        <div class="shot-info-main">${s.lie.charAt(0).toUpperCase()+s.lie.slice(1)} · ${distStr}${driveStr} <span class="category-badge cat-${s.category}">${catLabel(s.category)}</span>${isPenalty?'<span class="penalty-badge">+1 stroke</span>':''}</div>
-        <div class="shot-info-sub">→ ${resLabel}${resDist?' · '+resDist:''}${missStr}</div>
+        <div class="shot-info-main"><span class="category-badge cat-${s.category}">${catLabel(s.category)}</span>  ${mainResult}${isPenalty?' <span class="penalty-badge">+1 stroke</span>':''}</div>
+        <div class="shot-info-sub">${s.lie.charAt(0).toUpperCase()+s.lie.slice(1)} · ${distStr}${driveStr}${missStr}</div>
       </div>
       <div class="shot-sg"><div class="shot-sg-val" style="color:${sgColor}">${sgStr}</div>${quality?`<div class="shot-quality-dot" style="background:${quality.color}"></div>`:''}</div>
       <div class="shot-del" onclick="event.stopPropagation();deleteShot(${i})">×</div>
