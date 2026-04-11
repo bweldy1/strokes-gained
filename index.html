@@ -15,8 +15,8 @@
   --border: rgba(255,255,255,0.08); --border2: rgba(255,255,255,0.15);
   --radius: 14px; --radius-sm: 8px; --sheet-bg: #0d1b2a;
   --input-bg: rgba(255,255,255,0.06); --input-border: rgba(255,255,255,0.12);
-  --q-great: #69f0ae; --q-good: #a5d6a7; --q-average: #ffca28;
-  --q-poor: #ef5350; --q-terrible: #c62828;
+  --q-exceptional: #00e676; --q-great: #69f0ae; --q-good: #a5d6a7; --q-average: #ffca28;
+  --q-below-avg: #ffa726; --q-poor: #ef5350; --q-terrible: #c62828;
 }
 
 
@@ -127,7 +127,7 @@ textarea.json-input:focus { border-color: var(--fairway); }
 .penalty-badge { display: inline-flex; align-items: center; padding: 2px 7px; border-radius: 12px; font-size: 11px; font-weight: 600; background: rgba(233,69,96,.2); color: var(--accent); margin-left: 4px; }
 .cat-drive { background: rgba(244,162,97,.2); color: var(--gold); }
 .cat-approach { background: rgba(64,145,108,.2); color: var(--fairway); }
-.cat-shortgame { background: rgba(82,183,136,.2); color: #74c69d; }
+.cat-shortgame { background: rgba(82,183,136,.2); color: var(--q-good); }
 .cat-putt { background: rgba(26,161,221,.2); color: #74b9ff; }
 .summary-stat { display: flex; justify-content: space-between; align-items: center; padding: 14px 0; border-bottom: 1px solid var(--border); }
 .summary-cat-row { cursor: pointer; }
@@ -243,7 +243,7 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
     <div class="section-label">Recent Rounds</div>
     <div id="rounds-list"></div>
   </div>
-  <div id="build-version">Build: 2026-04-10 23:02</div>
+  <div id="build-version">Build: 2026-04-11 08:23</div>
 </div>
 
 <!-- COURSE SELECT -->
@@ -813,13 +813,13 @@ const SG_TABLES = {
 // ═══════════════════════════════════════════════════════════════
 
 const quality_band_global = [
-  {label:'Exceptional',   min:1,    color:'#00e676'},
-  {label:'Excellent',     min:0.5,  color:'#69f0ae'},
-  {label:'Above Average', min:0.2,  color:'#a5d6a7'},
-  {label:'Neutral',       min:-0.2, color:'#ffca28'},
-  {label:'Below Average', min:-0.5, color:'#ffa726'},
-  {label:'Poor',          min:-1,   color:'#ef5350'},
-  {label:'Very Poor',     min:-999, color:'#c62828'}
+  {label:'Exceptional',   min:1,    color:'#00e676'},  // --q-exceptional
+  {label:'Excellent',     min:0.5,  color:'#69f0ae'},  // --q-great
+  {label:'Above Average', min:0.2,  color:'#a5d6a7'},  // --q-good
+  {label:'Neutral',       min:-0.2, color:'#ffca28'},  // --q-average
+  {label:'Below Average', min:-0.5, color:'#ffa726'},  // --q-below-avg
+  {label:'Poor',          min:-1,   color:'#ef5350'},  // --q-poor
+  {label:'Very Poor',     min:-999, color:'#c62828'}   // --q-terrible
 ];
 
 
