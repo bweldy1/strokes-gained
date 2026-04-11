@@ -60,7 +60,7 @@ function buildShotRow(s, label, labelClass = 'ssum-hole') {
     <span class="ssum-from">${fromBlock}</span>
     <span class="ssum-arrow">›</span>
     <span class="ssum-to">${toLabel}${toDist ? ' ' + toDist : ''}${missStr ? `<span class="ssum-miss"> ${missStr}</span>` : ''}</span>
-    <span class="ssum-sg ${sgClass(s.sg)}">${sgStr}</span>
+    <span class="ssum-sg" style="color:${s.sg != null ? getQuality(s.sg, s.category).color : 'var(--text-muted)'}">${sgStr}</span>
   </div>`;
 }
 
