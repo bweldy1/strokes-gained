@@ -653,9 +653,9 @@ function renderSummary(){
   const fmtFt=v=>v!=null?Math.round(v)+' ft':'—';
   const fmtYd=v=>v!=null?Math.round(v)+' yds':'—';
   const statRow=(label,val)=>`<div class="sstat-row"><span class="sstat-label">${label}</span><span class="sstat-val">${val}</span></div>`;
-  const statGroup=(id,title,rows)=>`
+  const statGroup=(id,title,rows,headerVal='')=>`
     <div class="summary-stat summary-cat-row" onclick="toggleStatGroup('${id}')">
-      <span class="summary-stat-label">${title}</span>
+      <span class="summary-stat-label">${title}${headerVal?` <span style="font-size:12px;color:var(--text-dim);font-weight:400">${headerVal}</span>`:''}</span>
       <span class="ssum-chevron" id="sstat-icon-${id}">›</span>
     </div>
     <div class="ssum-expand" id="sstat-${id}" style="display:none">${rows}</div>`;
@@ -671,20 +671,32 @@ function renderSummary(){
   // Driving
   const drives=allShots.filter(s=>s.category==='drive'&&s.distFrom!=null&&s.resultDist!=null);
   const driveDists=drives.map(s=>s.distFrom-s.resultDist);
+  const fairwaysHit=drives.filter(s=>s.resultLie==='fairway').length;
+  const fairwayTotal=drives.length;
+  const fairwayStr=fairwayTotal?`${fairwaysHit}/${fairwayTotal} (${Math.round(fairwaysHit/fairwayTotal*100)}%)`:'—';
   const driveStats=statRow('Avg distance',fmtYd(avg(driveDists)))
-    +statRow('Longest',fmtYd(driveDists.length?Math.max(...driveDists):null));
+    +statRow('Longest',fmtYd(driveDists.length?Math.max(...driveDists):null))
+    +statRow('Fairways hit',fairwayStr);
 
   // Approach
   const approaches=allShots.filter(s=>s.category==='approach'&&s.distFrom!=null);
-  const approachStats=statRow('Avg distance',fmtYd(avg(approaches.map(s=>s.distFrom))));
+  const holesPlayed=round.holes.filter(h=>(h.shots||[]).length>0);
+  const girHoles=holesPlayed.filter(h=>{
+    const regIdx=h.par-3;
+    const s=(h.shots||[])[regIdx];
+    return s&&(s.resultLie==='green'||s.resultLie==='holed');
+  });
+  const girStr=holesPlayed.length?`${girHoles.length}/${holesPlayed.length} (${Math.round(girHoles.length/holesPlayed.length*100)}%)`:'—';
+  const approachStats=statRow('Avg distance',fmtYd(avg(approaches.map(s=>s.distFrom))))
+    +statRow('GIR',girStr);
 
   // Short Game
   const shortgame=allShots.filter(s=>s.category==='shortgame'&&s.distFrom!=null);
   const shortgameStats=statRow('Avg distance to hole',fmtYd(avg(shortgame.map(s=>s.distFrom))));
 
   document.getElementById('summary-stats').innerHTML=
-    statGroup('drive','Driving',driveStats)
-    +statGroup('approach','Approach',approachStats)
+    statGroup('drive','Driving',driveStats,fairwayStr)
+    +statGroup('approach','Approach',approachStats,girStr)
     +statGroup('shortgame','Short Game',shortgameStats)
     +statGroup('putt','Putting',puttStats);
 }

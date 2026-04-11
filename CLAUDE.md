@@ -130,11 +130,14 @@ Sand, Recovery, and Penalty are infrequent. In lie pill rows, they appear as sec
    - Each hole row shows number, par, stroke count, total SG — tappable to expand via `toggleSummaryHole(holeNum)` → `#ssum-hole-{holeNum}`
    - Expanded hole rows use category name as label (`.ssum-hole-cat`, 62px wide)
 
-**summary-stats card:** three expandable groups — `toggleStatGroup(group)` toggles `#sstat-{group}` / `#sstat-icon-{group}`.
-- **Putting** (`group='putt'`): Avg first putt distance (first putt per hole), Avg holed distance, Longest holed (all in feet)
-- **Driving** (`group='drive'`): Avg drive distance, Longest drive (yards; `distFrom - resultDist`)
-- **Approach** (`group='approach'`): Avg approach distance (yards)
+**summary-stats card:** four expandable groups — `toggleStatGroup(group)` toggles `#sstat-{group}` / `#sstat-icon-{group}`.
+- `statGroup(id, title, rows, headerVal='')` — helper that renders each group; `headerVal` appears inline in the collapsed header (dimmed, 12px) so key stats are visible without expanding
+- **Driving** (`group='drive'`): header shows Fairways hit (`n/total (pct%)`); expands to Avg distance, Longest, Fairways hit
+  - Fairways hit = drive shots where `resultLie==='fairway'`
+- **Approach** (`group='approach'`): header shows GIR (`n/total (pct%)`); expands to Avg distance, GIR
+  - GIR = shot at index `par-3` on each played hole with `resultLie==='green'` or `'holed'`
 - **Short Game** (`group='shortgame'`): Avg distance to hole (yards; `distFrom` of shortgame shots)
+- **Putting** (`group='putt'`): Avg first putt distance (first putt per hole), Avg holed distance, Longest holed (all in feet)
 - Stat rows use `.sstat-row`, `.sstat-label`, `.sstat-val`
 
 `buildShotRow(s, label, labelClass)` — shared helper used by both drill-downs to render a single shot row.
