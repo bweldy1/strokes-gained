@@ -18,10 +18,11 @@ Reads `html/app.html`, resolves `<!-- INCLUDE: fragments/foo.html -->` directive
 html/
   app.html                  # Template: head + INCLUDE directives + script tags
   fragments/
-    screen-home.html        # Home screen (recent rounds list)
+    screen-home.html        # Home screen (recent rounds list + Trends button)
     screen-courses.html     # Course select + JSON import
     screen-hole.html        # Hole entry (nav, tally bar, shot list)
     screen-summary.html     # Round summary + CSV export
+    screen-trends.html      # Cross-round trends: filter + category avg SG + bucket drill-down
     sheet-shot.html         # Bottom sheet: shot entry form
     sheet-course-edit.html  # Bottom sheet: course name/tees editor
     sheet-yardage.html      # Bottom sheet: yardage override
@@ -37,12 +38,13 @@ js/
   shot-entry.js             # Shot sheet: all form interactions, selectLie/Category/ResultLie, saveShot
   courses.js                # Courses screen: renderCourses, openCourseEdit, saveCourseJSON, startRound
   summary.js                # Summary screen: renderSummary, stats, CSV export, clipboard
+  trends.js                 # Trends screen: renderTrends, setTrendsFilter, toggleTrendsCat
   home.js                   # Home screen + init IIFE (loads last — calls renderHome on startup)
 images/
   SG_logo.png               # App icon used on home screen header
 ```
 
-**Load order matters:** `hole.js` and `shot-entry.js` before `courses.js`/`summary.js` (which use `countStrokes`, `catLabel`); `home.js` last (contains the init IIFE).
+**Load order matters:** `hole.js` and `shot-entry.js` before `courses.js`/`summary.js` (which use `countStrokes`, `catLabel`); `trends.js` before `home.js`; `home.js` last (contains the init IIFE).
 
 ## Shot Data Model
 
@@ -66,7 +68,7 @@ Each shot stored in `round.holes[n].shots[]`:
 ### State
 Single `state` object — never persisted, resets on page load:
 ```js
-let state = { currentRoundId, currentHole, editingShotIndex, editingCourseId, excludedCategories, shotLie, shotResultLie, shotCategory, shotMissDepth, shotMissSide }
+let state = { currentRoundId, currentHole, editingShotIndex, editingCourseId, excludedCategories, shotLie, shotResultLie, shotCategory, shotMissDepth, shotMissSide, trendsFilter }
 ```
 
 ### Shared Constants and Helpers (`state.js`)
@@ -204,9 +206,22 @@ Sand, Recovery, and Penalty are infrequent. In lie pill rows, they appear as sec
 
 Both use `countStrokes(shots)` for stroke totals (adds +1 per penalty shot).
 
+## Trends Screen
+
+`renderTrends()` builds the cross-round analysis view. Accessible via the "Trends" button on the home screen.
+
+**Filter:** Last 5 / Last 10 / All rounds toggle (`state.trendsFilter`, default `10`). Pills use `.selected` class. `setTrendsFilter(n)` updates state and re-renders; `n=0` means all rounds.
+
+**Category cards:** Four cards (Drive, Approach, Short Game, Putt), each showing:
+- Category name, shot count, round count
+- Avg SG across filtered rounds (colored via `sgClass`)
+- Tappable to expand bucket drill-down — reuses `buildBucketRows(shots, cat)` from `summary.js`
+
+Shots are aggregated from `round.holes[n].shots[]` across all filtered rounds before being passed to `buildBucketRows`.
+
 ## Screen Navigation
 
-`showScreen(name)` — shows `#screen-{name}`, hides all others, calls the matching render function. Screens: `home`, `courses`, `hole`, `summary`.
+`showScreen(name)` — shows `#screen-{name}`, hides all others, calls the matching render function. Screens: `home`, `courses`, `hole`, `summary`, `trends`.
 
 The hole screen topbar uses a `⌂` home icon (`.btn-icon`) to navigate back to the home screen — intentionally distinct from the `‹ ›` hole navigation arrows.
 
