@@ -30,7 +30,7 @@ css/
   v2.css                    # All styles
 js/
   sg_tables.js              # SG lookup tables (lie × distance → expected strokes)
-  state.js                  # Quality bands, state object, editingCourseId, showToast, formatDate
+  state.js                  # Quality bands, shared constants/helpers, state object, showToast, formatDate
   storage.js                # localStorage helpers: getRounds, getCourses, currentRound, updateRound, etc.
   sg-engine.js              # interpolate, getExpected, calcSG, getQuality, autoCategory, getSuggestion
   hole.js                   # Hole screen: renderHole, renderShotList, tally, yardage override, round edit
@@ -55,7 +55,7 @@ Each shot stored in `round.holes[n].shots[]`:
   resultLie: 'fairway'|'rough'|'sand'|'recovery'|'green'|'holed'|'penalty',
   resultDist: Number|null,             // yards (feet if resultLie=green); null if holed
   category: 'drive'|'approach'|'shortgame'|'putt',
-  sg: Number|null,                     // strokes gained value
+  sg: Number|null,                     // strokes gained, rounded to 4 decimal places on save
   missDepth: 'short'|'long'|null,
   missSide: 'left'|'middle'|'right'|null,  // OR 'low'|'center'|'high' for putts
 }
@@ -66,11 +66,39 @@ Each shot stored in `round.holes[n].shots[]`:
 ### State
 Single `state` object — never persisted, resets on page load:
 ```js
-let state = { currentRoundId, currentHole, editingShotIndex, excludedCategories, shotLie, shotResultLie, shotCategory, shotMissDepth, shotMissSide }
+let state = { currentRoundId, currentHole, editingShotIndex, editingCourseId, excludedCategories, shotLie, shotResultLie, shotCategory, shotMissDepth, shotMissSide }
 ```
+
+### Shared Constants and Helpers (`state.js`)
+```js
+CAT_LABELS  // {drive:'Drive', approach:'Approach', shortgame:'Short Game', putt:'Putt'}
+LIE_ABBR    // {tee:'Tee', fairway:'Fwy', rough:'Rgh', sand:'Sand', recovery:'Rcv', green:'Grn', holed:'Holed', penalty:'Pen'}
+
+formatDist(dist, lie)  // → "385 yds" or "12 ft" (full units; used on hole screen)
+sgClass(sg)            // → 'sg-pos' | 'sg-neg' | 'sg-null' (CSS class for SG value color)
+```
+
+`buildShotRow` in `summary.js` uses compact distance abbreviations (`y`/`ft`) directly — does **not** use `formatDist` since those are summary-view abbreviations, not full units.
 
 ### Storage
 All data in `localStorage` as JSON. Keys: `sg_rounds`, `sg_courses`.
+
+### Show/Hide Pattern
+All conditional visibility uses the `.hidden` CSS utility class (`display: none !important`). Never set `element.style.display` directly.
+- Hide: `el.classList.add('hidden')`
+- Show: `el.classList.remove('hidden')`
+- Toggle: `el.classList.toggle('hidden')` or `el.classList.toggle('hidden', !condition)`
+- Check: `el.classList.contains('hidden')`
+
+Elements that start hidden in HTML use `class="hidden"` (not `style="display:none"`).
+
+### SG Value Colors
+Three CSS classes cover all SG value coloring — never use inline `style="color:..."` for SG values:
+- `.sg-pos` → `var(--q-great)` (green, positive SG)
+- `.sg-neg` → `var(--q-poor)` (red, negative SG)
+- `.sg-null` → `var(--text-muted)` (grey, no data)
+
+Use `sgClass(sg)` helper to get the right class from a raw SG value (or null).
 
 ### Collapsed chip UI (Category, Starting Lie, Distance)
 Category, Starting Lie, and Distance from Pin all use a chip-based collapsed pattern:
@@ -105,7 +133,7 @@ When `lie='green'`, `selectLie` also auto-sets `resultLie='green'` if no result 
 - `getSuggestion` returns `{ lie: null, dist }` after a penalty; `openShotSheet` guards `selectLie`/`selectCategory` with `if(sug.lie)`
 
 ### SG Calculation
-`calcSG(startLie, startDist, resultLie, resultDist)` uses `sg_tables.js` lookup tables with linear interpolation. Result is added to each shot on save.
+`calcSG(startLie, startDist, resultLie, resultDist)` uses `sg_tables.js` lookup tables with linear interpolation. Result is rounded to 4 decimal places before being stored on the shot object.
 
 ## CSS Conventions
 
@@ -133,7 +161,7 @@ Sand, Recovery, and Penalty are infrequent. In lie pill rows, they appear as sec
 1. Header row: Total SG + stroke count
 2. Category rows (Drive, Approach, Short Game, Putt) — tappable to expand via `toggleSummaryCat(cat)` → `#ssum-{cat}` / `#ssum-icon-{cat}`
    - Expanded rows show: `H1  Tee 385y · 235y drive › Fwy 150y Short-Left  +0.32`
-   - Lie abbreviations: Tee, Fwy, Rgh, Sand, Rcv, Grn, Holed, Pen
+   - Lie abbreviations from `LIE_ABBR`: Tee, Fwy, Rgh, Sand, Rcv, Grn, Holed, Pen
    - Miss in `.ssum-miss` (10px, `--text-dim`); drive distance in `.ssum-drive` (10px, `--text-dim`)
 3. **SG by Hole** — collapsible section at the bottom of the card, collapsed by default
    - Toggle row styled as a section divider; `toggleHolesSection()` shows/hides `#summary-holes-wrap` and rotates `#holes-section-chevron`
@@ -145,8 +173,9 @@ Sand, Recovery, and Penalty are infrequent. In lie pill rows, they appear as sec
 - **Driving** (`group='drive'`): header shows Fairways hit (`n/total (pct%)`); expands to Avg distance, Longest, Fairways hit
   - Fairways hit = drive shots where `resultLie==='fairway'`
 - **Approach** (`group='approach'`): header shows GIR (`n/total (pct%)`); expands to Avg distance, GIR
-  - GIR = shot at index `par-3` on each played hole with `resultLie==='green'` or `'holed'`
-- **Short Game** (`group='shortgame'`): Avg distance to hole (yards; `distFrom` of shortgame shots)
+  - GIR = any shot at or before the regulation index (`par-3`) with `resultLie==='green'` or `'holed'`; handles eagle/albatross correctly
+- **Short Game** (`group='shortgame'`): header shows Avg proximity (feet); expands to Avg distance to hole (yards), Avg proximity (on green, feet)
+  - Avg proximity = avg `resultDist` of shortgame shots where `resultLie==='green'` and `resultDist != null`; excludes missed greens and holed shots; shows `—` if none
 - **Putting** (`group='putt'`): Avg first putt distance (first putt per hole), Avg holed distance, Longest holed (all in feet)
 - Stat rows use `.sstat-row`, `.sstat-label`, `.sstat-val`
 
@@ -188,7 +217,7 @@ Buttons use `event.stopPropagation()` to prevent triggering `startRound`.
 - Save: `saveCourseEdit()` — updates course in-place by id, closes sheet
 - "Edit holes in JSON ›": `loadCourseHolesJSON()` — pre-fills the JSON import textarea with current course data and closes sheet; user edits and re-saves via existing JSON flow
 - Overlay click to dismiss: `handleCourseEditOverlayClick(e)`
-- Active course being edited stored in `editingCourseId` (module-level, not in `state`)
+- Active course being edited stored in `state.editingCourseId`
 
 ### JSON import (`saveCourseJSON`)
 Updated to replace existing course if `c.id` matches an existing entry, rather than always pushing a new one. This supports the "edit holes in JSON" workflow.

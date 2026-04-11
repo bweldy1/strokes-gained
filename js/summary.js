@@ -159,7 +159,10 @@ function renderSummary() {
 
   // Short Game
   const shortgame = allShots.filter(s => s.category === 'shortgame' && s.distFrom != null);
-  const shortgameStats = statRow('Avg distance to hole', fmtYd(avg(shortgame.map(s => s.distFrom))));
+  const sgProximity = shortgame.filter(s => s.resultLie === 'green' && s.resultDist != null);
+  const proximityStr = sgProximity.length ? fmtFt(avg(sgProximity.map(s => s.resultDist))) : '—';
+  const shortgameStats = statRow('Avg distance to hole', fmtYd(avg(shortgame.map(s => s.distFrom))))
+    + statRow('Avg proximity (on green)', proximityStr);
 
   // Putting
   const putts = allShots.filter(s => s.category === 'putt');
@@ -172,7 +175,7 @@ function renderSummary() {
   document.getElementById('summary-stats').innerHTML =
     statGroup('drive', 'Driving', driveStats, fairwayStr)
     + statGroup('approach', 'Approach', approachStats, girStr)
-    + statGroup('shortgame', 'Short Game', shortgameStats)
+    + statGroup('shortgame', 'Short Game', shortgameStats, proximityStr)
     + statGroup('putt', 'Putting', puttStats);
 }
 
