@@ -23,16 +23,26 @@ html/
     screen-hole.html        # Hole entry (nav, tally bar, shot list)
     screen-summary.html     # Round summary + CSV export
     sheet-shot.html         # Bottom sheet: shot entry form
+    sheet-course-edit.html  # Bottom sheet: course name/tees editor
     sheet-yardage.html      # Bottom sheet: yardage override
-    sheet-date.html         # Bottom sheet: round date edit
+    sheet-round-edit.html   # Bottom sheet: round date/name editor
 css/
   v2.css                    # All styles
 js/
   sg_tables.js              # SG lookup tables (lie × distance → expected strokes)
-  v2.js                     # All app logic
+  state.js                  # Quality bands, state object, editingCourseId, showToast, formatDate
+  storage.js                # localStorage helpers: getRounds, getCourses, currentRound, updateRound, etc.
+  sg-engine.js              # interpolate, getExpected, calcSG, getQuality, autoCategory, getSuggestion
+  hole.js                   # Hole screen: renderHole, renderShotList, tally, yardage override, round edit
+  shot-entry.js             # Shot sheet: all form interactions, selectLie/Category/ResultLie, saveShot
+  courses.js                # Courses screen: renderCourses, openCourseEdit, saveCourseJSON, startRound
+  summary.js                # Summary screen: renderSummary, stats, CSV export, clipboard
+  home.js                   # Home screen + init IIFE (loads last — calls renderHome on startup)
 images/
   SG_logo.png               # App icon used on home screen header
 ```
+
+**Load order matters:** `hole.js` and `shot-entry.js` before `courses.js`/`summary.js` (which use `countStrokes`, `catLabel`); `home.js` last (contains the init IIFE).
 
 ## Shot Data Model
 

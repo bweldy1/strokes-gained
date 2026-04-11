@@ -173,6 +173,50 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
 .category-override-hint { font-size: 11px; color: var(--text-dim); margin-left: auto; }
 .lie-chip { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; background: var(--input-bg); border: 1px solid var(--input-border); color: var(--text); }
 
+/* ── Layout helpers ── */
+.topbar-center { text-align: center; }
+.topbar-spacer { width: 36px; flex-shrink: 0; }
+.topbar-clickable { cursor: pointer; }
+.spacer-sm { height: 20px; }
+
+/* ── Empty states ── */
+.list-empty { text-align: center; padding: 24px; color: var(--text-dim); font-size: 14px; }
+
+/* ── Shot form ── */
+.form-label-inline { margin-bottom: 0; }
+.form-unit-label { color: var(--text-dim); font-weight: 400; text-transform: none; letter-spacing: 0; }
+.pill-expand { margin-top: 10px; }
+.num-input-text { font-size: 18px; font-weight: 400; }
+.add-shot-icon { font-size: 20px; }
+.yardage-edit-icon { font-size: 10px; color: var(--text-dim); }
+
+/* ── Summary totals ── */
+.summary-total-label { font-size: 17px; font-weight: 600; color: var(--text); }
+.summary-total-sub { font-size: 12px; color: var(--text-dim); font-weight: 400; }
+.summary-total-val { font-size: 28px; font-weight: 700; }
+.ssum-cat-meta { font-size: 12px; color: var(--text-dim); }
+.ssum-cat-right { display: flex; align-items: center; gap: 10px; }
+.summary-by-hole-row { border-top: 1px solid var(--border); margin-top: 4px; }
+.summary-by-hole-label { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: .5px; color: var(--text-dim); }
+.sstat-header-val { font-size: 12px; color: var(--text-dim); font-weight: 400; }
+
+/* ── Hole summary row ── */
+.hsrow-par { font-size: 12px; }
+.hsrow-right { display: flex; align-items: center; gap: 8px; }
+
+/* ── Courses screen ── */
+.course-json-hint { font-size: 13px; color: var(--text-muted); margin-bottom: 12px; }
+.link-fairway { color: var(--fairway); cursor: pointer; }
+
+/* ── Export / summary screen ── */
+.export-hint-card { margin-top: 12px; padding: 12px; background: var(--card); border-radius: var(--radius-sm); border: 1px solid var(--border); }
+.export-hint-text { font-size: 12px; color: var(--text-muted); line-height: 1.6; }
+.btn-mb { margin-bottom: 12px; }
+
+/* ── Misc IDs ── */
+#build-version { position: absolute; bottom: 0; left: 0; right: 0; text-align: center; font-size: 10px; color: var(--text); padding: 4px; }
+#json-error { color: var(--accent); font-size: 13px; margin-top: 8px; display: none; }
+
 </style>
 <link rel="apple-touch-icon" href="images/SG_logo.png">
 </head>
@@ -190,7 +234,7 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
     <div class="section-label">Recent Rounds</div>
     <div id="rounds-list"></div>
   </div>
-  <div id="build-version" style="position:absolute;bottom:0;left:0;right:0;text-align:center;font-size:10px;color:var(--text);padding:4px;">Build: 2026-04-10 21:56</div>
+  <div id="build-version">Build: 2026-04-10 22:20</div>
 </div>
 
 <!-- COURSE SELECT -->
@@ -198,15 +242,15 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
   <div class="topbar">
     <button class="btn-icon" onclick="showScreen('home')">‹</button>
     <div><div class="topbar-title">Select Course</div></div>
-    <div style="width:36px"></div>
+    <div class="topbar-spacer"></div>
   </div>
   <div class="scroll-body">
     <div id="courses-list"></div>
     <div class="section-label" style="margin-top:24px">Add Course</div>
-    <p style="font-size:13px;color:var(--text-muted);margin-bottom:12px">Paste course JSON. <span style="color:var(--fairway);cursor:pointer" onclick="showSampleJSON()">Load Wild Wood example ›</span></p>
+    <p class="course-json-hint">Paste course JSON. <span class="link-fairway" onclick="showSampleJSON()">Load Wild Wood example ›</span></p>
     <textarea class="json-input" id="course-json-input" placeholder='[{"name":"My Club","tees":"Blue","holes":[{"hole":1,"par":4,"yards":385},...]}]'></textarea>
     <button class="btn btn-primary" style="margin-top:10px" onclick="saveCourseJSON()">Save Course</button>
-    <div id="json-error" style="color:var(--accent);font-size:13px;margin-top:8px;display:none"></div>
+    <div id="json-error"></div>
   </div>
 </div>
 
@@ -214,9 +258,9 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
 <div class="screen" id="screen-hole">
   <div class="topbar">
     <button class="btn-icon" onclick="showScreen('home')">⌂</button>
-    <div style="text-align:center">
-      <div class="topbar-title" id="hole-course-name" style="cursor:pointer" onclick="openRoundEdit()"></div>
-      <div class="topbar-sub" id="hole-round-date" style="cursor:pointer" onclick="openRoundEdit()"></div>
+    <div class="topbar-center">
+      <div class="topbar-title topbar-clickable" id="hole-course-name" onclick="openRoundEdit()"></div>
+      <div class="topbar-sub topbar-clickable" id="hole-round-date" onclick="openRoundEdit()"></div>
     </div>
     <button class="btn-icon" onclick="showScreen('summary')">⊞</button>
   </div>
@@ -229,7 +273,7 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
         <span id="hole-par-display">Par 4</span> ·
         <span class="hole-yardage-edit" onclick="editYardage()">
           <span id="hole-yards-display">400 yds</span>
-          <span style="font-size:10px;color:var(--text-dim)">✎</span>
+          <span class="yardage-edit-icon">✎</span>
         </span>
       </div>
     </div>
@@ -243,7 +287,7 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
     <div class="tally-chip active" id="tally-putt" onclick="toggleTally('putt')"><span class="tally-chip-val" id="tv-putt">—</span><span class="tally-chip-lbl">Putt</span></div>
   </div>
   <div class="shot-list" id="shot-list"></div>
-  <button class="add-shot-btn" onclick="openShotSheet()"><span style="font-size:20px">+</span> Add Shot</button>
+  <button class="add-shot-btn" onclick="openShotSheet()"><span class="add-shot-icon">+</span> Add Shot</button>
 </div>
 
 <!-- ROUND SUMMARY -->
@@ -258,12 +302,12 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
     <div class="section-label">Statistics</div>
     <div class="card" id="summary-stats"></div>
     <div class="section-label">Export</div>
-    <button class="btn btn-secondary" onclick="exportCSV()" style="margin-bottom:10px">📋 Copy Full CSV</button>
+    <button class="btn btn-secondary btn-mb" onclick="exportCSV()">📋 Copy Full CSV</button>
     <button class="btn btn-secondary" onclick="exportSummaryCSV()">📊 Copy Summary Row</button>
-    <div style="margin-top:12px;padding:12px;background:var(--card);border-radius:var(--radius-sm);border:1px solid var(--border)">
-      <p style="font-size:12px;color:var(--text-muted);line-height:1.6">Google Sheets: open a sheet → tap cell A1 → long-press and Paste.<br>If clipboard doesn't work, a text box will appear to copy manually.</p>
+    <div class="export-hint-card">
+      <p class="export-hint-text">Google Sheets: open a sheet → tap cell A1 → long-press and Paste.<br>If clipboard doesn't work, a text box will appear to copy manually.</p>
     </div>
-    <div style="height:20px"></div>
+    <div class="spacer-sm"></div>
     <button class="btn btn-ghost" onclick="showScreen('home')">Done</button>
   </div>
 </div>
@@ -278,11 +322,11 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
       <!-- Category (collapsed chip, tap to override) -->
       <div class="form-group">
         <div class="category-override-row" onclick="toggleCategoryOverride()">
-          <span class="form-label" style="margin:0">Category</span>
+          <span class="form-label form-label-inline">Category</span>
           <span id="category-chip"></span>
           <span class="category-override-hint">tap to override ›</span>
         </div>
-        <div id="category-pills-expand" style="display:none;margin-top:10px">
+        <div id="category-pills-expand" style="display:none" class="pill-expand">
           <div class="pill-group" id="category-pills">
             <div class="pill" onclick="selectCategory('drive')">Drive</div>
             <div class="pill" onclick="selectCategory('approach')">Approach</div>
@@ -295,11 +339,11 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
       <!-- Starting Lie -->
       <div class="form-group">
         <div class="category-override-row" onclick="toggleLieOverride()">
-          <span class="form-label" style="margin:0">Starting Lie</span>
+          <span class="form-label form-label-inline">Starting Lie</span>
           <span id="lie-chip"></span>
           <span class="category-override-hint">tap to override ›</span>
         </div>
-        <div id="lie-pills-expand" style="display:none;margin-top:10px">
+        <div id="lie-pills-expand" style="display:none" class="pill-expand">
           <div class="pill-group" id="lie-pills">
             <div class="pill" onclick="selectLie('tee')">Tee</div>
             <div class="pill" onclick="selectLie('fairway')">Fairway</div>
@@ -316,11 +360,11 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
       <!-- Distance from Pin -->
       <div class="form-group">
         <div class="category-override-row" onclick="toggleDistOverride()">
-          <span class="form-label" style="margin:0">Distance <span id="dist-from-unit-label" style="color:var(--text-dim);font-weight:400;text-transform:none;letter-spacing:0">(yards)</span></span>
+          <span class="form-label form-label-inline">Distance <span id="dist-from-unit-label" class="form-unit-label">(yards)</span></span>
           <span id="dist-chip" class="lie-chip"></span>
           <span class="category-override-hint">tap to override ›</span>
         </div>
-        <div id="dist-from-expand" style="display:none;margin-top:10px">
+        <div id="dist-from-expand" style="display:none" class="pill-expand">
           <div class="num-input-wrap">
             <input class="num-input" type="number" id="shot-dist-from" inputmode="numeric" placeholder="0" oninput="onDistInput()">
             <span class="num-unit" id="dist-from-unit">yds</span>
@@ -346,7 +390,7 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
 
       <!-- Result Distance -->
       <div class="form-group" id="result-dist-group" style="display:none">
-        <div class="form-label">Result Distance <span id="result-dist-unit-label" style="color:var(--text-dim);font-weight:400;text-transform:none;letter-spacing:0"></span></div>
+        <div class="form-label">Result Distance <span id="result-dist-unit-label" class="form-unit-label"></span></div>
         <div class="num-input-wrap">
           <input class="num-input" type="number" id="shot-dist-result" inputmode="numeric" placeholder="0" oninput="onShotFormChange()">
           <span class="num-unit" id="dist-result-unit">yds</span>
@@ -384,13 +428,13 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
     <div class="sheet-body">
       <div class="form-group">
         <div class="form-label">Name</div>
-        <input type="text" class="num-input" id="course-edit-name" style="font-size:18px" placeholder="Course name">
+        <input type="text" class="num-input num-input-text" id="course-edit-name" placeholder="Course name">
       </div>
       <div class="form-group">
         <div class="form-label">Tees</div>
-        <input type="text" class="num-input" id="course-edit-tees" style="font-size:18px" placeholder="e.g. Blue">
+        <input type="text" class="num-input num-input-text" id="course-edit-tees" placeholder="e.g. Blue">
       </div>
-      <button class="btn btn-primary" onclick="saveCourseEdit()" style="margin-bottom:12px">Save</button>
+      <button class="btn btn-primary btn-mb" onclick="saveCourseEdit()">Save</button>
       <button class="btn btn-ghost" onclick="loadCourseHolesJSON()">Edit holes in JSON ›</button>
     </div>
   </div>
@@ -422,7 +466,7 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
     <div class="sheet-body">
       <div class="form-group">
         <div class="form-label">Course Name</div>
-        <input type="text" class="num-input" id="round-edit-name" style="font-size:18px" placeholder="Course name">
+        <input type="text" class="num-input num-input-text" id="round-edit-name" placeholder="Course name">
       </div>
       <div class="form-group">
         <div class="form-label">Date Played</div>
@@ -759,13 +803,15 @@ const SG_TABLES = {
 // QUALITY BANDS
 // ═══════════════════════════════════════════════════════════════
 
-const quality_band_global =    [{label:'Exceptional',min:1,color:'#37ec98'},
-    {label:'Excellent',min:0.5,color:'#52b788'},
-    {label:'Above Average',min:0.2,color:'#74c69d'},
-    {label:'Neutral',min:-0.2,color:'#f5b17a'},
-    {label:'Below Average',min:-0.5,color:'#bb7b6b'},
-    {label:'Poor',min:-1,color:'#e76f51'},
-    {label:'Very Poor',min:-999,color:'#f32548'}]
+const quality_band_global = [
+  {label:'Exceptional',   min:1,    color:'#37ec98'},
+  {label:'Excellent',     min:0.5,  color:'#52b788'},
+  {label:'Above Average', min:0.2,  color:'#74c69d'},
+  {label:'Neutral',       min:-0.2, color:'#f5b17a'},
+  {label:'Below Average', min:-0.5, color:'#bb7b6b'},
+  {label:'Poor',          min:-1,   color:'#e76f51'},
+  {label:'Very Poor',     min:-999, color:'#f32548'}
+];
 
 const QUALITY_BANDS = {
   drive:     quality_band_global,
@@ -774,755 +820,925 @@ const QUALITY_BANDS = {
   putt:      quality_band_global
 };
 
-/*
-+1.0 or higher	Exceptional
-+0.5 to +0.99	Excellent
-+0.20- to +0.49+	Above Average
--0.19  to + 0.19	Neutral / Expected
--0.20 to -0.49+	Below Average
--0.5 to -0.99	Poor
--1.0 or lower	Very Poor / Costly
-*/
-
-
 // ═══════════════════════════════════════════════════════════════
 // STATE
 // ═══════════════════════════════════════════════════════════════
-let state = { currentRoundId:null, currentHole:1, editingShotIndex:null, excludedCategories:new Set(), shotLie:null, shotResultLie:null, shotCategory:null, shotMissDepth:null, shotMissSide:null };
-let editingCourseId=null;
 
+let state = {
+  currentRoundId: null,
+  currentHole: 1,
+  editingShotIndex: null,
+  excludedCategories: new Set(),
+  shotLie: null,
+  shotResultLie: null,
+  shotCategory: null,
+  shotMissDepth: null,
+  shotMissSide: null
+};
+
+let editingCourseId = null;
+
+// ═══════════════════════════════════════════════════════════════
+// SHARED UTILITIES
+// ═══════════════════════════════════════════════════════════════
+
+function formatDate(iso) {
+  if(!iso) return '';
+  const d = new Date(iso);
+  return d.toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'});
+}
+
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2400);
+}
+
+</script>
+<script>
 // ═══════════════════════════════════════════════════════════════
 // STORAGE
 // ═══════════════════════════════════════════════════════════════
+
 function getRounds()  { try { return JSON.parse(localStorage.getItem('sg_rounds') || '[]'); } catch(e) { return []; } }
 function saveRounds(r){ localStorage.setItem('sg_rounds', JSON.stringify(r)); }
 function getCourses() { try { return JSON.parse(localStorage.getItem('sg_courses') || '[]'); } catch(e) { return []; } }
 function saveCourses(c){ localStorage.setItem('sg_courses', JSON.stringify(c)); }
 function getRound(id) { return getRounds().find(r => r.id === id); }
-function updateRound(round) { const rs = getRounds(); const i = rs.findIndex(r => r.id === round.id); if(i>=0) rs[i]=round; else rs.unshift(round); saveRounds(rs); }
+function updateRound(round) {
+  const rs = getRounds();
+  const i = rs.findIndex(r => r.id === round.id);
+  if(i >= 0) rs[i] = round; else rs.unshift(round);
+  saveRounds(rs);
+}
 function currentRound()    { return getRound(state.currentRoundId); }
-function currentHoleData() { const r=currentRound(); return r ? r.holes[state.currentHole-1] : null; }
+function currentHoleData() { const r = currentRound(); return r ? r.holes[state.currentHole - 1] : null; }
 
+</script>
+<script>
 // ═══════════════════════════════════════════════════════════════
 // SG ENGINE
-// ═══════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════
+
 function interpolate(table, dist) {
-  if(!table||table.length===0) return null;
-  if(dist<=table[0][0]) return table[0][1];
-  if(dist>=table[table.length-1][0]) return table[table.length-1][1];
-  for(let i=0;i<table.length-1;i++){
-    const [d1,v1]=table[i],[d2,v2]=table[i+1];
-    if(dist>=d1&&dist<=d2) return v1+((dist-d1)/(d2-d1))*(v2-v1);
+  if(!table || table.length === 0) return null;
+  if(dist <= table[0][0]) return table[0][1];
+  if(dist >= table[table.length - 1][0]) return table[table.length - 1][1];
+  for(let i = 0; i < table.length - 1; i++) {
+    const [d1, v1] = table[i], [d2, v2] = table[i + 1];
+    if(dist >= d1 && dist <= d2) return v1 + ((dist - d1) / (d2 - d1)) * (v2 - v1);
   }
   return null;
 }
+
 function getExpected(lie, dist) { return interpolate(SG_TABLES[lie], dist); }
+
 function calcSG(startLie, startDist, resultLie, resultDist) {
-  if(resultLie==='holed'){   const s=getExpected(startLie,startDist); return s!==null ? s-1 : null; }
+  if(resultLie === 'holed') {
+    const s = getExpected(startLie, startDist);
+    return s !== null ? s - 1 : null;
+  }
   // Penalty: use 'rough' table for drop position, subtract extra stroke for the penalty
-  const lookupLie = resultLie==='penalty' ? 'rough' : resultLie;
-  const s=getExpected(startLie,startDist), e=getExpected(lookupLie,resultDist);
-  const penaltyStroke = resultLie==='penalty' ? 1 : 0;
-  return (s===null||e===null) ? null : s-e-1-penaltyStroke;
+  const lookupLie = resultLie === 'penalty' ? 'rough' : resultLie;
+  const s = getExpected(startLie, startDist), e = getExpected(lookupLie, resultDist);
+  const penaltyStroke = resultLie === 'penalty' ? 1 : 0;
+  return (s === null || e === null) ? null : s - e - 1 - penaltyStroke;
 }
+
 function getQuality(sg, category) {
-  const bands=QUALITY_BANDS[category]||QUALITY_BANDS.approach;
-  for(const b of bands){ if(sg>=b.min) return b; }
-  return bands[bands.length-1];
+  const bands = QUALITY_BANDS[category] || QUALITY_BANDS.approach;
+  for(const b of bands) { if(sg >= b.min) return b; }
+  return bands[bands.length - 1];
 }
 
 // ═══════════════════════════════════════════════════════════════
 // CATEGORY AUTO-ASSIGN
 // ═══════════════════════════════════════════════════════════════
+
 function autoCategory(lie, distYards, shotIndex, holePar) {
-  if(lie==='green') return 'putt';
-  if(shotIndex===0&&(holePar===4||holePar===5)) return 'drive';
-  if(distYards>=30) return 'approach';
+  if(lie === 'green') return 'putt';
+  if(shotIndex === 0 && (holePar === 4 || holePar === 5)) return 'drive';
+  if(distYards >= 30) return 'approach';
   return 'shortgame';
 }
 
 // ═══════════════════════════════════════════════════════════════
 // PRE-FILL: suggest lie+dist for next shot from prev shot result
 // ═══════════════════════════════════════════════════════════════
+
 function getSuggestion(holeData) {
   const shots = holeData.shots || [];
-  if(shots.length===0) {
+  if(shots.length === 0) {
     const yards = holeData.yardsOverride || holeData.yards;
-    return { lie:'tee', dist:yards, hint:'Scorecard: '+yards+' yds from tee' };
+    return { lie:'tee', dist:yards, hint:'Scorecard: ' + yards + ' yds from tee' };
   }
-  const prev = shots[shots.length-1];
-  if(!prev.resultLie || prev.resultLie==='holed') return null;
-  if(prev.resultLie==='penalty'){
-    const dist=prev.resultDist;
-    return dist!=null ? { lie:null, dist, hint:'From shot '+shots.length+': penalty drop · '+dist+' yds' } : null;
+  const prev = shots[shots.length - 1];
+  if(!prev.resultLie || prev.resultLie === 'holed') return null;
+  if(prev.resultLie === 'penalty') {
+    const dist = prev.resultDist;
+    return dist != null ? { lie:null, dist, hint:'From shot ' + shots.length + ': penalty drop · ' + dist + ' yds' } : null;
   }
   const lie = prev.resultLie;
   const dist = prev.resultDist;
-  const distLabel = lie==='green' ? (dist!=null?dist+' ft':'') : (dist!=null?dist+' yds':'');
-  return { lie, dist: dist||'', hint:'From shot '+shots.length+': '+lie+(distLabel?' · '+distLabel:'') };
+  const distLabel = lie === 'green' ? (dist != null ? dist + ' ft' : '') : (dist != null ? dist + ' yds' : '');
+  return { lie, dist: dist || '', hint:'From shot ' + shots.length + ': ' + lie + (distLabel ? ' · ' + distLabel : '') };
 }
 
-// ═══════════════════════════════════════════════════════════════
-// NAVIGATION
-// ═══════════════════════════════════════════════════════════════
-function showScreen(name) {
-  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-  document.getElementById('screen-'+name).classList.add('active');
-  window.scrollTo(0,0);
-  if(name==='home') renderHome();
-  if(name==='courses') renderCourses();
-  if(name==='hole') renderHoleScreen();
-  if(name==='summary') renderSummary();
-}
-
-// ═══════════════════════════════════════════════════════════════
-// HOME
-// ═══════════════════════════════════════════════════════════════
-function renderHome() {
-  const rounds = getRounds();
-  const el = document.getElementById('rounds-list');
-  if(rounds.length===0){ el.innerHTML=`<div class="empty-state"><div class="empty-state-icon">⛳</div><div class="empty-state-text">No rounds yet.<br>Start a new round to begin tracking.</div></div>`; return; }
-  el.innerHTML = rounds.map(r => {
-    const sg=roundTotalSG(r,null);
-    const sgStr=sg!==null?(sg>=0?'+':'')+sg.toFixed(1):'—';
-    const sgColor=sg===null?'var(--text-muted)':sg>=0?'var(--q-great)':'var(--q-poor)';
-    const strokes=r.holes.reduce((s,h)=>s+countStrokes(h.shots||[]),0);
-    return `<div class="round-card" onclick="resumeRound('${r.id}')">
-      <div class="round-card-info"><div class="round-card-name">${r.courseName}</div><div class="round-card-meta">${formatDate(r.date)} · ${strokes} stroke${strokes!==1?'s':''}</div></div>
-      <div class="round-card-sg"><div class="round-card-sg-val" style="color:${sgColor}">${sgStr}</div><div class="round-card-sg-lbl">Total SG</div></div>
-      <div class="round-del-btn" onclick="event.stopPropagation();deleteRound('${r.id}')">×</div>
-    </div>`;
-  }).join('');
-}
-function goToNewRound(){ showScreen('courses'); }
-function resumeRound(id){
-  state.currentRoundId=id; const r=getRound(id);
-  let last=1; for(let i=0;i<r.holes.length;i++) if((r.holes[i].shots||[]).length>0) last=i+1;
-  state.currentHole=last; state.excludedCategories=new Set(); showScreen('hole');
-}
-function deleteRound(id){ if(!confirm('Delete this round?')) return; saveRounds(getRounds().filter(r=>r.id!==id)); renderHome(); }
-function formatDate(iso){ if(!iso) return ''; const d=new Date(iso); return d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}); }
-
-// ═══════════════════════════════════════════════════════════════
-// COURSES
-// ═══════════════════════════════════════════════════════════════
-function renderCourses() {
-  const courses=getCourses(), el=document.getElementById('courses-list');
-  if(courses.length===0){ el.innerHTML=`<div class="empty-state" style="padding:24px 0"><div class="empty-state-icon">🏌️</div><div class="empty-state-text">No courses saved yet.<br>Add one below.</div></div>`; return; }
-  el.innerHTML=courses.map(c=>`<div class="course-card" onclick="startRound('${c.id}')"><div class="course-icon">⛳</div><div class="course-info"><div class="course-name">${c.name}</div><div class="course-meta">${c.tees?c.tees+' tees · ':''}${c.holes.length} holes</div></div><button class="course-action-btn" onclick="event.stopPropagation();openCourseEdit('${c.id}')">✎</button><button class="course-action-btn course-del-btn" onclick="event.stopPropagation();deleteCourse('${c.id}')">×</button></div>`).join('');
-}
-function openCourseEdit(id) {
-  const c=getCourses().find(x=>x.id===id); if(!c) return;
-  editingCourseId=id;
-  document.getElementById('course-edit-name').value=c.name||'';
-  document.getElementById('course-edit-tees').value=c.tees||'';
-  document.getElementById('course-edit-sheet').classList.add('open');
-}
-function saveCourseEdit() {
-  if(!editingCourseId) return;
-  const courses=getCourses(), idx=courses.findIndex(c=>c.id===editingCourseId); if(idx===-1) return;
-  courses[idx].name=document.getElementById('course-edit-name').value.trim()||courses[idx].name;
-  courses[idx].tees=document.getElementById('course-edit-tees').value.trim();
-  saveCourses(courses); editingCourseId=null;
-  document.getElementById('course-edit-sheet').classList.remove('open');
-  renderCourses(); showToast('Course updated!');
-}
-function loadCourseHolesJSON() {
-  if(!editingCourseId) return;
-  const c=getCourses().find(x=>x.id===editingCourseId); if(!c) return;
-  document.getElementById('course-edit-sheet').classList.remove('open');
-  document.getElementById('course-json-input').value=JSON.stringify({name:c.name,tees:c.tees,holes:c.holes},null,2);
-  showToast('JSON loaded — edit and save below');
-}
-function deleteCourse(id) {
-  const c=getCourses().find(x=>x.id===id); if(!c) return;
-  if(!confirm(`Delete "${c.name}"? This cannot be undone.`)) return;
-  saveCourses(getCourses().filter(x=>x.id!==id)); renderCourses(); showToast('Course deleted');
-}
-function handleCourseEditOverlayClick(e) {
-  if(e.target===document.getElementById('course-edit-sheet')){ editingCourseId=null; document.getElementById('course-edit-sheet').classList.remove('open'); }
-}
-function saveCourseJSON() {
-  const raw=document.getElementById('course-json-input').value.trim();
-  const errEl=document.getElementById('json-error'); errEl.style.display='none';
-  if(!raw){ errEl.textContent='Please paste course JSON.'; errEl.style.display='block'; return; }
-  let parsed; try{ parsed=JSON.parse(raw); }catch(e){ errEl.textContent='Invalid JSON: '+e.message; errEl.style.display='block'; return; }
-  const arr=Array.isArray(parsed)?parsed:[parsed];
-  const courses=getCourses(); let added=0;
-  for(const c of arr){
-    if(!c.name||!Array.isArray(c.holes)){ errEl.textContent='Each course needs "name" and "holes".'; errEl.style.display='block'; return; }
-    for(const h of c.holes){ if(!h.hole||!h.par||!h.yards){ errEl.textContent='Each hole needs "hole", "par", "yards".'; errEl.style.display='block'; return; } }
-    const existIdx=c.id?courses.findIndex(x=>x.id===c.id):-1;
-    if(existIdx>=0){ courses[existIdx]=c; } else { c.id=c.id||('course_'+Date.now()+'_'+added); courses.push(c); added++; }
-  }
-  saveCourses(courses); document.getElementById('course-json-input').value=''; renderCourses(); showToast('Course saved!');
-}
-function showSampleJSON() {
-  document.getElementById('course-json-input').value=JSON.stringify([{"name":"Wild Wood Golf Club","tees":"Blue","holes":[{"hole":1,"par":4,"yards":354},{"hole":2,"par":4,"yards":417},{"hole":3,"par":5,"yards":471},{"hole":4,"par":4,"yards":353},{"hole":5,"par":3,"yards":154},{"hole":6,"par":5,"yards":514},{"hole":7,"par":4,"yards":342},{"hole":8,"par":3,"yards":197},{"hole":9,"par":4,"yards":397},{"hole":10,"par":4,"yards":383},{"hole":11,"par":4,"yards":377},{"hole":12,"par":4,"yards":371},{"hole":13,"par":3,"yards":135},{"hole":14,"par":4,"yards":346},{"hole":15,"par":4,"yards":342},{"hole":16,"par":4,"yards":326},{"hole":17,"par":3,"yards":201},{"hole":18,"par":5,"yards":465}]}],null,2);
-}
-function startRound(courseId) {
-  const course=getCourses().find(c=>c.id===courseId); if(!course) return;
-  const round={ id:'round_'+Date.now(), date:new Date().toISOString(), courseName:course.name, courseId:course.id,
-    holes:course.holes.map(h=>({hole:h.hole,par:h.par,yards:h.yards,yardsOverride:null,shots:[]})) };
-  updateRound(round); state.currentRoundId=round.id; state.currentHole=1; state.excludedCategories=new Set(); showScreen('hole');
-}
-
+</script>
+<script>
 // ═══════════════════════════════════════════════════════════════
 // HOLE SCREEN
 // ═══════════════════════════════════════════════════════════════
+
 function renderHoleScreen() {
-  const round=currentRound(); if(!round) return;
-  document.getElementById('hole-course-name').textContent=round.courseName;
-  document.getElementById('hole-round-date').textContent=formatDate(round.date)+' ✎';
-  renderHole(); updateTally();
+  const round = currentRound(); if(!round) return;
+  document.getElementById('hole-course-name').textContent = round.courseName;
+  document.getElementById('hole-round-date').textContent = formatDate(round.date) + ' ✎';
+  renderHole();
+  updateTally();
 }
+
 function renderHole() {
-  const round=currentRound(), h=state.currentHole, hd=round.holes[h-1];
-  document.getElementById('hole-num-display').textContent=h;
-  document.getElementById('hole-par-display').textContent='Par '+hd.par;
-  document.getElementById('hole-yards-display').textContent=(hd.yardsOverride||hd.yards)+' yds';
-  document.getElementById('hole-prev-btn').classList.toggle('disabled',h<=1);
-  document.getElementById('hole-next-btn').classList.toggle('disabled',h>=round.holes.length);
+  const round = currentRound(), h = state.currentHole, hd = round.holes[h - 1];
+  document.getElementById('hole-num-display').textContent = h;
+  document.getElementById('hole-par-display').textContent = 'Par ' + hd.par;
+  document.getElementById('hole-yards-display').textContent = (hd.yardsOverride || hd.yards) + ' yds';
+  document.getElementById('hole-prev-btn').classList.toggle('disabled', h <= 1);
+  document.getElementById('hole-next-btn').classList.toggle('disabled', h >= round.holes.length);
   renderShotList(hd);
 }
+
 function renderShotList(hd) {
-  const shots=hd.shots||[], el=document.getElementById('shot-list');
-  if(shots.length===0){ el.innerHTML=`<div style="text-align:center;padding:24px;color:var(--text-dim);font-size:14px">No shots yet — tap Add Shot below</div>`; return; }
-  el.innerHTML=shots.map((s,i)=>{
-    const sg=s.sg, sgStr=sg!=null?(sg>=0?'+':'')+sg.toFixed(2):'—';
-    const sgColor=sg==null?'var(--text-muted)':sg>=0?'var(--q-good)':'var(--q-poor)';
-    const quality=sg!=null?getQuality(sg,s.category):null;
-    const distStr=s.lie==='green'?s.distFrom+' ft':s.distFrom+' yds';
-    const isPenalty=s.resultLie==='penalty';
-    const resLabel=s.resultLie==='holed'?'Holed ⛳':s.resultLie.charAt(0).toUpperCase()+s.resultLie.slice(1);
-    const resDist=s.resultLie==='holed'?'':(s.resultLie==='green'?(s.resultDist!=null?s.resultDist+' ft':''):(s.resultDist!=null?s.resultDist+' yds':''));
-    const missParts=[s.missDepth,s.missSide].filter(Boolean).map(v=>v.charAt(0).toUpperCase()+v.slice(1));
-    const missStr=missParts.length?` · ${missParts.join('-')}`:'';
-    const driveDist=(s.category==='drive'&&s.distFrom!=null&&s.resultDist!=null)?Math.round(s.distFrom-s.resultDist):null;
-    const driveStr=driveDist!=null?` · <span class="shot-drive-dist">${driveDist} yds drive</span>`:'';
-    const mainResult=resDist?`${resDist} <span class="shot-res-lie"> · ${resLabel}</span>`:`<span class="shot-res-lie">${resLabel}</span>`;
+  const shots = hd.shots || [], el = document.getElementById('shot-list');
+  if(shots.length === 0) {
+    el.innerHTML = `<div class="list-empty">No shots yet — tap Add Shot below</div>`;
+    return;
+  }
+  el.innerHTML = shots.map((s, i) => {
+    const sg = s.sg, sgStr = sg != null ? (sg >= 0 ? '+' : '') + sg.toFixed(2) : '—';
+    const sgColor = sg == null ? 'var(--text-muted)' : sg >= 0 ? 'var(--q-good)' : 'var(--q-poor)';
+    const quality = sg != null ? getQuality(sg, s.category) : null;
+    const distStr = s.lie === 'green' ? s.distFrom + ' ft' : s.distFrom + ' yds';
+    const isPenalty = s.resultLie === 'penalty';
+    const resLabel = s.resultLie === 'holed' ? 'Holed ⛳' : s.resultLie.charAt(0).toUpperCase() + s.resultLie.slice(1);
+    const resDist = s.resultLie === 'holed' ? '' : (s.resultLie === 'green' ? (s.resultDist != null ? s.resultDist + ' ft' : '') : (s.resultDist != null ? s.resultDist + ' yds' : ''));
+    const missParts = [s.missDepth, s.missSide].filter(Boolean).map(v => v.charAt(0).toUpperCase() + v.slice(1));
+    const missStr = missParts.length ? ` · ${missParts.join('-')}` : '';
+    const driveDist = (s.category === 'drive' && s.distFrom != null && s.resultDist != null) ? Math.round(s.distFrom - s.resultDist) : null;
+    const driveStr = driveDist != null ? ` · <span class="shot-drive-dist">${driveDist} yds drive</span>` : '';
+    const mainResult = resDist ? `${resDist} <span class="shot-res-lie"> · ${resLabel}</span>` : `<span class="shot-res-lie">${resLabel}</span>`;
     return `<div class="shot-row" onclick="editShot(${i})">
-      <div class="shot-num">${i+1}</div>
+      <div class="shot-num">${i + 1}</div>
       <div class="shot-info">
-        <div class="shot-info-main"><span class="category-badge cat-${s.category}">${catLabel(s.category)}</span>  ${mainResult}${isPenalty?' <span class="penalty-badge">+1 stroke</span>':''}</div>
-        <div class="shot-info-sub">${s.lie.charAt(0).toUpperCase()+s.lie.slice(1)} · ${distStr}${driveStr}${missStr}</div>
+        <div class="shot-info-main"><span class="category-badge cat-${s.category}">${catLabel(s.category)}</span>  ${mainResult}${isPenalty ? ' <span class="penalty-badge">+1 stroke</span>' : ''}</div>
+        <div class="shot-info-sub">${s.lie.charAt(0).toUpperCase() + s.lie.slice(1)} · ${distStr}${driveStr}${missStr}</div>
       </div>
-      <div class="shot-sg"><div class="shot-sg-val" style="color:${sgColor}">${sgStr}</div>${quality?`<div class="shot-quality-dot" style="background:${quality.color}"></div>`:''}</div>
+      <div class="shot-sg"><div class="shot-sg-val" style="color:${sgColor}">${sgStr}</div>${quality ? `<div class="shot-quality-dot" style="background:${quality.color}"></div>` : ''}</div>
       <div class="shot-del" onclick="event.stopPropagation();deleteShot(${i})">×</div>
     </div>`;
   }).join('');
 }
-function catLabel(cat){ return {drive:'Drive',approach:'Approach',shortgame:'Short Game',putt:'Putt'}[cat]||cat; }
-function countStrokes(shots){ return shots.length + shots.filter(s=>s.resultLie==='penalty').length; }
-function prevHole(){ if(state.currentHole>1){ state.currentHole--; renderHole(); updateTally(); } }
-function nextHole(){ const r=currentRound(); if(state.currentHole<r.holes.length){ state.currentHole++; renderHole(); updateTally(); } }
+
+function catLabel(cat) { return {drive:'Drive', approach:'Approach', shortgame:'Short Game', putt:'Putt'}[cat] || cat; }
+function countStrokes(shots) { return shots.length + shots.filter(s => s.resultLie === 'penalty').length; }
+function prevHole() { if(state.currentHole > 1) { state.currentHole--; renderHole(); updateTally(); } }
+function nextHole() { const r = currentRound(); if(state.currentHole < r.holes.length) { state.currentHole++; renderHole(); updateTally(); } }
 
 // ═══════════════════════════════════════════════════════════════
 // TALLY
 // ═══════════════════════════════════════════════════════════════
+
 function updateTally() {
-  const round=currentRound(); if(!round) return;
-  const cats=['drive','approach','shortgame','putt'];
-  const totals={drive:0,approach:0,shortgame:0,putt:0}, counts={drive:0,approach:0,shortgame:0,putt:0};
-  for(const hole of round.holes) for(const s of (hole.shots||[])){
-    if(s.sg==null) continue;
-    if(totals[s.category]!==undefined){ totals[s.category]+=s.sg; counts[s.category]++; }
+  const round = currentRound(); if(!round) return;
+  const cats = ['drive', 'approach', 'shortgame', 'putt'];
+  const totals = {drive:0, approach:0, shortgame:0, putt:0}, counts = {drive:0, approach:0, shortgame:0, putt:0};
+  for(const hole of round.holes) for(const s of (hole.shots || [])) {
+    if(s.sg == null) continue;
+    if(totals[s.category] !== undefined) { totals[s.category] += s.sg; counts[s.category]++; }
   }
-  let total=0;
-  cats.forEach(c=>{ if(!state.excludedCategories.has(c)) total+=totals[c]; });
-  const tc=cats.filter(c=>!state.excludedCategories.has(c)).reduce((s,c)=>s+counts[c],0);
-  const tvt=document.getElementById('tv-total');
-  tvt.textContent=tc===0?'—':(total>=0?'+':'')+total.toFixed(1);
-  tvt.className='tally-chip-val'+(tc>0&&total>0?' pos':tc>0&&total<0?' neg':'');
-  cats.forEach(cat=>{
-    const v=totals[cat],c=counts[cat],ve=document.getElementById('tv-'+cat);
-    ve.textContent=c===0?'—':(v>=0?'+':'')+v.toFixed(1);
-    ve.className='tally-chip-val'+(c>0&&v>0?' pos':c>0&&v<0?' neg':'');
-    document.getElementById('tally-'+cat).classList.toggle('excluded',state.excludedCategories.has(cat));
+  let total = 0;
+  cats.forEach(c => { if(!state.excludedCategories.has(c)) total += totals[c]; });
+  const tc = cats.filter(c => !state.excludedCategories.has(c)).reduce((s, c) => s + counts[c], 0);
+  const tvt = document.getElementById('tv-total');
+  tvt.textContent = tc === 0 ? '—' : (total >= 0 ? '+' : '') + total.toFixed(1);
+  tvt.className = 'tally-chip-val' + (tc > 0 && total > 0 ? ' pos' : tc > 0 && total < 0 ? ' neg' : '');
+  cats.forEach(cat => {
+    const v = totals[cat], c = counts[cat], ve = document.getElementById('tv-' + cat);
+    ve.textContent = c === 0 ? '—' : (v >= 0 ? '+' : '') + v.toFixed(1);
+    ve.className = 'tally-chip-val' + (c > 0 && v > 0 ? ' pos' : c > 0 && v < 0 ? ' neg' : '');
+    document.getElementById('tally-' + cat).classList.toggle('excluded', state.excludedCategories.has(cat));
   });
 }
-function toggleTally(cat){ if(cat==='total') return; if(state.excludedCategories.has(cat)) state.excludedCategories.delete(cat); else state.excludedCategories.add(cat); updateTally(); }
 
-// ═══════════════════════════════════════════════════════════════
-// SHOT SHEET
-// ═══════════════════════════════════════════════════════════════
-function openShotSheet(editIndex) {
-  state.editingShotIndex = editIndex!==undefined ? editIndex : null;
-  state.shotLie=null; state.shotResultLie=null; state.shotCategory=null; state.shotMissDepth=null; state.shotMissSide=null;
-  document.getElementById('shot-sheet-title').textContent = editIndex!==undefined?'Edit Shot':'Add Shot';
-  document.getElementById('shot-dist-from').value='';
-  document.getElementById('shot-dist-result').value='';
-  document.getElementById('result-dist-group').style.display='none';
-  document.getElementById('miss-dir-group').style.display='none';
-  document.getElementById('category-pills-expand').style.display='none';
-  document.getElementById('lie-pills-expand').style.display='none';
-  document.getElementById('dist-from-expand').style.display='none';
-  renderCategoryChip(null);
-  renderLieChip(null);
-  renderDistChip('','yds');
-  document.querySelectorAll('#lie-pills .pill,#lie-pills-secondary .pill,#result-lie-pills .pill,#result-lie-pills-secondary .pill,#category-pills .pill,#miss-depth-pills .pill').forEach(p=>p.classList.remove('selected'));
-
-  const hd=currentHoleData();
-  if(editIndex!==undefined){
-    const s=hd.shots[editIndex];
-    selectLie(s.lie,true);
-    document.getElementById('shot-dist-from').value=s.distFrom;
-    selectResultLie(s.resultLie,true);
-    if(s.resultDist!=null) document.getElementById('shot-dist-result').value=s.resultDist;
-    selectCategory(s.category,true);
-    if(s.missDepth) selectMissDepth(s.missDepth,true);
-    if(s.missSide) selectMissSide(s.missSide,true);
-  } else {
-    const sug=getSuggestion(hd);
-    if(sug){
-      if(sug.lie) selectLie(sug.lie,true);
-      if(sug.dist!=='') document.getElementById('shot-dist-from').value=sug.dist;
-      const idx=hd.shots.length;
-      if(sug.lie) selectCategory(autoCategory(sug.lie,sug.dist||0,idx,hd.par),true);
-    }
-  }
-  updateDistFromUnit(); updateResultDistVisibility(); updateSGPreview();
-  document.getElementById('shot-sheet').classList.add('open');
-}
-function editShot(i){ openShotSheet(i); }
-function closeShotSheet(){ document.getElementById('shot-sheet').classList.remove('open'); }
-function handleSheetOverlayClick(e){ if(e.target===document.getElementById('shot-sheet')) closeShotSheet(); }
-
-function selectLie(lie,silent){
-  state.shotLie=lie;
-  document.querySelectorAll('#lie-pills .pill,#lie-pills-secondary .pill').forEach(p=>p.classList.toggle('selected',p.textContent.trim().toLowerCase()===lie));
-  renderLieChip(lie);
-  updateDistFromUnit();
-  if(lie==='green' && !state.shotResultLie) selectResultLie('green',true);
-  if(!silent){
-    const exp=document.getElementById('lie-pills-expand'); if(exp) exp.style.display='none';
-    autoSetCategory(); updateSGPreview();
-  }
-}
-function renderLieChip(lie){
-  const el=document.getElementById('lie-chip'); if(!el) return;
-  const labels={tee:'Tee',fairway:'Fairway',rough:'Rough',green:'Green',sand:'Sand',recovery:'Recovery'};
-  el.textContent=labels[lie]||'—';
-  el.className=lie?'lie-chip':'';
-}
-function toggleLieOverride(){
-  const exp=document.getElementById('lie-pills-expand'); if(!exp) return;
-  exp.style.display=exp.style.display==='none'?'block':'none';
-}
-function updateDistFromUnit(){
-  const green=state.shotLie==='green';
-  const unit=green?'ft':'yds';
-  document.getElementById('dist-from-unit').textContent=unit;
-  document.getElementById('dist-from-unit-label').textContent=green?'(feet)':'(yards)';
-  const val=document.getElementById('shot-dist-from').value;
-  renderDistChip(val,unit);
-}
-function selectResultLie(lie,silent){
-  state.shotResultLie=lie;
-  document.querySelectorAll('#result-lie-pills .pill,#result-lie-pills-secondary .pill').forEach(p=>{
-    const t=p.textContent.toLowerCase().replace(/[^a-z]/g,'');
-    p.classList.toggle('selected',t===lie||(lie==='holed'&&t==='holed'));
-  });
-  updateResultDistVisibility();
-  const missGroup=document.getElementById('miss-dir-group');
-  if(lie==='holed'){
-    missGroup.style.display='none';
-    state.shotMissDepth=null; state.shotMissSide=null;
-    document.querySelectorAll('#miss-depth-pills .pill,#miss-side-pills .pill').forEach(p=>p.classList.remove('selected'));
-  } else {
-    missGroup.style.display='block';
-  }
-  if(!silent){ autoSetCategory(); updateSGPreview(); }
-
-    if (!silent && lie !== 'holed') {
-    setTimeout(() => {
-        const el = document.getElementById('shot-dist-result');
-        el.focus();
-
-        const btn_el = document.getElementById('save-shot-btn');
-        btn_el.scrollIntoView({ behavior: 'smooth', block: 'end', container: 'all' });
-    }, 200);
-    }
-}
-function updateResultDistVisibility(){
-  const show=state.shotResultLie&&state.shotResultLie!=='holed';
-  document.getElementById('result-dist-group').style.display=show?'block':'none';
-  if(show){
-    const green=state.shotResultLie==='green';
-    document.getElementById('dist-result-unit').textContent=green?'ft':'yds';
-    document.getElementById('result-dist-unit-label').textContent=green?'(feet)':'(yards)';
-  }
-}
-function selectCategory(cat,silent){
-  state.shotCategory=cat;
-  const map={'Drive':'drive','Approach':'approach','Short Game':'shortgame','Putt':'putt'};
-  document.querySelectorAll('#category-pills .pill').forEach(p=>p.classList.toggle('selected',map[p.textContent.trim()]===cat));
-  renderCategoryChip(cat);
-  updateMissSidePills(cat);
-  if(!silent){
-    const exp=document.getElementById('category-pills-expand'); if(exp) exp.style.display='none';
-  }
-}
-function renderCategoryChip(cat){
-  const el=document.getElementById('category-chip'); if(!el) return;
-  const labels={drive:'Drive',approach:'Approach',shortgame:'Short Game',putt:'Putt'};
-  el.textContent=labels[cat]||'—';
-  el.className=cat?`category-badge cat-${cat}`:'';
-}
-function toggleCategoryOverride(){
-  const exp=document.getElementById('category-pills-expand'); if(!exp) return;
-  exp.style.display=exp.style.display==='none'?'block':'none';
-}
-function renderDistChip(val,unit){
-  const el=document.getElementById('dist-chip'); if(!el) return;
-  el.textContent=val?`${val} ${unit}`:'—';
-}
-function toggleDistOverride(){
-  const exp=document.getElementById('dist-from-expand'); if(!exp) return;
-  const opening=exp.style.display==='none';
-  exp.style.display=opening?'block':'none';
-  if(opening) setTimeout(()=>document.getElementById('shot-dist-from').focus(),50);
-}
-function onDistInput(){
-  const val=document.getElementById('shot-dist-from').value;
-  const unit=state.shotLie==='green'?'ft':'yds';
-  renderDistChip(val,unit);
-  onShotFormChange();
-}
-function updateMissSidePills(cat){
-  const opts=cat==='putt'
-    ?[['low','Low'],['center','Center'],['high','High']]
-    :[['left','Left'],['middle','Middle'],['right','Right']];
-  const container=document.getElementById('miss-side-pills');
-  if(!container) return;
-  // Clear missSide state if it no longer applies to the new option set
-  if(state.shotMissSide && !opts.some(([v])=>v===state.shotMissSide)) state.shotMissSide=null;
-  container.innerHTML=opts.map(([v,l])=>`<div class="pill pill-sm${state.shotMissSide===v?' selected':''}" onclick="selectMissSide('${v}')">${l}</div>`).join('');
-}
-function selectMissDepth(val,silent){
-  if(!silent && state.shotMissDepth===val){ state.shotMissDepth=null; }
-  else { state.shotMissDepth=val; }
-  document.querySelectorAll('#miss-depth-pills .pill').forEach(p=>p.classList.toggle('selected',p.textContent.trim().toLowerCase()===state.shotMissDepth));
-}
-function selectMissSide(val,silent){
-  if(!silent && state.shotMissSide===val){ state.shotMissSide=null; }
-  else { state.shotMissSide=val; }
-  document.querySelectorAll('#miss-side-pills .pill').forEach(p=>p.classList.toggle('selected',p.textContent.trim().toLowerCase()===state.shotMissSide));
-}
-function autoSetCategory(){
-  if(!state.shotLie) return;
-  const dist=parseFloat(document.getElementById('shot-dist-from').value)||0;
-  const hd=currentHoleData(), idx=state.editingShotIndex!==null?state.editingShotIndex:(hd.shots||[]).length;
-  selectCategory(autoCategory(state.shotLie,dist,idx,hd.par),true);
-}
-function onShotFormChange(){ autoSetCategory(); updateSGPreview(); }
-function updateSGPreview(){
-  const lie=state.shotLie, rLie=state.shotResultLie;
-  const dFrom=parseFloat(document.getElementById('shot-dist-from').value);
-  const dRes=parseFloat(document.getElementById('shot-dist-result').value);
-  const pv=document.getElementById('sg-preview-val'), pl=document.getElementById('sg-preview-label'), mk=document.getElementById('sg-quality-marker');
-  if(!lie||!rLie||isNaN(dFrom)){ pv.textContent='—'; pv.style.color='var(--text-muted)'; pl.textContent='Enter shot details for SG'; mk.style.left='50%'; return; }
-  const sg=calcSG(lie,dFrom,rLie,isNaN(dRes)?0:dRes);
-  if(sg===null){ pv.textContent='—'; pv.style.color='var(--text-muted)'; pl.textContent='Distance out of range'; mk.style.left='50%'; return; }
-  const q=getQuality(sg,state.shotCategory||'approach');
-  pv.textContent=(sg>=0?'+':'')+sg.toFixed(2); pv.style.color=q.color; pl.textContent=q.label;
-  mk.style.left=Math.max(0,Math.min(100,((sg+1.5)/3.0)*100))+'%';
-}
-function saveShot(){
-  const lie=state.shotLie, rLie=state.shotResultLie;
-  const dFrom=parseFloat(document.getElementById('shot-dist-from').value);
-  const dRes=parseFloat(document.getElementById('shot-dist-result').value);
-  if(!lie){ showToast('Select a starting lie'); return; }
-  if(isNaN(dFrom)||dFrom<=0){ showToast('Enter distance from pin'); return; }
-  if(!rLie){ showToast('Select result location'); return; }
-  if(rLie!=='holed'&&(isNaN(dRes)||dRes<=0)){ showToast('Enter result distance'); return; }
-  const sg=calcSG(lie,dFrom,rLie,isNaN(dRes)?0:dRes);
-  const hd=currentHoleData(), idx=state.editingShotIndex!==null?state.editingShotIndex:hd.shots.length;
-  const cat=state.shotCategory||autoCategory(lie,dFrom,idx,hd.par);
-  const shot={ lie, distFrom:dFrom, resultLie:rLie, resultDist:(rLie!=='holed'&&!isNaN(dRes))?dRes:null, category:cat, sg, missDepth:state.shotMissDepth||null, missSide:state.shotMissSide||null };
-  const round=currentRound();
-  if(state.editingShotIndex!==null) round.holes[state.currentHole-1].shots[state.editingShotIndex]=shot;
-  else round.holes[state.currentHole-1].shots.push(shot);
-  updateRound(round); closeShotSheet(); renderHole(); updateTally();
-  showToast(state.editingShotIndex!==null?'Shot updated':'Shot saved');
-}
-function deleteShot(i){
-  if(!confirm('Delete this shot?')) return;
-  const round=currentRound(); round.holes[state.currentHole-1].shots.splice(i,1);
-  updateRound(round); renderHole(); updateTally();
+function toggleTally(cat) {
+  if(cat === 'total') return;
+  if(state.excludedCategories.has(cat)) state.excludedCategories.delete(cat);
+  else state.excludedCategories.add(cat);
+  updateTally();
 }
 
 // ═══════════════════════════════════════════════════════════════
 // YARDAGE OVERRIDE
 // ═══════════════════════════════════════════════════════════════
-function editYardage(){ const h=currentHoleData(); document.getElementById('yardage-override-input').value=h.yardsOverride||h.yards; document.getElementById('yardage-sheet').classList.add('open'); }
-function saveYardageOverride(){
-  const val=parseInt(document.getElementById('yardage-override-input').value);
-  if(isNaN(val)||val<=0){ showToast('Enter valid yardage'); return; }
-  const round=currentRound(); round.holes[state.currentHole-1].yardsOverride=val;
-  updateRound(round); document.getElementById('yardage-sheet').classList.remove('open'); renderHole(); showToast('Yardage updated');
+
+function editYardage() {
+  const h = currentHoleData();
+  document.getElementById('yardage-override-input').value = h.yardsOverride || h.yards;
+  document.getElementById('yardage-sheet').classList.add('open');
 }
-function handleYardageOverlayClick(e){ if(e.target===document.getElementById('yardage-sheet')) document.getElementById('yardage-sheet').classList.remove('open'); }
+
+function saveYardageOverride() {
+  const val = parseInt(document.getElementById('yardage-override-input').value);
+  if(isNaN(val) || val <= 0) { showToast('Enter valid yardage'); return; }
+  const round = currentRound();
+  round.holes[state.currentHole - 1].yardsOverride = val;
+  updateRound(round);
+  document.getElementById('yardage-sheet').classList.remove('open');
+  renderHole();
+  showToast('Yardage updated');
+}
+
+function handleYardageOverlayClick(e) {
+  if(e.target === document.getElementById('yardage-sheet')) document.getElementById('yardage-sheet').classList.remove('open');
+}
 
 // ═══════════════════════════════════════════════════════════════
-// DATE EDIT
+// ROUND EDIT
 // ═══════════════════════════════════════════════════════════════
-function openRoundEdit(){
-  const round=currentRound(); if(!round) return;
-  document.getElementById('round-edit-name').value=round.courseName;
-  const d=new Date(round.date);
-  const yyyy=d.getFullYear(), mm=String(d.getMonth()+1).padStart(2,'0'), dd=String(d.getDate()).padStart(2,'0');
-  document.getElementById('round-edit-date').value=`${yyyy}-${mm}-${dd}`;
+
+function openRoundEdit() {
+  const round = currentRound(); if(!round) return;
+  document.getElementById('round-edit-name').value = round.courseName;
+  const d = new Date(round.date);
+  const yyyy = d.getFullYear(), mm = String(d.getMonth() + 1).padStart(2, '0'), dd = String(d.getDate()).padStart(2, '0');
+  document.getElementById('round-edit-date').value = `${yyyy}-${mm}-${dd}`;
   document.getElementById('round-edit-sheet').classList.add('open');
 }
-function saveRoundEdit(){
-  const name=document.getElementById('round-edit-name').value.trim();
-  const date=document.getElementById('round-edit-date').value;
-  if(!name){ showToast('Enter a course name'); return; }
-  if(!date){ showToast('Select a date'); return; }
-  const round=currentRound();
-  round.courseName=name;
-  round.date=date+'T12:00:00.000Z';
+
+function saveRoundEdit() {
+  const name = document.getElementById('round-edit-name').value.trim();
+  const date = document.getElementById('round-edit-date').value;
+  if(!name) { showToast('Enter a course name'); return; }
+  if(!date) { showToast('Select a date'); return; }
+  const round = currentRound();
+  round.courseName = name;
+  round.date = date + 'T12:00:00.000Z';
   updateRound(round);
   document.getElementById('round-edit-sheet').classList.remove('open');
-  document.getElementById('hole-course-name').textContent=name;
-  document.getElementById('hole-round-date').textContent=formatDate(round.date)+' ✎';
+  document.getElementById('hole-course-name').textContent = name;
+  document.getElementById('hole-round-date').textContent = formatDate(round.date) + ' ✎';
   showToast('Round updated');
 }
-function handleRoundEditOverlayClick(e){ if(e.target===document.getElementById('round-edit-sheet')) document.getElementById('round-edit-sheet').classList.remove('open'); }
 
+function handleRoundEditOverlayClick(e) {
+  if(e.target === document.getElementById('round-edit-sheet')) document.getElementById('round-edit-sheet').classList.remove('open');
+}
+
+</script>
+<script>
+// ═══════════════════════════════════════════════════════════════
+// SHOT SHEET
+// ═══════════════════════════════════════════════════════════════
+
+function openShotSheet(editIndex) {
+  state.editingShotIndex = editIndex !== undefined ? editIndex : null;
+  state.shotLie = null; state.shotResultLie = null; state.shotCategory = null; state.shotMissDepth = null; state.shotMissSide = null;
+  document.getElementById('shot-sheet-title').textContent = editIndex !== undefined ? 'Edit Shot' : 'Add Shot';
+  document.getElementById('shot-dist-from').value = '';
+  document.getElementById('shot-dist-result').value = '';
+  document.getElementById('result-dist-group').style.display = 'none';
+  document.getElementById('miss-dir-group').style.display = 'none';
+  document.getElementById('category-pills-expand').style.display = 'none';
+  document.getElementById('lie-pills-expand').style.display = 'none';
+  document.getElementById('dist-from-expand').style.display = 'none';
+  renderCategoryChip(null);
+  renderLieChip(null);
+  renderDistChip('', 'yds');
+  document.querySelectorAll('#lie-pills .pill,#lie-pills-secondary .pill,#result-lie-pills .pill,#result-lie-pills-secondary .pill,#category-pills .pill,#miss-depth-pills .pill').forEach(p => p.classList.remove('selected'));
+
+  const hd = currentHoleData();
+  if(editIndex !== undefined) {
+    const s = hd.shots[editIndex];
+    selectLie(s.lie, true);
+    document.getElementById('shot-dist-from').value = s.distFrom;
+    selectResultLie(s.resultLie, true);
+    if(s.resultDist != null) document.getElementById('shot-dist-result').value = s.resultDist;
+    selectCategory(s.category, true);
+    if(s.missDepth) selectMissDepth(s.missDepth, true);
+    if(s.missSide) selectMissSide(s.missSide, true);
+  } else {
+    const sug = getSuggestion(hd);
+    if(sug) {
+      if(sug.lie) selectLie(sug.lie, true);
+      if(sug.dist !== '') document.getElementById('shot-dist-from').value = sug.dist;
+      const idx = hd.shots.length;
+      if(sug.lie) selectCategory(autoCategory(sug.lie, sug.dist || 0, idx, hd.par), true);
+    }
+  }
+  updateDistFromUnit(); updateResultDistVisibility(); updateSGPreview();
+  document.getElementById('shot-sheet').classList.add('open');
+}
+
+function editShot(i) { openShotSheet(i); }
+function closeShotSheet() { document.getElementById('shot-sheet').classList.remove('open'); }
+function handleSheetOverlayClick(e) { if(e.target === document.getElementById('shot-sheet')) closeShotSheet(); }
+
+function selectLie(lie, silent) {
+  state.shotLie = lie;
+  document.querySelectorAll('#lie-pills .pill,#lie-pills-secondary .pill').forEach(p => p.classList.toggle('selected', p.textContent.trim().toLowerCase() === lie));
+  renderLieChip(lie);
+  updateDistFromUnit();
+  if(lie === 'green' && !state.shotResultLie) selectResultLie('green', true);
+  if(!silent) {
+    const exp = document.getElementById('lie-pills-expand'); if(exp) exp.style.display = 'none';
+    autoSetCategory(); updateSGPreview();
+  }
+}
+
+function renderLieChip(lie) {
+  const el = document.getElementById('lie-chip'); if(!el) return;
+  const labels = {tee:'Tee', fairway:'Fairway', rough:'Rough', green:'Green', sand:'Sand', recovery:'Recovery'};
+  el.textContent = labels[lie] || '—';
+  el.className = lie ? 'lie-chip' : '';
+}
+
+function toggleLieOverride() {
+  const exp = document.getElementById('lie-pills-expand'); if(!exp) return;
+  exp.style.display = exp.style.display === 'none' ? 'block' : 'none';
+}
+
+function updateDistFromUnit() {
+  const green = state.shotLie === 'green';
+  const unit = green ? 'ft' : 'yds';
+  document.getElementById('dist-from-unit').textContent = unit;
+  document.getElementById('dist-from-unit-label').textContent = green ? '(feet)' : '(yards)';
+  const val = document.getElementById('shot-dist-from').value;
+  renderDistChip(val, unit);
+}
+
+function selectResultLie(lie, silent) {
+  state.shotResultLie = lie;
+  document.querySelectorAll('#result-lie-pills .pill,#result-lie-pills-secondary .pill').forEach(p => {
+    const t = p.textContent.toLowerCase().replace(/[^a-z]/g, '');
+    p.classList.toggle('selected', t === lie || (lie === 'holed' && t === 'holed'));
+  });
+  updateResultDistVisibility();
+  const missGroup = document.getElementById('miss-dir-group');
+  if(lie === 'holed') {
+    missGroup.style.display = 'none';
+    state.shotMissDepth = null; state.shotMissSide = null;
+    document.querySelectorAll('#miss-depth-pills .pill,#miss-side-pills .pill').forEach(p => p.classList.remove('selected'));
+  } else {
+    missGroup.style.display = 'block';
+  }
+  if(!silent) { autoSetCategory(); updateSGPreview(); }
+  if(!silent && lie !== 'holed') {
+    setTimeout(() => {
+      const el = document.getElementById('shot-dist-result');
+      el.focus();
+      const btn_el = document.getElementById('save-shot-btn');
+      btn_el.scrollIntoView({behavior:'smooth', block:'end', container:'all'});
+    }, 200);
+  }
+}
+
+function updateResultDistVisibility() {
+  const show = state.shotResultLie && state.shotResultLie !== 'holed';
+  document.getElementById('result-dist-group').style.display = show ? 'block' : 'none';
+  if(show) {
+    const green = state.shotResultLie === 'green';
+    document.getElementById('dist-result-unit').textContent = green ? 'ft' : 'yds';
+    document.getElementById('result-dist-unit-label').textContent = green ? '(feet)' : '(yards)';
+  }
+}
+
+function selectCategory(cat, silent) {
+  state.shotCategory = cat;
+  const map = {'Drive':'drive', 'Approach':'approach', 'Short Game':'shortgame', 'Putt':'putt'};
+  document.querySelectorAll('#category-pills .pill').forEach(p => p.classList.toggle('selected', map[p.textContent.trim()] === cat));
+  renderCategoryChip(cat);
+  updateMissSidePills(cat);
+  if(!silent) {
+    const exp = document.getElementById('category-pills-expand'); if(exp) exp.style.display = 'none';
+  }
+}
+
+function renderCategoryChip(cat) {
+  const el = document.getElementById('category-chip'); if(!el) return;
+  const labels = {drive:'Drive', approach:'Approach', shortgame:'Short Game', putt:'Putt'};
+  el.textContent = labels[cat] || '—';
+  el.className = cat ? `category-badge cat-${cat}` : '';
+}
+
+function toggleCategoryOverride() {
+  const exp = document.getElementById('category-pills-expand'); if(!exp) return;
+  exp.style.display = exp.style.display === 'none' ? 'block' : 'none';
+}
+
+function renderDistChip(val, unit) {
+  const el = document.getElementById('dist-chip'); if(!el) return;
+  el.textContent = val ? `${val} ${unit}` : '—';
+}
+
+function toggleDistOverride() {
+  const exp = document.getElementById('dist-from-expand'); if(!exp) return;
+  const opening = exp.style.display === 'none';
+  exp.style.display = opening ? 'block' : 'none';
+  if(opening) setTimeout(() => document.getElementById('shot-dist-from').focus(), 50);
+}
+
+function onDistInput() {
+  const val = document.getElementById('shot-dist-from').value;
+  const unit = state.shotLie === 'green' ? 'ft' : 'yds';
+  renderDistChip(val, unit);
+  onShotFormChange();
+}
+
+function updateMissSidePills(cat) {
+  const opts = cat === 'putt'
+    ? [['low','Low'], ['center','Center'], ['high','High']]
+    : [['left','Left'], ['middle','Middle'], ['right','Right']];
+  const container = document.getElementById('miss-side-pills'); if(!container) return;
+  if(state.shotMissSide && !opts.some(([v]) => v === state.shotMissSide)) state.shotMissSide = null;
+  container.innerHTML = opts.map(([v, l]) => `<div class="pill pill-sm${state.shotMissSide === v ? ' selected' : ''}" onclick="selectMissSide('${v}')">${l}</div>`).join('');
+}
+
+function selectMissDepth(val, silent) {
+  if(!silent && state.shotMissDepth === val) { state.shotMissDepth = null; }
+  else { state.shotMissDepth = val; }
+  document.querySelectorAll('#miss-depth-pills .pill').forEach(p => p.classList.toggle('selected', p.textContent.trim().toLowerCase() === state.shotMissDepth));
+}
+
+function selectMissSide(val, silent) {
+  if(!silent && state.shotMissSide === val) { state.shotMissSide = null; }
+  else { state.shotMissSide = val; }
+  document.querySelectorAll('#miss-side-pills .pill').forEach(p => p.classList.toggle('selected', p.textContent.trim().toLowerCase() === state.shotMissSide));
+}
+
+function autoSetCategory() {
+  if(!state.shotLie) return;
+  const dist = parseFloat(document.getElementById('shot-dist-from').value) || 0;
+  const hd = currentHoleData(), idx = state.editingShotIndex !== null ? state.editingShotIndex : (hd.shots || []).length;
+  selectCategory(autoCategory(state.shotLie, dist, idx, hd.par), true);
+}
+
+function onShotFormChange() { autoSetCategory(); updateSGPreview(); }
+
+function updateSGPreview() {
+  const lie = state.shotLie, rLie = state.shotResultLie;
+  const dFrom = parseFloat(document.getElementById('shot-dist-from').value);
+  const dRes = parseFloat(document.getElementById('shot-dist-result').value);
+  const pv = document.getElementById('sg-preview-val'), pl = document.getElementById('sg-preview-label'), mk = document.getElementById('sg-quality-marker');
+  if(!lie || !rLie || isNaN(dFrom)) { pv.textContent = '—'; pv.style.color = 'var(--text-muted)'; pl.textContent = 'Enter shot details for SG'; mk.style.left = '50%'; return; }
+  const sg = calcSG(lie, dFrom, rLie, isNaN(dRes) ? 0 : dRes);
+  if(sg === null) { pv.textContent = '—'; pv.style.color = 'var(--text-muted)'; pl.textContent = 'Distance out of range'; mk.style.left = '50%'; return; }
+  const q = getQuality(sg, state.shotCategory || 'approach');
+  pv.textContent = (sg >= 0 ? '+' : '') + sg.toFixed(2); pv.style.color = q.color; pl.textContent = q.label;
+  mk.style.left = Math.max(0, Math.min(100, ((sg + 1.5) / 3.0) * 100)) + '%';
+}
+
+function saveShot() {
+  const lie = state.shotLie, rLie = state.shotResultLie;
+  const dFrom = parseFloat(document.getElementById('shot-dist-from').value);
+  const dRes = parseFloat(document.getElementById('shot-dist-result').value);
+  if(!lie) { showToast('Select a starting lie'); return; }
+  if(isNaN(dFrom) || dFrom <= 0) { showToast('Enter distance from pin'); return; }
+  if(!rLie) { showToast('Select result location'); return; }
+  if(rLie !== 'holed' && (isNaN(dRes) || dRes <= 0)) { showToast('Enter result distance'); return; }
+  const sg = calcSG(lie, dFrom, rLie, isNaN(dRes) ? 0 : dRes);
+  const hd = currentHoleData(), idx = state.editingShotIndex !== null ? state.editingShotIndex : hd.shots.length;
+  const cat = state.shotCategory || autoCategory(lie, dFrom, idx, hd.par);
+  const shot = { lie, distFrom:dFrom, resultLie:rLie, resultDist:(rLie !== 'holed' && !isNaN(dRes)) ? dRes : null, category:cat, sg, missDepth:state.shotMissDepth || null, missSide:state.shotMissSide || null };
+  const round = currentRound();
+  if(state.editingShotIndex !== null) round.holes[state.currentHole - 1].shots[state.editingShotIndex] = shot;
+  else round.holes[state.currentHole - 1].shots.push(shot);
+  updateRound(round); closeShotSheet(); renderHole(); updateTally();
+  showToast(state.editingShotIndex !== null ? 'Shot updated' : 'Shot saved');
+}
+
+function deleteShot(i) {
+  if(!confirm('Delete this shot?')) return;
+  const round = currentRound();
+  round.holes[state.currentHole - 1].shots.splice(i, 1);
+  updateRound(round); renderHole(); updateTally();
+}
+
+</script>
+<script>
+// ═══════════════════════════════════════════════════════════════
+// COURSES
+// ═══════════════════════════════════════════════════════════════
+
+function renderCourses() {
+  const courses = getCourses(), el = document.getElementById('courses-list');
+  if(courses.length === 0) {
+    el.innerHTML = `<div class="empty-state"><div class="empty-state-icon">🏌️</div><div class="empty-state-text">No courses saved yet.<br>Add one below.</div></div>`;
+    return;
+  }
+  el.innerHTML = courses.map(c => `<div class="course-card" onclick="startRound('${c.id}')">
+    <div class="course-icon">⛳</div>
+    <div class="course-info"><div class="course-name">${c.name}</div><div class="course-meta">${c.tees ? c.tees + ' tees · ' : ''}${c.holes.length} holes</div></div>
+    <button class="course-action-btn" onclick="event.stopPropagation();openCourseEdit('${c.id}')">✎</button>
+    <button class="course-action-btn course-del-btn" onclick="event.stopPropagation();deleteCourse('${c.id}')">×</button>
+  </div>`).join('');
+}
+
+function openCourseEdit(id) {
+  const c = getCourses().find(x => x.id === id); if(!c) return;
+  editingCourseId = id;
+  document.getElementById('course-edit-name').value = c.name || '';
+  document.getElementById('course-edit-tees').value = c.tees || '';
+  document.getElementById('course-edit-sheet').classList.add('open');
+}
+
+function saveCourseEdit() {
+  if(!editingCourseId) return;
+  const courses = getCourses(), idx = courses.findIndex(c => c.id === editingCourseId);
+  if(idx === -1) return;
+  courses[idx].name = document.getElementById('course-edit-name').value.trim() || courses[idx].name;
+  courses[idx].tees = document.getElementById('course-edit-tees').value.trim();
+  saveCourses(courses);
+  editingCourseId = null;
+  document.getElementById('course-edit-sheet').classList.remove('open');
+  renderCourses();
+  showToast('Course updated!');
+}
+
+function loadCourseHolesJSON() {
+  if(!editingCourseId) return;
+  const c = getCourses().find(x => x.id === editingCourseId); if(!c) return;
+  document.getElementById('course-edit-sheet').classList.remove('open');
+  document.getElementById('course-json-input').value = JSON.stringify({name:c.name, tees:c.tees, holes:c.holes}, null, 2);
+  showToast('JSON loaded — edit and save below');
+}
+
+function deleteCourse(id) {
+  const c = getCourses().find(x => x.id === id); if(!c) return;
+  if(!confirm(`Delete "${c.name}"? This cannot be undone.`)) return;
+  saveCourses(getCourses().filter(x => x.id !== id));
+  renderCourses();
+  showToast('Course deleted');
+}
+
+function handleCourseEditOverlayClick(e) {
+  if(e.target === document.getElementById('course-edit-sheet')) {
+    editingCourseId = null;
+    document.getElementById('course-edit-sheet').classList.remove('open');
+  }
+}
+
+function saveCourseJSON() {
+  const raw = document.getElementById('course-json-input').value.trim();
+  const errEl = document.getElementById('json-error'); errEl.style.display = 'none';
+  if(!raw) { errEl.textContent = 'Please paste course JSON.'; errEl.style.display = 'block'; return; }
+  let parsed;
+  try { parsed = JSON.parse(raw); } catch(e) { errEl.textContent = 'Invalid JSON: ' + e.message; errEl.style.display = 'block'; return; }
+  const arr = Array.isArray(parsed) ? parsed : [parsed];
+  const courses = getCourses(); let added = 0;
+  for(const c of arr) {
+    if(!c.name || !Array.isArray(c.holes)) { errEl.textContent = 'Each course needs "name" and "holes".'; errEl.style.display = 'block'; return; }
+    for(const h of c.holes) { if(!h.hole || !h.par || !h.yards) { errEl.textContent = 'Each hole needs "hole", "par", "yards".'; errEl.style.display = 'block'; return; } }
+    const existIdx = c.id ? courses.findIndex(x => x.id === c.id) : -1;
+    if(existIdx >= 0) { courses[existIdx] = c; } else { c.id = c.id || ('course_' + Date.now() + '_' + added); courses.push(c); added++; }
+  }
+  saveCourses(courses);
+  document.getElementById('course-json-input').value = '';
+  renderCourses();
+  showToast('Course saved!');
+}
+
+function showSampleJSON() {
+  document.getElementById('course-json-input').value = JSON.stringify([{"name":"Wild Wood Golf Club","tees":"Blue","holes":[{"hole":1,"par":4,"yards":354},{"hole":2,"par":4,"yards":417},{"hole":3,"par":5,"yards":471},{"hole":4,"par":4,"yards":353},{"hole":5,"par":3,"yards":154},{"hole":6,"par":5,"yards":514},{"hole":7,"par":4,"yards":342},{"hole":8,"par":3,"yards":197},{"hole":9,"par":4,"yards":397},{"hole":10,"par":4,"yards":383},{"hole":11,"par":4,"yards":377},{"hole":12,"par":4,"yards":371},{"hole":13,"par":3,"yards":135},{"hole":14,"par":4,"yards":346},{"hole":15,"par":4,"yards":342},{"hole":16,"par":4,"yards":326},{"hole":17,"par":3,"yards":201},{"hole":18,"par":5,"yards":465}]}], null, 2);
+}
+
+function startRound(courseId) {
+  const course = getCourses().find(c => c.id === courseId); if(!course) return;
+  const round = {
+    id: 'round_' + Date.now(),
+    date: new Date().toISOString(),
+    courseName: course.name,
+    courseId: course.id,
+    holes: course.holes.map(h => ({hole:h.hole, par:h.par, yards:h.yards, yardsOverride:null, shots:[]}))
+  };
+  updateRound(round);
+  state.currentRoundId = round.id;
+  state.currentHole = 1;
+  state.excludedCategories = new Set();
+  showScreen('hole');
+}
+
+</script>
+<script>
 // ═══════════════════════════════════════════════════════════════
 // SUMMARY
 // ═══════════════════════════════════════════════════════════════
-function roundTotalSG(round,exc){
-  let t=0,c=0;
-  for(const hole of round.holes) for(const s of (hole.shots||[])){
-    if(s.sg==null) continue; if(exc&&exc.has(s.category)) continue; t+=s.sg; c++;
+
+function roundTotalSG(round, exc) {
+  let t = 0, c = 0;
+  for(const hole of round.holes) for(const s of (hole.shots || [])) {
+    if(s.sg == null) continue;
+    if(exc && exc.has(s.category)) continue;
+    t += s.sg; c++;
   }
-  return c>0?t:null;
+  return c > 0 ? t : null;
 }
-function toggleSummaryCat(cat){
-  const el=document.getElementById('ssum-'+cat), icon=document.getElementById('ssum-icon-'+cat);
+
+function toggleSummaryCat(cat) {
+  const el = document.getElementById('ssum-' + cat), icon = document.getElementById('ssum-icon-' + cat);
   if(!el) return;
-  const open=el.style.display==='none';
-  el.style.display=open?'block':'none';
-  if(icon) icon.style.transform=open?'rotate(90deg)':'';
+  const open = el.style.display === 'none';
+  el.style.display = open ? 'block' : 'none';
+  if(icon) icon.style.transform = open ? 'rotate(90deg)' : '';
 }
-function toggleHolesSection(){
-  const wrap=document.getElementById('summary-holes-wrap'), icon=document.getElementById('holes-section-chevron');
+
+function toggleHolesSection() {
+  const wrap = document.getElementById('summary-holes-wrap'), icon = document.getElementById('holes-section-chevron');
   if(!wrap) return;
-  const open=wrap.style.display==='none';
-  wrap.style.display=open?'block':'none';
-  if(icon) icon.style.transform=open?'rotate(90deg)':'';
+  const open = wrap.style.display === 'none';
+  wrap.style.display = open ? 'block' : 'none';
+  if(icon) icon.style.transform = open ? 'rotate(90deg)' : '';
 }
-function toggleStatGroup(group){
-  const el=document.getElementById('sstat-'+group), icon=document.getElementById('sstat-icon-'+group);
+
+function toggleStatGroup(group) {
+  const el = document.getElementById('sstat-' + group), icon = document.getElementById('sstat-icon-' + group);
   if(!el) return;
-  const open=el.style.display==='none';
-  el.style.display=open?'block':'none';
-  if(icon) icon.style.transform=open?'rotate(90deg)':'';
+  const open = el.style.display === 'none';
+  el.style.display = open ? 'block' : 'none';
+  if(icon) icon.style.transform = open ? 'rotate(90deg)' : '';
 }
-function toggleSummaryHole(holeNum){
-  const el=document.getElementById('ssum-hole-'+holeNum), icon=document.getElementById('ssum-hole-icon-'+holeNum);
+
+function toggleSummaryHole(holeNum) {
+  const el = document.getElementById('ssum-hole-' + holeNum), icon = document.getElementById('ssum-hole-icon-' + holeNum);
   if(!el) return;
-  const open=el.style.display==='none';
-  el.style.display=open?'block':'none';
-  if(icon) icon.style.transform=open?'rotate(90deg)':'';
+  const open = el.style.display === 'none';
+  el.style.display = open ? 'block' : 'none';
+  if(icon) icon.style.transform = open ? 'rotate(90deg)' : '';
 }
-function renderSummary(){
-  const round=currentRound(); if(!round) return;
-  const cats=['drive','approach','shortgame','putt'];
-  const cNames={drive:'Drive',approach:'Approach',shortgame:'Short Game',putt:'Putt'};
-  const tot={drive:0,approach:0,shortgame:0,putt:0}, cnt={drive:0,approach:0,shortgame:0,putt:0};
-  const catShots={drive:[],approach:[],shortgame:[],putt:[]};
-  const lieAbbr={tee:'Tee',fairway:'Fwy',rough:'Rgh',sand:'Sand',recovery:'Rcv',green:'Grn',holed:'Holed',penalty:'Pen'};
-  let gTotal=0,gCount=0,gStrokes=0;
-  for(const hole of round.holes){
-    const hShots=hole.shots||[];
-    gStrokes+=countStrokes(hShots);
-    for(const s of hShots){
-      if(catShots[s.category]) catShots[s.category].push({...s,holeNum:hole.hole});
-      if(s.sg==null) continue; tot[s.category]+=s.sg; cnt[s.category]++; gTotal+=s.sg; gCount++;
+
+function buildShotRow(s, label, labelClass = 'ssum-hole') {
+  const lieAbbr = {tee:'Tee', fairway:'Fwy', rough:'Rgh', sand:'Sand', recovery:'Rcv', green:'Grn', holed:'Holed', penalty:'Pen'};
+  const fromDist = s.lie === 'green' ? s.distFrom + 'ft' : s.distFrom + 'y';
+  const toLabel = lieAbbr[s.resultLie] || s.resultLie;
+  const toDist = s.resultLie === 'holed' ? '' : s.resultLie === 'green' ? (s.resultDist != null ? s.resultDist + 'ft' : '') : (s.resultDist != null ? s.resultDist + 'y' : '');
+  const missParts = [s.missDepth, s.missSide].filter(Boolean).map(v => v.charAt(0).toUpperCase() + v.slice(1));
+  const missStr = missParts.length ? missParts.join('-') : '';
+  const sgStr = s.sg != null ? (s.sg >= 0 ? '+' : '') + s.sg.toFixed(2) : '—';
+  const sgColor = s.sg == null ? 'var(--text-muted)' : s.sg >= 0 ? 'var(--q-great)' : 'var(--q-poor)';
+  const driveDist = (s.category === 'drive' && s.distFrom != null && s.resultDist != null) ? Math.round(s.distFrom - s.resultDist) : null;
+  const fromBlock = driveDist != null
+    ? `${lieAbbr[s.lie] || s.lie} ${fromDist} <span class="ssum-drive">${driveDist}y drive</span>`
+    : `${lieAbbr[s.lie] || s.lie} ${fromDist}`;
+  return `<div class="ssum-shot">
+    <span class="${labelClass}">${label}</span>
+    <span class="ssum-from">${fromBlock}</span>
+    <span class="ssum-arrow">›</span>
+    <span class="ssum-to">${toLabel}${toDist ? ' ' + toDist : ''}${missStr ? `<span class="ssum-miss"> ${missStr}</span>` : ''}</span>
+    <span class="ssum-sg" style="color:${sgColor}">${sgStr}</span>
+  </div>`;
+}
+
+function renderSummary() {
+  const round = currentRound(); if(!round) return;
+  const cats = ['drive', 'approach', 'shortgame', 'putt'];
+  const cNames = {drive:'Drive', approach:'Approach', shortgame:'Short Game', putt:'Putt'};
+  const tot = {drive:0, approach:0, shortgame:0, putt:0}, cnt = {drive:0, approach:0, shortgame:0, putt:0};
+  const catShots = {drive:[], approach:[], shortgame:[], putt:[]};
+  let gTotal = 0, gCount = 0, gStrokes = 0;
+
+  for(const hole of round.holes) {
+    const hShots = hole.shots || [];
+    gStrokes += countStrokes(hShots);
+    for(const s of hShots) {
+      if(catShots[s.category]) catShots[s.category].push({...s, holeNum:hole.hole});
+      if(s.sg == null) continue; tot[s.category] += s.sg; cnt[s.category]++; gTotal += s.sg; gCount++;
     }
   }
-  const fmt=(v,c)=>c===0?'—':(v>=0?'+':'')+v.toFixed(2);
-  const col=(v,c)=>c===0?'var(--text-muted)':v>=0?'var(--q-great)':'var(--q-poor)';
-  const buildShotRow=(s,label,labelClass='ssum-hole')=>{
-    const fromDist=s.lie==='green'?s.distFrom+'ft':s.distFrom+'y';
-    const toLabel=lieAbbr[s.resultLie]||s.resultLie;
-    const toDist=s.resultLie==='holed'?'':s.resultLie==='green'?(s.resultDist!=null?s.resultDist+'ft':''):(s.resultDist!=null?s.resultDist+'y':'');
-    const missParts=[s.missDepth,s.missSide].filter(Boolean).map(v=>v.charAt(0).toUpperCase()+v.slice(1));
-    const missStr=missParts.length?missParts.join('-'):'';
-    const sgStr=s.sg!=null?(s.sg>=0?'+':'')+s.sg.toFixed(2):'—';
-    const sgColor=s.sg==null?'var(--text-muted)':s.sg>=0?'var(--q-great)':'var(--q-poor)';
-    const driveDist=(s.category==='drive'&&s.distFrom!=null&&s.resultDist!=null)?Math.round(s.distFrom-s.resultDist):null;
-    const fromBlock=driveDist!=null
-      ?`${lieAbbr[s.lie]||s.lie} ${fromDist} <span class="ssum-drive">${driveDist}y drive</span>`
-      :`${lieAbbr[s.lie]||s.lie} ${fromDist}`;
-    return `<div class="ssum-shot">
-      <span class="${labelClass}">${label}</span>
-      <span class="ssum-from">${fromBlock}</span>
-      <span class="ssum-arrow">›</span>
-      <span class="ssum-to">${toLabel}${toDist?' '+toDist:''}${missStr?`<span class="ssum-miss"> ${missStr}</span>`:''}</span>
-      <span class="ssum-sg" style="color:${sgColor}">${sgStr}</span>
-    </div>`;
-  };
-  const catHTML=cats.map(c=>{
-    const rows=catShots[c].map(s=>buildShotRow(s,`H${s.holeNum}`)).join('');
+
+  const fmt = (v, c) => c === 0 ? '—' : (v >= 0 ? '+' : '') + v.toFixed(2);
+  const col = (v, c) => c === 0 ? 'var(--text-muted)' : v >= 0 ? 'var(--q-great)' : 'var(--q-poor)';
+
+  const catHTML = cats.map(c => {
+    const rows = catShots[c].map(s => buildShotRow(s, `H${s.holeNum}`)).join('');
     return `<div class="summary-stat summary-cat-row" onclick="toggleSummaryCat('${c}')">
-        <span class="summary-stat-label">${cNames[c]} <span style="font-size:12px;color:var(--text-dim)">(${cnt[c]} shots)</span></span>
-        <span style="display:flex;align-items:center;gap:10px">
+        <span class="summary-stat-label">${cNames[c]} <span class="ssum-cat-meta">(${cnt[c]} shots)</span></span>
+        <span class="ssum-cat-right">
           <span class="summary-stat-val" style="color:${col(tot[c],cnt[c])}">${fmt(tot[c],cnt[c])}</span>
           <span class="ssum-chevron" id="ssum-icon-${c}">›</span>
         </span>
       </div>
-      <div class="ssum-expand" id="ssum-${c}" style="display:none">${rows||'<div class="ssum-empty">No shots recorded</div>'}</div>`;
+      <div class="ssum-expand" id="ssum-${c}" style="display:none">${rows || '<div class="ssum-empty">No shots recorded</div>'}</div>`;
   }).join('');
-  const holesHTML=round.holes.map(h=>{
-    const shots=h.shots||[]; if(shots.length===0) return '';
-    const hsg=shots.reduce((s,sh)=>s+(sh.sg||0),0);
-    const hStrokes=countStrokes(shots);
-    const rows=shots.map(s=>buildShotRow(s,cNames[s.category]||s.category,'ssum-hole-cat')).join('');
+
+  const holesHTML = round.holes.map(h => {
+    const shots = h.shots || []; if(shots.length === 0) return '';
+    const hsg = shots.reduce((s, sh) => s + (sh.sg || 0), 0);
+    const hStrokes = countStrokes(shots);
+    const rows = shots.map(s => buildShotRow(s, cNames[s.category] || s.category, 'ssum-hole-cat')).join('');
     return `<div class="hole-summary-row summary-cat-row" onclick="toggleSummaryHole(${h.hole})">
       <div class="hsrow-hole">${h.hole}</div>
-      <div class="hsrow-par" style="font-size:12px">P${h.par}</div>
-      <div class="hsrow-shots">${hStrokes} stroke${hStrokes!==1?'s':''}</div>
-      <div style="display:flex;align-items:center;gap:8px">
-        <div class="hsrow-sg" style="color:${hsg>=0?'var(--q-great)':'var(--q-poor)'}">${(hsg>=0?'+':'')+hsg.toFixed(2)}</div>
+      <div class="hsrow-par">P${h.par}</div>
+      <div class="hsrow-shots">${hStrokes} stroke${hStrokes !== 1 ? 's' : ''}</div>
+      <div class="hsrow-right">
+        <div class="hsrow-sg" style="color:${hsg >= 0 ? 'var(--q-great)' : 'var(--q-poor)'}">${(hsg >= 0 ? '+' : '') + hsg.toFixed(2)}</div>
         <span class="ssum-chevron" id="ssum-hole-icon-${h.hole}">›</span>
       </div>
     </div>
     <div class="ssum-expand" id="ssum-hole-${h.hole}" style="display:none">${rows}</div>`;
-  }).filter(Boolean).join('')||'<div style="color:var(--text-dim);text-align:center;padding:16px;font-size:14px">No shots recorded yet</div>';
-  const byHoleSection=`
-    <div class="summary-stat summary-cat-row" style="border-top:1px solid var(--border);margin-top:4px" onclick="toggleHolesSection()">
-      <span class="summary-stat-label" style="font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text-dim)">SG by Hole</span>
+  }).filter(Boolean).join('') || '<div class="list-empty">No shots recorded yet</div>';
+
+  const byHoleSection = `
+    <div class="summary-stat summary-cat-row summary-by-hole-row" onclick="toggleHolesSection()">
+      <span class="summary-by-hole-label">SG by Hole</span>
       <span class="ssum-chevron" id="holes-section-chevron">›</span>
     </div>
     <div id="summary-holes-wrap" style="display:none">${holesHTML}</div>`;
-  document.getElementById('summary-totals').innerHTML=`
-    <div class="summary-stat" style="border-bottom:1px solid var(--border)"><span class="summary-stat-label" style="font-size:17px;font-weight:600;color:var(--text)">Total SG <span style="font-size:12px;color:var(--text-dim);font-weight:400">(${gStrokes} stroke${gStrokes!==1?'s':''})</span></span><span class="summary-stat-val" style="font-size:28px;color:${col(gTotal,gCount)}">${fmt(gTotal,gCount)}</span></div>
+
+  document.getElementById('summary-totals').innerHTML = `
+    <div class="summary-stat"><span class="summary-total-label">Total SG <span class="summary-total-sub">(${gStrokes} stroke${gStrokes !== 1 ? 's' : ''})</span></span><span class="summary-total-val" style="color:${col(gTotal,gCount)}">${fmt(gTotal,gCount)}</span></div>
     ${catHTML}${byHoleSection}`;
 
   // Statistics
-  const allShots=round.holes.flatMap(h=>(h.shots||[]).map((s,i)=>({...s,holeNum:h.hole,shotIdx:i})));
-  const avg=arr=>arr.length?arr.reduce((a,b)=>a+b,0)/arr.length:null;
-  const fmtFt=v=>v!=null?Math.round(v)+' ft':'—';
-  const fmtYd=v=>v!=null?Math.round(v)+' yds':'—';
-  const statRow=(label,val)=>`<div class="sstat-row"><span class="sstat-label">${label}</span><span class="sstat-val">${val}</span></div>`;
-  const statGroup=(id,title,rows,headerVal='')=>`
+  const allShots = round.holes.flatMap(h => (h.shots || []).map((s, i) => ({...s, holeNum:h.hole, shotIdx:i})));
+  const avg = arr => arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : null;
+  const fmtFt = v => v != null ? Math.round(v) + ' ft' : '—';
+  const fmtYd = v => v != null ? Math.round(v) + ' yds' : '—';
+  const statRow = (label, val) => `<div class="sstat-row"><span class="sstat-label">${label}</span><span class="sstat-val">${val}</span></div>`;
+  const statGroup = (id, title, rows, headerVal = '') => `
     <div class="summary-stat summary-cat-row" onclick="toggleStatGroup('${id}')">
-      <span class="summary-stat-label">${title}${headerVal?` <span style="font-size:12px;color:var(--text-dim);font-weight:400">${headerVal}</span>`:''}</span>
+      <span class="summary-stat-label">${title}${headerVal ? ` <span class="sstat-header-val">${headerVal}</span>` : ''}</span>
       <span class="ssum-chevron" id="sstat-icon-${id}">›</span>
     </div>
     <div class="ssum-expand" id="sstat-${id}" style="display:none">${rows}</div>`;
 
-  // Putting
-  const putts=allShots.filter(s=>s.category==='putt');
-  const firstPutts=round.holes.map(h=>(h.shots||[]).find(s=>s.category==='putt')).filter(Boolean);
-  const holedPutts=putts.filter(s=>s.resultLie==='holed');
-  const puttStats=statRow('Avg first putt',fmtFt(avg(firstPutts.map(s=>s.distFrom))))
-    +statRow('Avg holed',fmtFt(avg(holedPutts.map(s=>s.distFrom))))
-    +statRow('Longest holed',fmtFt(holedPutts.length?Math.max(...holedPutts.map(s=>s.distFrom)):null));
-
   // Driving
-  const drives=allShots.filter(s=>s.category==='drive'&&s.distFrom!=null&&s.resultDist!=null);
-  const driveDists=drives.map(s=>s.distFrom-s.resultDist);
-  const fairwaysHit=drives.filter(s=>s.resultLie==='fairway').length;
-  const fairwayTotal=drives.length;
-  const fairwayStr=fairwayTotal?`${fairwaysHit}/${fairwayTotal} (${Math.round(fairwaysHit/fairwayTotal*100)}%)`:'—';
-  const driveStats=statRow('Avg distance',fmtYd(avg(driveDists)))
-    +statRow('Longest',fmtYd(driveDists.length?Math.max(...driveDists):null))
-    +statRow('Fairways hit',fairwayStr);
+  const drives = allShots.filter(s => s.category === 'drive' && s.distFrom != null && s.resultDist != null);
+  const driveDists = drives.map(s => s.distFrom - s.resultDist);
+  const fairwaysHit = drives.filter(s => s.resultLie === 'fairway').length;
+  const fairwayTotal = drives.length;
+  const fairwayStr = fairwayTotal ? `${fairwaysHit}/${fairwayTotal} (${Math.round(fairwaysHit / fairwayTotal * 100)}%)` : '—';
+  const driveStats = statRow('Avg distance', fmtYd(avg(driveDists)))
+    + statRow('Longest', fmtYd(driveDists.length ? Math.max(...driveDists) : null))
+    + statRow('Fairways hit', fairwayStr);
 
   // Approach
-  const approaches=allShots.filter(s=>s.category==='approach'&&s.distFrom!=null);
-  const holesPlayed=round.holes.filter(h=>(h.shots||[]).length>0);
-  const girHoles=holesPlayed.filter(h=>{
-    const regIdx=h.par-3;
-    const s=(h.shots||[])[regIdx];
-    return s&&(s.resultLie==='green'||s.resultLie==='holed');
+  const approaches = allShots.filter(s => s.category === 'approach' && s.distFrom != null);
+  const holesPlayed = round.holes.filter(h => (h.shots || []).length > 0);
+  const girHoles = holesPlayed.filter(h => {
+    const regIdx = h.par - 3;
+    const s = (h.shots || [])[regIdx];
+    return s && (s.resultLie === 'green' || s.resultLie === 'holed');
   });
-  const girStr=holesPlayed.length?`${girHoles.length}/${holesPlayed.length} (${Math.round(girHoles.length/holesPlayed.length*100)}%)`:'—';
-  const approachStats=statRow('Avg distance',fmtYd(avg(approaches.map(s=>s.distFrom))))
-    +statRow('GIR',girStr);
+  const girStr = holesPlayed.length ? `${girHoles.length}/${holesPlayed.length} (${Math.round(girHoles.length / holesPlayed.length * 100)}%)` : '—';
+  const approachStats = statRow('Avg distance', fmtYd(avg(approaches.map(s => s.distFrom))))
+    + statRow('GIR', girStr);
 
   // Short Game
-  const shortgame=allShots.filter(s=>s.category==='shortgame'&&s.distFrom!=null);
-  const shortgameStats=statRow('Avg distance to hole',fmtYd(avg(shortgame.map(s=>s.distFrom))));
+  const shortgame = allShots.filter(s => s.category === 'shortgame' && s.distFrom != null);
+  const shortgameStats = statRow('Avg distance to hole', fmtYd(avg(shortgame.map(s => s.distFrom))));
 
-  document.getElementById('summary-stats').innerHTML=
-    statGroup('drive','Driving',driveStats,fairwayStr)
-    +statGroup('approach','Approach',approachStats,girStr)
-    +statGroup('shortgame','Short Game',shortgameStats)
-    +statGroup('putt','Putting',puttStats);
+  // Putting
+  const putts = allShots.filter(s => s.category === 'putt');
+  const firstPutts = round.holes.map(h => (h.shots || []).find(s => s.category === 'putt')).filter(Boolean);
+  const holedPutts = putts.filter(s => s.resultLie === 'holed');
+  const puttStats = statRow('Avg first putt', fmtFt(avg(firstPutts.map(s => s.distFrom))))
+    + statRow('Avg holed', fmtFt(avg(holedPutts.map(s => s.distFrom))))
+    + statRow('Longest holed', fmtFt(holedPutts.length ? Math.max(...holedPutts.map(s => s.distFrom)) : null));
+
+  document.getElementById('summary-stats').innerHTML =
+    statGroup('drive', 'Driving', driveStats, fairwayStr)
+    + statGroup('approach', 'Approach', approachStats, girStr)
+    + statGroup('shortgame', 'Short Game', shortgameStats)
+    + statGroup('putt', 'Putting', puttStats);
 }
 
 // ═══════════════════════════════════════════════════════════════
 // CLIPBOARD — robust iOS Safari support with fallback modal
 // ═══════════════════════════════════════════════════════════════
+
 function copyToClipboard(text, msg) {
-  if(navigator.clipboard&&typeof navigator.clipboard.writeText==='function'){
-    navigator.clipboard.writeText(text).then(()=>showToast(msg)).catch(()=>fallbackCopy(text,msg));
-  } else { fallbackCopy(text,msg); }
+  if(navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+    navigator.clipboard.writeText(text).then(() => showToast(msg)).catch(() => fallbackCopy(text, msg));
+  } else { fallbackCopy(text, msg); }
 }
-function fallbackCopy(text,msg){
-  const ta=document.createElement('textarea');
-  ta.value=text; ta.setAttribute('readonly','');
-  ta.style.cssText='position:fixed;top:0;left:0;width:2px;height:2px;padding:0;border:none;outline:none;background:transparent;opacity:0;';
+
+function fallbackCopy(text, msg) {
+  const ta = document.createElement('textarea');
+  ta.value = text; ta.setAttribute('readonly', '');
+  ta.style.cssText = 'position:fixed;top:0;left:0;width:2px;height:2px;padding:0;border:none;outline:none;background:transparent;opacity:0;';
   document.body.appendChild(ta); ta.focus(); ta.select();
-  if(/ipad|iphone/i.test(navigator.userAgent)){
-    const range=document.createRange(); range.selectNodeContents(ta);
-    const sel=window.getSelection(); sel.removeAllRanges(); sel.addRange(range); ta.setSelectionRange(0,999999);
+  if(/ipad|iphone/i.test(navigator.userAgent)) {
+    const range = document.createRange(); range.selectNodeContents(ta);
+    const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(range); ta.setSelectionRange(0, 999999);
   }
-  let ok=false; try{ ok=document.execCommand('copy'); }catch(e){}
+  let ok = false; try { ok = document.execCommand('copy'); } catch(e) {}
   document.body.removeChild(ta);
   if(ok) showToast(msg); else showExportModal(text);
 }
-function showExportModal(text){
-  const ov=document.createElement('div');
-  ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:300;display:flex;flex-direction:column;padding:24px;gap:12px;';
-  const t=document.createElement('div'); t.style.cssText='color:#fff;font-size:16px;font-weight:600;'; t.textContent='Select all text below and copy:';
-  const ta=document.createElement('textarea'); ta.value=text;
-  ta.style.cssText='flex:1;background:#0d1b2a;color:#e8f4f8;border:1px solid rgba(255,255,255,.2);border-radius:8px;padding:12px;font-family:monospace;font-size:11px;resize:none;';
-  const btn=document.createElement('button'); btn.textContent='Done';
-  btn.style.cssText='background:#40916c;color:#fff;border:none;border-radius:12px;padding:14px;font-size:16px;font-weight:600;cursor:pointer;';
-  btn.onclick=()=>document.body.removeChild(ov);
-  ov.append(t,ta,btn); document.body.appendChild(ov); ta.focus(); ta.select();
+
+function showExportModal(text) {
+  const ov = document.createElement('div');
+  ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:300;display:flex;flex-direction:column;padding:24px;gap:12px;';
+  const t = document.createElement('div'); t.style.cssText = 'color:#fff;font-size:16px;font-weight:600;'; t.textContent = 'Select all text below and copy:';
+  const ta = document.createElement('textarea'); ta.value = text;
+  ta.style.cssText = 'flex:1;background:#0d1b2a;color:#e8f4f8;border:1px solid rgba(255,255,255,.2);border-radius:8px;padding:12px;font-family:monospace;font-size:11px;resize:none;';
+  const btn = document.createElement('button'); btn.textContent = 'Done';
+  btn.style.cssText = 'background:#40916c;color:#fff;border:none;border-radius:12px;padding:14px;font-size:16px;font-weight:600;cursor:pointer;';
+  btn.onclick = () => document.body.removeChild(ov);
+  ov.append(t, ta, btn); document.body.appendChild(ov); ta.focus(); ta.select();
 }
-function exportCSV(){
-  const round=currentRound(); if(!round) return;
-  const rows=[['Hole','Par','Yardage','Shot#','Lie','Dist From','Dist Unit','Result Lie','Result Dist','Result Unit','Category','SG','Miss Depth','Miss Side']];
-  for(const hole of round.holes) for(let i=0;i<(hole.shots||[]).length;i++){
-    const s=hole.shots[i];
-    const fu=s.lie==='green'?'ft':'yds', ru=s.resultLie==='green'?'ft':'yds';
-    rows.push([hole.hole,hole.par,hole.yardsOverride||hole.yards,i+1,s.lie,s.distFrom,fu,s.resultLie,s.resultDist!=null?s.resultDist:'',s.resultLie!=='holed'?ru:'',s.category,s.sg!=null?s.sg.toFixed(4):'',s.missDepth||'',s.missSide||'']);
+
+function exportCSV() {
+  const round = currentRound(); if(!round) return;
+  const rows = [['Hole','Par','Yardage','Shot#','Lie','Dist From','Dist Unit','Result Lie','Result Dist','Result Unit','Category','SG','Miss Depth','Miss Side']];
+  for(const hole of round.holes) for(let i = 0; i < (hole.shots || []).length; i++) {
+    const s = hole.shots[i];
+    const fu = s.lie === 'green' ? 'ft' : 'yds', ru = s.resultLie === 'green' ? 'ft' : 'yds';
+    rows.push([hole.hole, hole.par, hole.yardsOverride || hole.yards, i + 1, s.lie, s.distFrom, fu, s.resultLie, s.resultDist != null ? s.resultDist : '', s.resultLie !== 'holed' ? ru : '', s.category, s.sg != null ? s.sg.toFixed(4) : '', s.missDepth || '', s.missSide || '']);
   }
-  const csv=rows.map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\r\n');
-  copyToClipboard(csv,'CSV copied to clipboard!');
+  const csv = rows.map(r => r.map(c => '"' + String(c).replace(/"/g, '""') + '"').join(',')).join('\r\n');
+  copyToClipboard(csv, 'CSV copied to clipboard!');
 }
-function exportSummaryCSV(){
-  const round=currentRound(); if(!round) return;
-  const tot={drive:0,approach:0,shortgame:0,putt:0},cnt={drive:0,approach:0,shortgame:0,putt:0}; let grand=0;
-  for(const hole of round.holes) for(const s of (hole.shots||[])){
-    if(s.sg==null) continue; tot[s.category]+=s.sg; cnt[s.category]++; grand+=s.sg;
+
+function exportSummaryCSV() {
+  const round = currentRound(); if(!round) return;
+  const tot = {drive:0, approach:0, shortgame:0, putt:0}, cnt = {drive:0, approach:0, shortgame:0, putt:0}; let grand = 0;
+  for(const hole of round.holes) for(const s of (hole.shots || [])) {
+    if(s.sg == null) continue; tot[s.category] += s.sg; cnt[s.category]++; grand += s.sg;
   }
-  const rows=[['Date','Course','Total SG','Drive SG','Drive Shots','Approach SG','Approach Shots','Short Game SG','Short Game Shots','Putt SG','Putt Shots'],
-    [round.date.split('T')[0],round.courseName,grand.toFixed(4),tot.drive.toFixed(4),cnt.drive,tot.approach.toFixed(4),cnt.approach,tot.shortgame.toFixed(4),cnt.shortgame,tot.putt.toFixed(4),cnt.putt]];
-  const csv=rows.map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\r\n');
-  copyToClipboard(csv,'Summary CSV copied!');
+  const rows = [
+    ['Date','Course','Total SG','Drive SG','Drive Shots','Approach SG','Approach Shots','Short Game SG','Short Game Shots','Putt SG','Putt Shots'],
+    [round.date.split('T')[0], round.courseName, grand.toFixed(4), tot.drive.toFixed(4), cnt.drive, tot.approach.toFixed(4), cnt.approach, tot.shortgame.toFixed(4), cnt.shortgame, tot.putt.toFixed(4), cnt.putt]
+  ];
+  const csv = rows.map(r => r.map(c => '"' + String(c).replace(/"/g, '""') + '"').join(',')).join('\r\n');
+  copyToClipboard(csv, 'Summary CSV copied!');
+}
+
+</script>
+<script>
+// ═══════════════════════════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════════════════════════
+
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + name).classList.add('active');
+  window.scrollTo(0, 0);
+  if(name === 'home')    renderHome();
+  if(name === 'courses') renderCourses();
+  if(name === 'hole')    renderHoleScreen();
+  if(name === 'summary') renderSummary();
 }
 
 // ═══════════════════════════════════════════════════════════════
-// TOAST
+// HOME
 // ═══════════════════════════════════════════════════════════════
-let toastTimer;
-function showToast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove('show'),2400); }
+
+function renderHome() {
+  const rounds = getRounds();
+  const el = document.getElementById('rounds-list');
+  if(rounds.length === 0) {
+    el.innerHTML = `<div class="empty-state"><div class="empty-state-icon">⛳</div><div class="empty-state-text">No rounds yet.<br>Start a new round to begin tracking.</div></div>`;
+    return;
+  }
+  el.innerHTML = rounds.map(r => {
+    const sg = roundTotalSG(r, null);
+    const sgStr = sg !== null ? (sg >= 0 ? '+' : '') + sg.toFixed(1) : '—';
+    const sgColor = sg === null ? 'var(--text-muted)' : sg >= 0 ? 'var(--q-great)' : 'var(--q-poor)';
+    const strokes = r.holes.reduce((s, h) => s + countStrokes(h.shots || []), 0);
+    return `<div class="round-card" onclick="resumeRound('${r.id}')">
+      <div class="round-card-info"><div class="round-card-name">${r.courseName}</div><div class="round-card-meta">${formatDate(r.date)} · ${strokes} stroke${strokes !== 1 ? 's' : ''}</div></div>
+      <div class="round-card-sg"><div class="round-card-sg-val" style="color:${sgColor}">${sgStr}</div><div class="round-card-sg-lbl">Total SG</div></div>
+      <div class="round-del-btn" onclick="event.stopPropagation();deleteRound('${r.id}')">×</div>
+    </div>`;
+  }).join('');
+}
+
+function goToNewRound() { showScreen('courses'); }
+
+function resumeRound(id) {
+  state.currentRoundId = id;
+  const r = getRound(id);
+  let last = 1;
+  for(let i = 0; i < r.holes.length; i++) if((r.holes[i].shots || []).length > 0) last = i + 1;
+  state.currentHole = last;
+  state.excludedCategories = new Set();
+  showScreen('hole');
+}
+
+function deleteRound(id) {
+  if(!confirm('Delete this round?')) return;
+  saveRounds(getRounds().filter(r => r.id !== id));
+  renderHome();
+}
 
 // ═══════════════════════════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════════════════════════
-(function(){ renderHome(); })();
+
+(function() { renderHome(); })();
 
 </script>
 </body>

@@ -3,14 +3,14 @@
   <div class="topbar">
     <button class="btn-icon" onclick="showScreen('home')">‹</button>
     <div><div class="topbar-title">Select Course</div></div>
-    <div style="width:36px"></div>
+    <div class="topbar-spacer"></div>
   </div>
   <div class="scroll-body">
     <div id="courses-list"></div>
     <div class="section-label" style="margin-top:24px">Add Course</div>
-    <p style="font-size:13px;color:var(--text-muted);margin-bottom:12px">Paste course JSON. <span style="color:var(--fairway);cursor:pointer" onclick="showSampleJSON()">Load Wild Wood example ›</span></p>
+    <p class="course-json-hint">Paste course JSON. <span class="link-fairway" onclick="showSampleJSON()">Load Wild Wood example ›</span></p>
     <textarea class="json-input" id="course-json-input" placeholder='[{"name":"My Club","tees":"Blue","holes":[{"hole":1,"par":4,"yards":385},...]}]'></textarea>
     <button class="btn btn-primary" style="margin-top:10px" onclick="saveCourseJSON()">Save Course</button>
-    <div id="json-error" style="color:var(--accent);font-size:13px;margin-top:8px;display:none"></div>
+    <div id="json-error"></div>
   </div>
 </div>

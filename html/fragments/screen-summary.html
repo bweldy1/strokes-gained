@@ -10,12 +10,12 @@
     <div class="section-label">Statistics</div>
     <div class="card" id="summary-stats"></div>
     <div class="section-label">Export</div>
-    <button class="btn btn-secondary" onclick="exportCSV()" style="margin-bottom:10px">📋 Copy Full CSV</button>
+    <button class="btn btn-secondary btn-mb" onclick="exportCSV()">📋 Copy Full CSV</button>
     <button class="btn btn-secondary" onclick="exportSummaryCSV()">📊 Copy Summary Row</button>
-    <div style="margin-top:12px;padding:12px;background:var(--card);border-radius:var(--radius-sm);border:1px solid var(--border)">
-      <p style="font-size:12px;color:var(--text-muted);line-height:1.6">Google Sheets: open a sheet → tap cell A1 → long-press and Paste.<br>If clipboard doesn't work, a text box will appear to copy manually.</p>
+    <div class="export-hint-card">
+      <p class="export-hint-text">Google Sheets: open a sheet → tap cell A1 → long-press and Paste.<br>If clipboard doesn't work, a text box will appear to copy manually.</p>
     </div>
-    <div style="height:20px"></div>
+    <div class="spacer-sm"></div>
     <button class="btn btn-ghost" onclick="showScreen('home')">Done</button>
   </div>
 </div>

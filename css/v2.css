@@ -163,3 +163,47 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
 .category-override-row:active { opacity: .7; }
 .category-override-hint { font-size: 11px; color: var(--text-dim); margin-left: auto; }
 .lie-chip { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; background: var(--input-bg); border: 1px solid var(--input-border); color: var(--text); }
+
+/* ── Layout helpers ── */
+.topbar-center { text-align: center; }
+.topbar-spacer { width: 36px; flex-shrink: 0; }
+.topbar-clickable { cursor: pointer; }
+.spacer-sm { height: 20px; }
+
+/* ── Empty states ── */
+.list-empty { text-align: center; padding: 24px; color: var(--text-dim); font-size: 14px; }
+
+/* ── Shot form ── */
+.form-label-inline { margin-bottom: 0; }
+.form-unit-label { color: var(--text-dim); font-weight: 400; text-transform: none; letter-spacing: 0; }
+.pill-expand { margin-top: 10px; }
+.num-input-text { font-size: 18px; font-weight: 400; }
+.add-shot-icon { font-size: 20px; }
+.yardage-edit-icon { font-size: 10px; color: var(--text-dim); }
+
+/* ── Summary totals ── */
+.summary-total-label { font-size: 17px; font-weight: 600; color: var(--text); }
+.summary-total-sub { font-size: 12px; color: var(--text-dim); font-weight: 400; }
+.summary-total-val { font-size: 28px; font-weight: 700; }
+.ssum-cat-meta { font-size: 12px; color: var(--text-dim); }
+.ssum-cat-right { display: flex; align-items: center; gap: 10px; }
+.summary-by-hole-row { border-top: 1px solid var(--border); margin-top: 4px; }
+.summary-by-hole-label { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: .5px; color: var(--text-dim); }
+.sstat-header-val { font-size: 12px; color: var(--text-dim); font-weight: 400; }
+
+/* ── Hole summary row ── */
+.hsrow-par { font-size: 12px; }
+.hsrow-right { display: flex; align-items: center; gap: 8px; }
+
+/* ── Courses screen ── */
+.course-json-hint { font-size: 13px; color: var(--text-muted); margin-bottom: 12px; }
+.link-fairway { color: var(--fairway); cursor: pointer; }
+
+/* ── Export / summary screen ── */
+.export-hint-card { margin-top: 12px; padding: 12px; background: var(--card); border-radius: var(--radius-sm); border: 1px solid var(--border); }
+.export-hint-text { font-size: 12px; color: var(--text-muted); line-height: 1.6; }
+.btn-mb { margin-bottom: 12px; }
+
+/* ── Misc IDs ── */
+#build-version { position: absolute; bottom: 0; left: 0; right: 0; text-align: center; font-size: 10px; color: var(--text); padding: 4px; }
+#json-error { color: var(--accent); font-size: 13px; margin-top: 8px; display: none; }
