@@ -44,7 +44,7 @@ function toggleSummaryHole(holeNum) {
   if(icon) icon.style.transform = open ? 'rotate(90deg)' : '';
 }
 
-function buildBucketRows(shots, cat) {
+function buildBucketRows(shots, cat, showTotal = true) {
   const buckets = SG_BUCKETS[cat]; if(!buckets) return '';
   const fmtSG = v => (v >= 0 ? '+' : '') + v.toFixed(2);
   const rows = buckets.map(b => {
@@ -57,7 +57,7 @@ function buildBucketRows(shots, cat) {
       <span class="ssum-bucket-label">${b.label}</span>
       <span class="ssum-bucket-count">${bs.length} shot${bs.length !== 1 ? 's' : ''}</span>
       <span class="ssum-bucket-avg ${cls(bAvg)}">${fmtSG(bAvg)}</span>
-      <span class="ssum-bucket-total ${cls(bTot)}">${fmtSG(bTot)}</span>
+      ${showTotal ? `<span class="ssum-bucket-total ${cls(bTot)}">${fmtSG(bTot)}</span>` : ''}
     </div>`;
   }).filter(Boolean).join('');
   return rows || '<div class="ssum-empty">No shots recorded</div>';

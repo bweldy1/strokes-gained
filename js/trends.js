@@ -36,7 +36,7 @@ function renderTrends() {
     const tot = valid.reduce((sum, s) => sum + s.sg, 0);
     const avg = cnt > 0 ? tot / cnt : null;
     const avgStr = avg !== null ? (avg >= 0 ? '+' : '') + avg.toFixed(2) : '—';
-    const bucketRows = buildBucketRows(shots, cat);
+    const bucketRows = buildBucketRows(shots, cat, false);
 
     return `<div class="card trends-cat-card">
       <div class="trends-cat-header" onclick="toggleTrendsCat('${cat}')">
