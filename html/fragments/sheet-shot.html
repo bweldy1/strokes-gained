@@ -41,21 +41,26 @@
             <div class="pill pill-sm" onclick="selectLie('recovery')">Recovery</div>
           </div>
         </div>
-        <div id="prefill-hint" class="prefill-hint" style="display:none"></div>
       </div>
 
       <!-- Distance from Pin -->
       <div class="form-group">
-        <div class="form-label">Distance from Pin <span id="dist-from-unit-label" style="color:var(--text-dim);font-weight:400;text-transform:none;letter-spacing:0">(yards)</span></div>
-        <div class="num-input-wrap">
-          <input class="num-input" type="number" id="shot-dist-from" inputmode="numeric" placeholder="0" oninput="onShotFormChange()">
-          <span class="num-unit" id="dist-from-unit">yds</span>
+        <div class="category-override-row" onclick="toggleDistOverride()">
+          <span class="form-label" style="margin:0">Distance <span id="dist-from-unit-label" style="color:var(--text-dim);font-weight:400;text-transform:none;letter-spacing:0">(yards)</span></span>
+          <span id="dist-chip" class="lie-chip"></span>
+          <span class="category-override-hint">tap to override ›</span>
+        </div>
+        <div id="dist-from-expand" style="display:none;margin-top:10px">
+          <div class="num-input-wrap">
+            <input class="num-input" type="number" id="shot-dist-from" inputmode="numeric" placeholder="0" oninput="onDistInput()">
+            <span class="num-unit" id="dist-from-unit">yds</span>
+          </div>
         </div>
       </div>
 
       <!-- Result Lie -->
       <div class="form-group">
-        <div class="form-label">Result — Next Lie</div>
+        <div class="form-label">Result Lie</div>
         <div class="pill-group" id="result-lie-pills">
           <div class="pill" onclick="selectResultLie('fairway')">Fairway</div>
           <div class="pill" onclick="selectResultLie('rough')">Rough</div>

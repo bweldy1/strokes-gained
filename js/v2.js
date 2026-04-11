@@ -296,11 +296,12 @@ function openShotSheet(editIndex) {
   document.getElementById('shot-dist-result').value='';
   document.getElementById('result-dist-group').style.display='none';
   document.getElementById('miss-dir-group').style.display='none';
-  document.getElementById('prefill-hint').style.display='none';
   document.getElementById('category-pills-expand').style.display='none';
   document.getElementById('lie-pills-expand').style.display='none';
+  document.getElementById('dist-from-expand').style.display='none';
   renderCategoryChip(null);
   renderLieChip(null);
+  renderDistChip('','yds');
   document.querySelectorAll('#lie-pills .pill,#lie-pills-secondary .pill,#result-lie-pills .pill,#result-lie-pills-secondary .pill,#category-pills .pill,#miss-depth-pills .pill').forEach(p=>p.classList.remove('selected'));
 
   const hd=currentHoleData();
@@ -318,16 +319,12 @@ function openShotSheet(editIndex) {
     if(sug){
       if(sug.lie) selectLie(sug.lie,true);
       if(sug.dist!=='') document.getElementById('shot-dist-from').value=sug.dist;
-      const hint=document.getElementById('prefill-hint');
-      hint.textContent='↑ Pre-filled: '+sug.hint+' (override freely)';
-      hint.style.display='block';
       const idx=hd.shots.length;
       if(sug.lie) selectCategory(autoCategory(sug.lie,sug.dist||0,idx,hd.par),true);
     }
   }
   updateDistFromUnit(); updateResultDistVisibility(); updateSGPreview();
   document.getElementById('shot-sheet').classList.add('open');
-  setTimeout(()=>document.getElementById('shot-dist-from').focus(),350);
 }
 function editShot(i){ openShotSheet(i); }
 function closeShotSheet(){ document.getElementById('shot-sheet').classList.remove('open'); }
@@ -356,8 +353,11 @@ function toggleLieOverride(){
 }
 function updateDistFromUnit(){
   const green=state.shotLie==='green';
-  document.getElementById('dist-from-unit').textContent=green?'ft':'yds';
+  const unit=green?'ft':'yds';
+  document.getElementById('dist-from-unit').textContent=unit;
   document.getElementById('dist-from-unit-label').textContent=green?'(feet)':'(yards)';
+  const val=document.getElementById('shot-dist-from').value;
+  renderDistChip(val,unit);
 }
 function selectResultLie(lie,silent){
   state.shotResultLie=lie;
@@ -414,6 +414,22 @@ function renderCategoryChip(cat){
 function toggleCategoryOverride(){
   const exp=document.getElementById('category-pills-expand'); if(!exp) return;
   exp.style.display=exp.style.display==='none'?'block':'none';
+}
+function renderDistChip(val,unit){
+  const el=document.getElementById('dist-chip'); if(!el) return;
+  el.textContent=val?`${val} ${unit}`:'—';
+}
+function toggleDistOverride(){
+  const exp=document.getElementById('dist-from-expand'); if(!exp) return;
+  const opening=exp.style.display==='none';
+  exp.style.display=opening?'block':'none';
+  if(opening) setTimeout(()=>document.getElementById('shot-dist-from').focus(),50);
+}
+function onDistInput(){
+  const val=document.getElementById('shot-dist-from').value;
+  const unit=state.shotLie==='green'?'ft':'yds';
+  renderDistChip(val,unit);
+  onShotFormChange();
 }
 function updateMissSidePills(cat){
   const opts=cat==='putt'

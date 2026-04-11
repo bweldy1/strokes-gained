@@ -62,17 +62,20 @@ let state = { currentRoundId, currentHole, editingShotIndex, excludedCategories,
 ### Storage
 All data in `localStorage` as JSON. Keys: `sg_rounds`, `sg_courses`.
 
-### Collapsed chip UI (Category + Starting Lie)
-Both "Category" and "Starting Lie" in the shot entry form use a chip-based collapsed pattern:
-- A chip (`#category-chip`, `#lie-chip`) shows the current value
-- Pills expand inline on tap via `toggleCategoryOverride()` / `toggleLieOverride()`
+### Collapsed chip UI (Category, Starting Lie, Distance)
+Category, Starting Lie, and Distance from Pin all use a chip-based collapsed pattern:
+- A chip (`#category-chip`, `#lie-chip`, `#dist-chip`) shows the current value
+- Pills/input expand inline on tap via `toggleCategoryOverride()` / `toggleLieOverride()` / `toggleDistOverride()`
 - Selecting a pill updates the chip and auto-collapses via `silent=false` path in `selectCategory()` / `selectLie()`
-- `renderCategoryChip(cat)` and `renderLieChip(lie)` handle chip DOM updates
+- Distance chip updates on input via `onDistInput()` and on unit change via `updateDistFromUnit()`
+- `renderCategoryChip(cat)`, `renderLieChip(lie)`, `renderDistChip(val, unit)` handle chip DOM updates
+- Distance field no longer auto-focuses on sheet open — user taps chip to expand and focus
 
 ### Shot Pre-fill (getSuggestion)
 `getSuggestion(holeData)` returns `{ lie, dist, hint }` for new shots:
 - First shot on a hole → `lie:'tee'`, dist from scorecard
 - Subsequent shots → previous shot's `resultLie` and `resultDist`
+- The pre-filled distance is shown in the collapsed chip — no separate hint text
 
 When `lie='green'`, `selectLie` also auto-sets `resultLie='green'` if no result lie is set yet.
 
@@ -89,7 +92,7 @@ When `lie='green'`, `selectLie` also auto-sets `resultLie='green'` if no result 
 - Shows a red `+1 stroke` badge (`.penalty-badge`) in the shot list row
 - `countStrokes(shots)` — helper that returns `shots.length + penalty count`; used everywhere strokes are displayed (home card, summary header, hole rows)
 - No auto-fill for the next shot's lie (drop location varies), but result distance carries forward as the distance pre-fill
-- `getSuggestion` returns `{ lie: null, dist, hint }` after a penalty; `openShotSheet` guards `selectLie`/`selectCategory` with `if(sug.lie)`
+- `getSuggestion` returns `{ lie: null, dist }` after a penalty; `openShotSheet` guards `selectLie`/`selectCategory` with `if(sug.lie)`
 
 ### SG Calculation
 `calcSG(startLie, startDist, resultLie, resultDist)` uses `sg_tables.js` lookup tables with linear interpolation. Result is added to each shot on save.
