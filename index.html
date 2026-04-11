@@ -15,9 +15,11 @@
   --border: rgba(255,255,255,0.08); --border2: rgba(255,255,255,0.15);
   --radius: 14px; --radius-sm: 8px; --sheet-bg: #0d1b2a;
   --input-bg: rgba(255,255,255,0.06); --input-border: rgba(255,255,255,0.12);
-  --q-great: #52b788; --q-good: #74c69d; --q-average: #f4a261;
-  --q-poor: #e76f51; --q-terrible: #e94560;
+  --q-great: #69f0ae; --q-good: #a5d6a7; --q-average: #ffca28;
+  --q-poor: #ef5350; --q-terrible: #c62828;
 }
+
+
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 body { font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif; background: var(--sky); color: var(--text); min-height: 100vh; overflow-x: hidden; -webkit-font-smoothing: antialiased; }
 .screen { display: none; flex-direction: column; min-height: 100vh; }
@@ -241,7 +243,7 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
     <div class="section-label">Recent Rounds</div>
     <div id="rounds-list"></div>
   </div>
-  <div id="build-version">Build: 2026-04-10 22:43</div>
+  <div id="build-version">Build: 2026-04-10 23:02</div>
 </div>
 
 <!-- COURSE SELECT -->
@@ -811,14 +813,15 @@ const SG_TABLES = {
 // ═══════════════════════════════════════════════════════════════
 
 const quality_band_global = [
-  {label:'Exceptional',   min:1,    color:'#37ec98'},
-  {label:'Excellent',     min:0.5,  color:'#52b788'},
-  {label:'Above Average', min:0.2,  color:'#74c69d'},
-  {label:'Neutral',       min:-0.2, color:'#f5b17a'},
-  {label:'Below Average', min:-0.5, color:'#bb7b6b'},
-  {label:'Poor',          min:-1,   color:'#e76f51'},
-  {label:'Very Poor',     min:-999, color:'#f32548'}
+  {label:'Exceptional',   min:1,    color:'#00e676'},
+  {label:'Excellent',     min:0.5,  color:'#69f0ae'},
+  {label:'Above Average', min:0.2,  color:'#a5d6a7'},
+  {label:'Neutral',       min:-0.2, color:'#ffca28'},
+  {label:'Below Average', min:-0.5, color:'#ffa726'},
+  {label:'Poor',          min:-1,   color:'#ef5350'},
+  {label:'Very Poor',     min:-999, color:'#c62828'}
 ];
+
 
 const QUALITY_BANDS = {
   drive:     quality_band_global,

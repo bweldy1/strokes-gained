@@ -6,9 +6,11 @@
   --border: rgba(255,255,255,0.08); --border2: rgba(255,255,255,0.15);
   --radius: 14px; --radius-sm: 8px; --sheet-bg: #0d1b2a;
   --input-bg: rgba(255,255,255,0.06); --input-border: rgba(255,255,255,0.12);
-  --q-great: #52b788; --q-good: #74c69d; --q-average: #f4a261;
-  --q-poor: #e76f51; --q-terrible: #e94560;
+  --q-great: #69f0ae; --q-good: #a5d6a7; --q-average: #ffca28;
+  --q-poor: #ef5350; --q-terrible: #c62828;
 }
+
+
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 body { font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif; background: var(--sky); color: var(--text); min-height: 100vh; overflow-x: hidden; -webkit-font-smoothing: antialiased; }
 .screen { display: none; flex-direction: column; min-height: 100vh; }

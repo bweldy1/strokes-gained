@@ -3,14 +3,15 @@
 // ═══════════════════════════════════════════════════════════════
 
 const quality_band_global = [
-  {label:'Exceptional',   min:1,    color:'#37ec98'},
-  {label:'Excellent',     min:0.5,  color:'#52b788'},
-  {label:'Above Average', min:0.2,  color:'#74c69d'},
-  {label:'Neutral',       min:-0.2, color:'#f5b17a'},
-  {label:'Below Average', min:-0.5, color:'#bb7b6b'},
-  {label:'Poor',          min:-1,   color:'#e76f51'},
-  {label:'Very Poor',     min:-999, color:'#f32548'}
+  {label:'Exceptional',   min:1,    color:'#00e676'},
+  {label:'Excellent',     min:0.5,  color:'#69f0ae'},
+  {label:'Above Average', min:0.2,  color:'#a5d6a7'},
+  {label:'Neutral',       min:-0.2, color:'#ffca28'},
+  {label:'Below Average', min:-0.5, color:'#ffa726'},
+  {label:'Poor',          min:-1,   color:'#ef5350'},
+  {label:'Very Poor',     min:-999, color:'#c62828'}
 ];
+
 
 const QUALITY_BANDS = {
   drive:     quality_band_global,
