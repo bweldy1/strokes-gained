@@ -58,7 +58,7 @@ Each shot stored in `round.holes[n].shots[]`:
   resultDist: Number|null,             // yards (feet if resultLie=green); null if holed
   category: 'drive'|'approach'|'shortgame'|'putt',
   sg: Number|null,                     // strokes gained, rounded to 4 decimal places on save
-  missDepth: 'short'|'long'|null,
+  missDepth: 'short'|'even'|'long'|null,   // 'even' = pin high / on-line
   missSide: 'left'|'middle'|'right'|null,  // OR 'low'|'center'|'high' for putts
 }
 ```
@@ -127,9 +127,12 @@ When `lie='green'`, `selectLie` also auto-sets `resultLie='green'` if no result 
 Short Game = any non-putt, non-drive shot from **under 30 yards** (`autoCategory` returns `'shortgame'` when `distYards < 30`). Chips, pitches, and bunker shots within 30 yards. Users can manually override category on any shot.
 
 ### Miss Direction
-- `selectMissDepth(val)` / `selectMissSide(val)` — toggle behavior (tap selected → deselects)
-- Side options swap based on category: putts use Low/Center/High, all others use Left/Middle/Right
-- `updateMissSidePills(cat)` rebuilds the side pills and is called from `selectCategory`
+- Rendered as a 3×3 grid: rows are Long / (unlabeled) / Short, columns are Left/Middle/Right (or Low/Center/High for putts)
+- The middle row has no depth label and stores `missDepth: 'even'`; it represents pin-high / on-line direction only
+- `selectMissCombo(depth, side)` — selects both depth and side in one tap; tap the selected cell again to deselect
+- `selectMissDepth(val)` / `selectMissSide(val)` — still available for programmatic use (e.g. pre-filling on edit)
+- `updateMissGrid(cat)` rebuilds the grid and is called from `selectCategory`; handles putt vs non-putt column labels
+- Grid cells are fixed `40px` tall via `grid-auto-rows`; flexbox centers content within each cell
 - Miss direction group is hidden when result is 'Holed', shown for all other results (including Penalty)
 
 ### Penalty Shots

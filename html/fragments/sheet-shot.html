@@ -74,6 +74,12 @@
         </div>
       </div>
 
+      <!-- Miss Direction (grid, conditional) -->
+      <div id="miss-dir-group" class="hidden">
+        <div class="miss-label">Miss Direction <span style="font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></div>
+        <div class="miss-grid" id="miss-grid"></div>
+      </div>
+
       <!-- Result Distance -->
       <div class="form-group hidden" id="result-dist-group">
         <div class="form-label">Result Distance <span id="result-dist-unit-label" class="form-unit-label"></span></div>
@@ -81,18 +87,6 @@
           <input class="num-input" type="number" id="shot-dist-result" inputmode="numeric" placeholder="0" oninput="onShotFormChange()">
           <span class="num-unit" id="dist-result-unit">yds</span>
         </div>
-      </div>
-
-      <!-- Miss Direction (compact, conditional) -->
-      <div id="miss-dir-group" class="hidden">
-        <div class="miss-row">
-          <span class="miss-label">Miss</span>
-          <div class="pill-group" id="miss-depth-pills">
-            <div class="pill pill-sm" onclick="selectMissDepth('short')">Short</div>
-            <div class="pill pill-sm" onclick="selectMissDepth('long')">Long</div>
-          </div>
-        </div>
-        <div class="pill-group pill-group-secondary" id="miss-side-pills"></div>
       </div>
 
       <!-- SG Preview -->

@@ -16,7 +16,7 @@ function openShotSheet(editIndex) {
   renderCategoryChip(null);
   renderLieChip(null);
   renderDistChip('', 'yds');
-  document.querySelectorAll('#lie-pills .pill,#lie-pills-secondary .pill,#result-lie-pills .pill,#result-lie-pills-secondary .pill,#category-pills .pill,#miss-depth-pills .pill').forEach(p => p.classList.remove('selected'));
+  document.querySelectorAll('#lie-pills .pill,#lie-pills-secondary .pill,#result-lie-pills .pill,#result-lie-pills-secondary .pill,#category-pills .pill').forEach(p => p.classList.remove('selected'));
 
   const hd = currentHoleData();
   if(editIndex !== undefined) {
@@ -26,8 +26,8 @@ function openShotSheet(editIndex) {
     selectResultLie(s.resultLie, true);
     if(s.resultDist != null) document.getElementById('shot-dist-result').value = s.resultDist;
     selectCategory(s.category, true);
-    if(s.missDepth) selectMissDepth(s.missDepth, true);
-    if(s.missSide) selectMissSide(s.missSide, true);
+    if(s.missDepth) state.shotMissDepth = s.missDepth;
+    if(s.missSide) state.shotMissSide = s.missSide;
   } else {
     const sug = getSuggestion(hd);
     if(sug) {
@@ -89,7 +89,6 @@ function selectResultLie(lie, silent) {
   if(lie === 'holed') {
     missGroup.classList.add('hidden');
     state.shotMissDepth = null; state.shotMissSide = null;
-    document.querySelectorAll('#miss-depth-pills .pill,#miss-side-pills .pill').forEach(p => p.classList.remove('selected'));
   } else {
     missGroup.classList.remove('hidden');
   }
@@ -119,7 +118,7 @@ function selectCategory(cat, silent) {
   const map = {'Drive':'drive', 'Approach':'approach', 'Short Game':'shortgame', 'Putt':'putt'};
   document.querySelectorAll('#category-pills .pill').forEach(p => p.classList.toggle('selected', map[p.textContent.trim()] === cat));
   renderCategoryChip(cat);
-  updateMissSidePills(cat);
+  updateMissGrid(cat);
   if(!silent) {
     const exp = document.getElementById('category-pills-expand'); if(exp) exp.classList.add('hidden');
   }
@@ -155,25 +154,40 @@ function onDistInput() {
   onShotFormChange();
 }
 
-function updateMissSidePills(cat) {
-  const opts = cat === 'putt'
+function updateMissGrid(cat) {
+  const sides = cat === 'putt'
     ? [['low','Low'], ['center','Center'], ['high','High']]
     : [['left','Left'], ['middle','Middle'], ['right','Right']];
-  const container = document.getElementById('miss-side-pills'); if(!container) return;
-  if(state.shotMissSide && !opts.some(([v]) => v === state.shotMissSide)) state.shotMissSide = null;
-  container.innerHTML = opts.map(([v, l]) => `<div class="pill pill-sm${state.shotMissSide === v ? ' selected' : ''}" onclick="selectMissSide('${v}')">${l}</div>`).join('');
+  const container = document.getElementById('miss-grid'); if(!container) return;
+  if(state.shotMissSide && !sides.some(([v]) => v === state.shotMissSide)) state.shotMissSide = null;
+  const depthLabels = {long:'Long', even:'', short:'Short'};
+  container.innerHTML = ['long','even','short'].map(dv =>
+    sides.map(([sv, sl]) => {
+      const sel = state.shotMissDepth === dv && state.shotMissSide === sv;
+      return `<div class="miss-grid-cell${sel ? ' selected' : ''}" onclick="selectMissCombo('${dv}','${sv}')"><span class="miss-cell-depth">${depthLabels[dv]}</span>${sl}</div>`;
+    }).join('')
+  ).join('');
+}
+
+function selectMissCombo(depth, side) {
+  if(state.shotMissDepth === depth && state.shotMissSide === side) {
+    state.shotMissDepth = null; state.shotMissSide = null;
+  } else {
+    state.shotMissDepth = depth; state.shotMissSide = side;
+  }
+  updateMissGrid(state.shotCategory);
 }
 
 function selectMissDepth(val, silent) {
-  if(!silent && state.shotMissDepth === val) { state.shotMissDepth = null; }
-  else { state.shotMissDepth = val; }
-  document.querySelectorAll('#miss-depth-pills .pill').forEach(p => p.classList.toggle('selected', p.textContent.trim().toLowerCase() === state.shotMissDepth));
+  if(!silent && state.shotMissDepth === val) state.shotMissDepth = null;
+  else state.shotMissDepth = val;
+  updateMissGrid(state.shotCategory);
 }
 
 function selectMissSide(val, silent) {
-  if(!silent && state.shotMissSide === val) { state.shotMissSide = null; }
-  else { state.shotMissSide = val; }
-  document.querySelectorAll('#miss-side-pills .pill').forEach(p => p.classList.toggle('selected', p.textContent.trim().toLowerCase() === state.shotMissSide));
+  if(!silent && state.shotMissSide === val) state.shotMissSide = null;
+  else state.shotMissSide = val;
+  updateMissGrid(state.shotCategory);
 }
 
 function autoSetCategory() {
