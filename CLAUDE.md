@@ -191,11 +191,13 @@ Sand, Recovery, and Penalty are infrequent. In lie pill rows, they appear as sec
 - **Putting** (`group='putt'`): Avg first putt distance (first putt per hole), Avg holed distance, Longest holed (all in feet)
 - Stat rows use `.sstat-row`, `.sstat-label`, `.sstat-val`
 
-`buildBucketRows(shots, cat)` — renders the category drill-down as distance-bucket rows (avg SG + total SG per bucket). Empty buckets are skipped. Filter uses `distFrom >= b.min && distFrom <= b.max` (inclusive on both ends). Defined in `state.js` as `SG_BUCKETS`:
+`buildBucketRows(shots, cat)` — renders the category drill-down as bucket rows (avg SG + total SG per bucket). Empty buckets are skipped. Defined in `state.js` as `SG_BUCKETS`:
 - **Putt** (feet, `distFrom`): 0–3, 4–8, 9–15, 16–25, 26+
 - **Short Game** (yards, `distFrom`): 0–15, 16–30 — upper bound matches `autoCategory` threshold
-- **Approach** (yards, `distFrom`): <75, 76–100, 101–125, 126–150, 151–175, 176+
+- **Approach** (yards, `distFrom`): <75, 76–100, 101–125, 126–150, 151–175, 176+, Recovery
 - **Drive** (hole yardage, `distFrom`): <350, 351–400, 401+
+
+Buckets filter by `distFrom >= b.min && distFrom <= b.max` (inclusive). Buckets with a `lie` property (e.g. Approach › Recovery) filter by `s.lie === b.lie` instead of distance, and those lies are automatically excluded from distance-based buckets in the same category.
 
 `buildShotRow(s, label, labelClass)` — used by the hole drill-down (`toggleSummaryHole`) only; category drill-down now uses `buildBucketRows`.
 

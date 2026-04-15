@@ -47,8 +47,11 @@ function toggleSummaryHole(holeNum) {
 function buildBucketRows(shots, cat, showTotal = true) {
   const buckets = SG_BUCKETS[cat]; if(!buckets) return '';
   const fmtSG = v => (v >= 0 ? '+' : '') + v.toFixed(2);
+  const lieBucketLies = buckets.filter(b => b.lie).map(b => b.lie);
   const rows = buckets.map(b => {
-    const bs = shots.filter(s => s.distFrom != null && s.distFrom >= b.min && s.distFrom <= b.max);
+    const bs = b.lie
+      ? shots.filter(s => s.lie === b.lie)
+      : shots.filter(s => s.distFrom != null && s.distFrom >= b.min && s.distFrom <= b.max && !lieBucketLies.includes(s.lie));
     if(bs.length === 0) return '';
     const bTot = bs.reduce((sum, s) => sum + (s.sg || 0), 0);
     const bAvg = bTot / bs.length;
@@ -67,7 +70,7 @@ function buildShotRow(s, label, labelClass = 'ssum-hole') {
   const fromDist = s.lie === 'green' ? s.distFrom + 'ft' : s.distFrom + 'y';
   const toLabel = LIE_ABBR[s.resultLie] || s.resultLie;
   const toDist = s.resultLie === 'holed' ? '' : s.resultLie === 'green' ? (s.resultDist != null ? s.resultDist + 'ft' : '') : (s.resultDist != null ? s.resultDist + 'y' : '');
-  const missParts = [s.missDepth, s.missSide].filter(Boolean).map(v => v.charAt(0).toUpperCase() + v.slice(1));
+  const missParts = [s.missDepth === 'even' ? null : s.missDepth, s.missSide].filter(Boolean).map(v => v.charAt(0).toUpperCase() + v.slice(1));
   const missStr = missParts.length ? missParts.join('-') : '';
   const sgStr = s.sg != null ? (s.sg >= 0 ? '+' : '') + s.sg.toFixed(2) : '—';
   const driveDist = (s.category === 'drive' && s.distFrom != null && s.resultDist != null) ? Math.round(s.distFrom - s.resultDist) : null;

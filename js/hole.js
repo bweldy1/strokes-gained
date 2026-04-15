@@ -33,7 +33,7 @@ function renderShotList(hd) {
     const isPenalty = s.resultLie === 'penalty';
     const resLabel = s.resultLie === 'holed' ? 'Holed ⛳' : s.resultLie.charAt(0).toUpperCase() + s.resultLie.slice(1);
     const resDist = s.resultLie === 'holed' ? '' : formatDist(s.resultDist, s.resultLie);
-    const missParts = [s.missDepth, s.missSide].filter(Boolean).map(v => v.charAt(0).toUpperCase() + v.slice(1));
+    const missParts = [s.missDepth === 'even' ? null : s.missDepth, s.missSide].filter(Boolean).map(v => v.charAt(0).toUpperCase() + v.slice(1));
     const missStr = missParts.length ? ` · ${missParts.join('-')}` : '';
     const driveDist = (s.category === 'drive' && s.distFrom != null && s.resultDist != null) ? Math.round(s.distFrom - s.resultDist) : null;
     const driveStr = driveDist != null ? ` · <span class="shot-drive-dist">${driveDist} yds drive</span>` : '';

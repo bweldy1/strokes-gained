@@ -50,6 +50,7 @@ const SG_BUCKETS = {
     {label:'126–150 yds',min:126, max:150},
     {label:'151–175 yds',min:151, max:175},
     {label:'176+ yds',   min:176, max:Infinity},
+    {label:'Recovery',   lie:'recovery'},
   ],
   drive: [
     {label:'< 350 yds',   min:0,   max:350},
