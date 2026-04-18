@@ -284,7 +284,7 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
     <div class="section-label">Recent Rounds</div>
     <div id="rounds-list"></div>
   </div>
-  <div id="build-version">Build: 2026-04-18 17:27</div>
+  <div id="build-version">Build: 2026-04-18 17:36</div>
 </div>
 
 <!-- COURSE SELECT -->
@@ -1633,7 +1633,7 @@ function buildMissGrid(shots, cat) {
     ? {low: 'Low', center: 'Center', high: 'High'}
     : {left: 'Left', middle: 'Middle', right: 'Right'};
 
-  const withMiss = shots.filter(s => s.missDepth != null && s.missSide != null);
+  const withMiss = shots.filter(s => s.missSide != null).map(s => ({...s, missDepth: s.missDepth ?? 'even'}));
   if(withMiss.length === 0) return '';
 
   const total = withMiss.length;

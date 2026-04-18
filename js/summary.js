@@ -74,7 +74,7 @@ function buildMissGrid(shots, cat) {
     ? {low: 'Low', center: 'Center', high: 'High'}
     : {left: 'Left', middle: 'Middle', right: 'Right'};
 
-  const withMiss = shots.filter(s => s.missDepth != null && s.missSide != null);
+  const withMiss = shots.filter(s => s.missSide != null).map(s => ({...s, missDepth: s.missDepth ?? 'even'}));
   if(withMiss.length === 0) return '';
 
   const total = withMiss.length;
