@@ -25,9 +25,9 @@ function openShotSheet(editIndex) {
     document.getElementById('shot-dist-from').value = s.distFrom;
     selectResultLie(s.resultLie, true);
     if(s.resultDist != null) document.getElementById('shot-dist-result').value = s.resultDist;
-    selectCategory(s.category, true);
     if(s.missDepth) state.shotMissDepth = s.missDepth;
     if(s.missSide) state.shotMissSide = s.missSide;
+    selectCategory(s.category, true);
   } else {
     const sug = getSuggestion(hd);
     if(sug) {

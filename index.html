@@ -284,7 +284,7 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
     <div class="section-label">Recent Rounds</div>
     <div id="rounds-list"></div>
   </div>
-  <div id="build-version">Build: 2026-04-18 16:45</div>
+  <div id="build-version">Build: 2026-04-18 17:27</div>
 </div>
 
 <!-- COURSE SELECT -->
@@ -1237,9 +1237,9 @@ function openShotSheet(editIndex) {
     document.getElementById('shot-dist-from').value = s.distFrom;
     selectResultLie(s.resultLie, true);
     if(s.resultDist != null) document.getElementById('shot-dist-result').value = s.resultDist;
-    selectCategory(s.category, true);
     if(s.missDepth) state.shotMissDepth = s.missDepth;
     if(s.missSide) state.shotMissSide = s.missSide;
+    selectCategory(s.category, true);
   } else {
     const sug = getSuggestion(hd);
     if(sug) {
