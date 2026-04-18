@@ -58,7 +58,7 @@ Each shot stored in `round.holes[n].shots[]`:
   resultDist: Number|null,             // yards (feet if resultLie=green); null if holed
   category: 'drive'|'approach'|'shortgame'|'putt',
   sg: Number|null,                     // strokes gained, rounded to 4 decimal places on save
-  missDepth: 'short'|'even'|'long'|null,   // 'even' = pin high / on-line
+  missDepth: 'short'|'even'|'long'|null,   // 'even' = pin high / on-line; null in older data (treated as 'even')
   missSide: 'left'|'middle'|'right'|null,  // OR 'low'|'center'|'high' for putts
 }
 ```
@@ -201,7 +201,7 @@ Buckets filter by `distFrom >= b.min && distFrom <= b.max` (inclusive). Buckets 
 
 `buildShotRow(s, label, labelClass)` — used by the hole drill-down (`toggleSummaryHole`) only; category drill-down now uses `buildBucketRows`.
 
-`buildMissGrid(shots, cat)` — renders a miss direction percentage grid appended after bucket rows in each category's expand section (summary + trends). Shows a 3×3 grid of depth (Long/Even/Short) × side (Left/Middle/Right, or Low/Center/High for putts). Each cell shows percentage and shot count; cells with ≥20% get a subtle green highlight (`.miss-pct-cell-hi`). Column headers show side totals. Shots without miss data are excluded from the count; a metadata line shows how many shots had miss data. Returns `''` if no miss data exists for the category.
+`buildMissGrid(shots, cat)` — renders a miss direction percentage grid appended after bucket rows in each category's expand section (summary + trends). Shows a 3×3 grid of depth (Long/Even/Short) × side (Left/Middle/Right, or Low/Center/High for putts). Each cell shows percentage and shot count; cells with ≥20% get a subtle green highlight (`.miss-pct-cell-hi`). Column headers show side totals. Only `missSide` is required for inclusion — if `missDepth` is null (older data), it defaults to `'even'`. A metadata line shows how many shots had miss data vs total. Returns `''` if no shots have `missSide` set.
 
 ### Shot List Layout (hole screen)
 `renderShotList` renders each shot with result as primary and starting position as secondary:
