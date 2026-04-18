@@ -66,6 +66,57 @@ function buildBucketRows(shots, cat, showTotal = true) {
   return rows || '<div class="ssum-empty">No shots recorded</div>';
 }
 
+function buildMissGrid(shots, cat) {
+  const depths = ['long', 'even', 'short'];
+  const depthLabels = {long: 'Long', even: 'Even', short: 'Short'};
+  const sides = cat === 'putt' ? ['low', 'center', 'high'] : ['left', 'middle', 'right'];
+  const sideLabels = cat === 'putt'
+    ? {low: 'Low', center: 'Center', high: 'High'}
+    : {left: 'Left', middle: 'Middle', right: 'Right'};
+
+  const withMiss = shots.filter(s => s.missDepth != null && s.missSide != null);
+  if(withMiss.length === 0) return '';
+
+  const total = withMiss.length;
+  const allCount = shots.length;
+  const metaStr = total < allCount ? `${total} of ${allCount} shots` : `${total} shot${total !== 1 ? 's' : ''}`;
+
+  // Count each depth×side combo
+  const counts = {};
+  for(const s of withMiss) {
+    const key = s.missDepth + '|' + s.missSide;
+    counts[key] = (counts[key] || 0) + 1;
+  }
+
+  // Side totals for column headers
+  const sideTotals = sides.map(side => withMiss.filter(s => s.missSide === side).length);
+
+  const colHeaders = sides.map((side, i) => {
+    const pct = Math.round(sideTotals[i] / total * 100);
+    return `<div class="miss-pct-col-hdr">${sideLabels[side]}<span class="miss-pct-col-pct">${pct}%</span></div>`;
+  }).join('');
+
+  const rows = depths.map(depth => {
+    const cells = sides.map(side => {
+      const n = counts[depth + '|' + side] || 0;
+      const pct = Math.round(n / total * 100);
+      const prominent = pct >= 20;
+      return n > 0
+        ? `<div class="miss-pct-cell${prominent ? ' miss-pct-cell-hi' : ''}"><span class="miss-pct-pct">${pct}%</span><span class="miss-pct-n">${n}</span></div>`
+        : `<div class="miss-pct-cell miss-pct-cell-empty">—</div>`;
+    }).join('');
+    return `<div class="miss-pct-row"><div class="miss-pct-depth-lbl">${depthLabels[depth]}</div>${cells}</div>`;
+  }).join('');
+
+  return `<div class="miss-pct-section">
+    <div class="miss-pct-header">Miss Direction <span class="miss-pct-meta">${metaStr}</span></div>
+    <div class="miss-pct-grid">
+      <div class="miss-pct-row miss-pct-col-row"><div class="miss-pct-depth-lbl"></div>${colHeaders}</div>
+      ${rows}
+    </div>
+  </div>`;
+}
+
 function buildShotRow(s, label, labelClass = 'ssum-hole') {
   const fromDist = s.lie === 'green' ? s.distFrom + 'ft' : s.distFrom + 'y';
   const toLabel = LIE_ABBR[s.resultLie] || s.resultLie;
@@ -106,7 +157,7 @@ function renderSummary() {
   const sgCls = (v, c) => c === 0 ? 'sg-null' : v >= 0 ? 'sg-pos' : 'sg-neg';
 
   const catHTML = cats.map(c => {
-    const rows = buildBucketRows(catShots[c], c);
+    const rows = buildBucketRows(catShots[c], c) + buildMissGrid(catShots[c], c);
     const avg = fmt(cnt[c] > 0 ? tot[c] / cnt[c] : 0, cnt[c]);
     return `<div class="summary-stat summary-cat-row" onclick="toggleSummaryCat('${c}')">
         <span class="summary-stat-label">${CAT_LABELS[c]} <span class="ssum-cat-meta">(${cnt[c]} shots)</span></span>

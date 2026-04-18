@@ -201,6 +201,8 @@ Buckets filter by `distFrom >= b.min && distFrom <= b.max` (inclusive). Buckets 
 
 `buildShotRow(s, label, labelClass)` — used by the hole drill-down (`toggleSummaryHole`) only; category drill-down now uses `buildBucketRows`.
 
+`buildMissGrid(shots, cat)` — renders a miss direction percentage grid appended after bucket rows in each category's expand section (summary + trends). Shows a 3×3 grid of depth (Long/Even/Short) × side (Left/Middle/Right, or Low/Center/High for putts). Each cell shows percentage and shot count; cells with ≥20% get a subtle green highlight (`.miss-pct-cell-hi`). Column headers show side totals. Shots without miss data are excluded from the count; a metadata line shows how many shots had miss data. Returns `''` if no miss data exists for the category.
+
 ### Shot List Layout (hole screen)
 `renderShotList` renders each shot with result as primary and starting position as secondary:
 - **Main line:** `[Category badge]  150 yds · Fairway` — result distance + result lie (lie is muted via `.shot-res-lie`, separated by ` · `); penalty badge appended if applicable
@@ -220,9 +222,9 @@ Both use `countStrokes(shots)` for stroke totals (adds +1 per penalty shot).
 **Category cards:** Four cards (Drive, Approach, Short Game, Putt), each showing:
 - Category name, shot count, round count
 - Avg SG across filtered rounds (colored via `sgClass`)
-- Tappable to expand bucket drill-down — reuses `buildBucketRows(shots, cat)` from `summary.js`
+- Tappable to expand bucket drill-down — reuses `buildBucketRows(shots, cat)` + `buildMissGrid(shots, cat)` from `summary.js`
 
-Shots are aggregated from `round.holes[n].shots[]` across all filtered rounds before being passed to `buildBucketRows`.
+Shots are aggregated from `round.holes[n].shots[]` across all filtered rounds before being passed to `buildBucketRows` and `buildMissGrid`.
 
 ## Screen Navigation
 
