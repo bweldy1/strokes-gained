@@ -3,18 +3,12 @@
   <div class="topbar">
     <button class="btn-icon" onclick="showScreen('hole')">‹</button>
     <div><div class="topbar-title">Round Summary</div></div>
-    <button class="btn-icon" onclick="exportCSV()">↑</button>
+    <div class="topbar-spacer"></div>
   </div>
   <div class="scroll-body">
     <div class="card" id="summary-totals"></div>
     <div class="section-label">Statistics</div>
     <div class="card" id="summary-stats"></div>
-    <div class="section-label">Export</div>
-    <button class="btn btn-secondary btn-mb" onclick="exportCSV()">📋 Copy Full CSV</button>
-    <button class="btn btn-secondary" onclick="exportSummaryCSV()">📊 Copy Summary Row</button>
-    <div class="export-hint-card">
-      <p class="export-hint-text">Google Sheets: open a sheet → tap cell A1 → long-press and Paste.<br>If clipboard doesn't work, a text box will appear to copy manually.</p>
-    </div>
     <div class="spacer-sm"></div>
     <button class="btn btn-ghost" onclick="showScreen('home')">Done</button>
   </div>

@@ -27,6 +27,7 @@ html/
     sheet-course-edit.html  # Bottom sheet: course name/tees editor
     sheet-yardage.html      # Bottom sheet: yardage override
     sheet-round-edit.html   # Bottom sheet: round date/name editor
+    sheet-settings.html     # Bottom sheet: settings menu (backup, restore)
 css/
   v2.css                    # All styles
 js/
@@ -39,7 +40,7 @@ js/
   courses.js                # Courses screen: renderCourses, openCourseEdit, saveCourseJSON, startRound
   summary.js                # Summary screen: renderSummary, stats, CSV export, clipboard
   trends.js                 # Trends screen: renderTrends, setTrendsFilter, toggleTrendsCat
-  home.js                   # Home screen + init IIFE (loads last — calls renderHome on startup)
+  home.js                   # Home screen + init IIFE (loads last — calls renderHome on startup); settings sheet (backup/restore)
 images/
   SG_logo.png               # App icon used on home screen header
 ```
@@ -234,13 +235,27 @@ Shots are aggregated from `round.holes[n].shots[]` across all filtered rounds be
 
 The hole screen topbar uses a `⌂` home icon (`.btn-icon`) to navigate back to the home screen — intentionally distinct from the `‹ ›` hole navigation arrows.
 
+## Settings & Backup
+
+Accessed via the ⚙ gear button (top-right of the home header). Opens `#settings-sheet`. Logic lives in `home.js`.
+
+**Backup** (`backupData()`): Serializes `{ version, exported, rounds, courses }` as JSON and triggers a file download (`sg-backup-YYYY-MM-DD.json`) via a Blob URL. Falls back to `showExportModal(json)` if Blob download fails (e.g. restrictive browser).
+- `version`: hardcoded `1` — reserved for future migration logic if the data model changes. Currently written but not read by `confirmRestore()`; restore only validates that `payload.rounds` is an array.
+
+**Restore** (`triggerRestoreFilePicker()` → `onRestoreFileSelected()` → `confirmRestore()`):
+- File picker (`<input type="file" accept=".json">`) reads the backup JSON
+- Validates that `payload.rounds` is an array; shows a preview with round/course counts
+- Two radio options (default: "Restore New Rounds Only"):
+  - **New only** — skips duplicates (identified by `courseName + date + name`), appends new rounds
+  - **All** — replaces any matching existing rounds with incoming versions, appends the rest
+- Courses are always merged by `id` (never duplicated, never overwrite existing)
+- After restore: rounds sorted newest-first, `renderHome()` called, toast shows count + skipped
+
+Duplicate key: `roundDuplicateKey(r)` = `courseName|date(YYYY-MM-DD)|name` joined by `|`.
+
 ## CSV Export
 
-`exportCSV()` — full shot-level CSV with columns: Hole, Par, Yardage, Shot#, Lie, Dist From, Dist Unit, Result Lie, Result Dist, Result Unit, Category, SG, Miss Depth, Miss Side.
-
-`exportSummaryCSV()` — one row per round with SG totals by category.
-
-Both use a clipboard fallback modal for iOS Safari compatibility.
+`exportCSV()` and `exportSummaryCSV()` remain in `summary.js` but are **not currently exposed in the UI**. The export buttons and hint card were removed from `screen-summary.html`; the topbar export icon was also removed. Use Backup (settings sheet) for data portability.
 
 ## Course Management
 

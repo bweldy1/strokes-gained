@@ -1,0 +1,34 @@
+<!-- SETTINGS SHEET -->
+<div class="sheet-overlay" id="settings-sheet" onclick="handleSettingsOverlayClick(event)">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">Settings</div>
+    <div class="sheet-body">
+
+      <div class="settings-section-label">Data</div>
+
+      <button class="btn btn-secondary settings-btn" onclick="backupData()">Backup</button>
+      <p class="settings-hint">Downloads a JSON file with all rounds and courses.</p>
+
+      <button class="btn btn-secondary settings-btn" onclick="triggerRestoreFilePicker()">Restore</button>
+      <p class="settings-hint">Merge a backup file into your current data.</p>
+      <input type="file" id="restore-file-input" accept=".json" style="display:none" onchange="onRestoreFileSelected(event)">
+
+      <!-- Restore preview (hidden until file chosen) -->
+      <div id="restore-preview" class="hidden">
+        <div class="restore-preview-summary" id="restore-preview-summary"></div>
+        <div class="restore-options">
+          <label class="restore-option-row">
+            <input type="radio" name="restore-mode" value="new" checked> Restore New Rounds Only
+          </label>
+          <label class="restore-option-row">
+            <input type="radio" name="restore-mode" value="all"> Restore All (overwrite duplicates)
+          </label>
+        </div>
+        <button class="btn btn-primary" onclick="confirmRestore()">Confirm Restore</button>
+        <button class="btn btn-ghost" style="margin-top:8px" onclick="cancelRestore()">Cancel</button>
+      </div>
+
+    </div>
+  </div>
+</div>

@@ -55,6 +55,131 @@ function deleteRound(id) {
 }
 
 // ═══════════════════════════════════════════════════════════════
+// SETTINGS SHEET
+// ═══════════════════════════════════════════════════════════════
+
+function openSettingsSheet() {
+  cancelRestore();
+  document.getElementById('settings-sheet').classList.add('open');
+}
+
+function closeSettingsSheet() {
+  document.getElementById('settings-sheet').classList.remove('open');
+}
+
+function handleSettingsOverlayClick(e) {
+  if(e.target === document.getElementById('settings-sheet')) closeSettingsSheet();
+}
+
+// ── Backup ──
+
+function backupData() {
+  const payload = { version: 1, exported: new Date().toISOString(), rounds: getRounds(), courses: getCourses() };
+  const json = JSON.stringify(payload, null, 2);
+  const date = new Date().toISOString().slice(0, 10);
+  const filename = `sg-backup-${date}.json`;
+  try {
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = filename; a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    showToast('Backup downloaded');
+  } catch(e) {
+    // Fallback for environments where Blob/download fails
+    showExportModal(json);
+  }
+}
+
+// ── Restore ──
+
+let _restorePayload = null;
+
+function triggerRestoreFilePicker() {
+  cancelRestore();
+  document.getElementById('restore-file-input').value = '';
+  document.getElementById('restore-file-input').click();
+}
+
+function onRestoreFileSelected(e) {
+  const file = e.target.files[0]; if(!file) return;
+  const reader = new FileReader();
+  reader.onload = evt => {
+    try {
+      const payload = JSON.parse(evt.target.result);
+      if(!Array.isArray(payload.rounds)) throw new Error('Invalid backup file');
+      _restorePayload = payload;
+      const rCount = payload.rounds.length;
+      const cCount = Array.isArray(payload.courses) ? payload.courses.length : 0;
+      document.getElementById('restore-preview-summary').textContent =
+        `Found ${rCount} round${rCount !== 1 ? 's' : ''} and ${cCount} course${cCount !== 1 ? 's' : ''} in backup.`;
+      document.getElementById('restore-preview').classList.remove('hidden');
+    } catch(err) {
+      showToast('Invalid backup file');
+    }
+  };
+  reader.readAsText(file);
+}
+
+function cancelRestore() {
+  _restorePayload = null;
+  const preview = document.getElementById('restore-preview');
+  if(preview) preview.classList.add('hidden');
+  const input = document.getElementById('restore-file-input');
+  if(input) input.value = '';
+  const radios = document.querySelectorAll('input[name="restore-mode"]');
+  radios.forEach(r => { r.checked = r.value === 'new'; });
+}
+
+function roundDuplicateKey(r) {
+  return [r.courseName || '', (r.date || '').slice(0, 10), r.name || ''].join('|');
+}
+
+function confirmRestore() {
+  if(!_restorePayload) return;
+  const mode = document.querySelector('input[name="restore-mode"]:checked').value;
+  const incoming = _restorePayload.rounds || [];
+  const incomingCourses = _restorePayload.courses || [];
+
+  const existingRounds = getRounds();
+  const existingKeys = new Set(existingRounds.map(roundDuplicateKey));
+
+  let merged, addedRounds;
+  if(mode === 'all') {
+    // Overwrite duplicates: replace matching existing rounds, append new ones
+    const incomingKeys = new Set(incoming.map(roundDuplicateKey));
+    const kept = existingRounds.filter(r => !incomingKeys.has(roundDuplicateKey(r)));
+    merged = [...incoming, ...kept];
+    addedRounds = incoming.length;
+  } else {
+    // New only: skip duplicates
+    const newRounds = incoming.filter(r => !existingKeys.has(roundDuplicateKey(r)));
+    merged = [...existingRounds, ...newRounds];
+    addedRounds = newRounds.length;
+  }
+
+  // Sort rounds newest first (match existing order convention)
+  merged.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+  saveRounds(merged);
+
+  // Courses: always merge by id, never duplicate
+  if(incomingCourses.length > 0) {
+    const existingCourses = getCourses();
+    const existingCourseIds = new Set(existingCourses.map(c => c.id));
+    const newCourses = incomingCourses.filter(c => !existingCourseIds.has(c.id));
+    saveCourses([...existingCourses, ...newCourses]);
+  }
+
+  closeSettingsSheet();
+  renderHome();
+  const skipped = incoming.length - addedRounds;
+  const msg = skipped > 0
+    ? `Restored ${addedRounds} round${addedRounds !== 1 ? 's' : ''} (${skipped} skipped)`
+    : `Restored ${addedRounds} round${addedRounds !== 1 ? 's' : ''}`;
+  showToast(msg);
+}
+
+// ═══════════════════════════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════════════════════════
 
