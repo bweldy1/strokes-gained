@@ -117,6 +117,42 @@ function buildMissGrid(shots, cat) {
   </div>`;
 }
 
+function buildRankedBuckets(catShots) {
+  const fmtSG = v => (v >= 0 ? '+' : '') + v.toFixed(2);
+  const cats = ['drive', 'approach', 'shortgame', 'putt'];
+  const entries = [];
+  for(const cat of cats) {
+    const shots = catShots[cat] || [];
+    const buckets = SG_BUCKETS[cat]; if(!buckets) continue;
+    const lieBucketLies = buckets.filter(b => b.lie).map(b => b.lie);
+    for(const b of buckets) {
+      const bs = b.lie
+        ? shots.filter(s => s.lie === b.lie)
+        : shots.filter(s => s.distFrom != null && s.distFrom >= b.min && s.distFrom <= b.max && !lieBucketLies.includes(s.lie));
+      if(bs.length === 0) continue;
+      const tot = bs.reduce((sum, s) => sum + (s.sg || 0), 0);
+      const avg = tot / bs.length;
+      entries.push({cat, label: b.label, count: bs.length, avg});
+    }
+  }
+  if(entries.length === 0) return '<div class="ssum-empty">No shots recorded</div>';
+  entries.sort((a, b) => b.avg - a.avg);
+  return entries.map(e => `<div class="bucket-rank-row">
+    <span class="category-badge cat-${e.cat} bucket-rank-cat">${CAT_LABELS[e.cat]}</span>
+    <span class="bucket-rank-label">${e.label}</span>
+    <span class="bucket-rank-count">${e.count}</span>
+    <span class="bucket-rank-avg ${e.avg >= 0 ? 'sg-pos' : 'sg-neg'}">${fmtSG(e.avg)}</span>
+  </div>`).join('');
+}
+
+function toggleRankingsSection() {
+  const wrap = document.getElementById('rankings-wrap'), icon = document.getElementById('rankings-chevron');
+  if(!wrap) return;
+  const open = wrap.classList.contains('hidden');
+  wrap.classList.toggle('hidden');
+  if(icon) icon.style.transform = open ? 'rotate(90deg)' : '';
+}
+
 function buildShotRow(s, label, labelClass = 'ssum-hole') {
   const fromDist = s.lie === 'green' ? s.distFrom + 'ft' : s.distFrom + 'y';
   const toLabel = LIE_ABBR[s.resultLie] || s.resultLie;
@@ -193,6 +229,13 @@ function renderSummary() {
     <div class="ssum-expand hidden" id="ssum-hole-${h.hole}">${rows}</div>`;
   }).filter(Boolean).join('') || '<div class="list-empty">No shots recorded yet</div>';
 
+  const rankingsSection = `
+    <div class="summary-stat summary-cat-row summary-by-hole-row" onclick="toggleRankingsSection()">
+      <span class="summary-by-hole-label">Rankings</span>
+      <span class="ssum-chevron" id="rankings-chevron">›</span>
+    </div>
+    <div id="rankings-wrap" class="hidden">${buildRankedBuckets(catShots)}</div>`;
+
   const byHoleSection = `
     <div class="summary-stat summary-cat-row summary-by-hole-row" onclick="toggleHolesSection()">
       <span class="summary-by-hole-label">SG by Hole</span>
@@ -202,7 +245,7 @@ function renderSummary() {
 
   document.getElementById('summary-totals').innerHTML = `
     <div class="summary-stat"><span class="summary-total-label">Total SG <span class="summary-total-sub">(${gStrokes} stroke${gStrokes !== 1 ? 's' : ''})</span></span><span class="summary-total-val ${sgCls(gTotal,gCount)}">${fmt(gTotal,gCount)}</span></div>
-    ${catHTML}${byHoleSection}`;
+    ${catHTML}${rankingsSection}${byHoleSection}`;
 
   // Statistics
   const allShots = round.holes.flatMap(h => (h.shots || []).map((s, i) => ({...s, holeNum:h.hole, shotIdx:i})));

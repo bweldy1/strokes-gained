@@ -201,6 +201,8 @@ Buckets filter by `distFrom >= b.min && distFrom <= b.max` (inclusive). Buckets 
 
 `buildShotRow(s, label, labelClass)` — used by the hole drill-down (`toggleSummaryHole`) only; category drill-down now uses `buildBucketRows`.
 
+`buildRankedBuckets(catShots)` — flattens all category buckets into a single list sorted best → worst by avg SG. Takes the same `catShots = {drive, approach, shortgame, putt}` shape used by `renderSummary` and `renderTrends`. Empty buckets are skipped. Each row shows category badge, bucket label, shot count, avg SG. Appears as a collapsible "Rankings" section in both summary (inside `#summary-totals`, between category rows and SG by Hole, toggled by `toggleRankingsSection()`) and trends (as a `.trends-rankings-card` at the bottom, toggled by `toggleTrendsRankings()`).
+
 `buildMissGrid(shots, cat)` — renders a miss direction percentage grid appended after bucket rows in each category's expand section (summary + trends). Shows a 3×3 grid of depth (Long/Even/Short) × side (Left/Middle/Right, or Low/Center/High for putts). Each cell shows percentage and shot count; cells with ≥20% get a subtle green highlight (`.miss-pct-cell-hi`). Column headers show side totals. Only `missSide` is required for inclusion — if `missDepth` is null (older data), it defaults to `'even'`. A metadata line shows how many shots had miss data vs total. Returns `''` if no shots have `missSide` set.
 
 ### Shot List Layout (hole screen)

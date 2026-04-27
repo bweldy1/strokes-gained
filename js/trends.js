@@ -29,6 +29,14 @@ function renderTrends() {
   const cats = ['drive', 'approach', 'shortgame', 'putt'];
   const roundLabel = `${rounds.length} round${rounds.length !== 1 ? 's' : ''}`;
 
+  const rankingsCard = `<div class="card trends-rankings-card">
+    <div class="trends-cat-header" onclick="toggleTrendsRankings()">
+      <div class="trends-cat-name">Rankings</div>
+      <span class="ssum-chevron" id="trankings-icon">›</span>
+    </div>
+    <div class="ssum-expand hidden" id="trankings">${buildRankedBuckets(catShots)}</div>
+  </div>`;
+
   el.innerHTML = cats.map(cat => {
     const shots = catShots[cat];
     const valid = shots.filter(s => s.sg != null);
@@ -47,12 +55,19 @@ function renderTrends() {
       </div>
       <div class="ssum-expand hidden" id="tcat-${cat}">${bucketRows}</div>
     </div>`;
-  }).join('');
+  }).join('') + rankingsCard;
 }
 
 function setTrendsFilter(n) {
   state.trendsFilter = n;
   renderTrends();
+}
+
+function toggleTrendsRankings() {
+  const el = document.getElementById('trankings'), icon = document.getElementById('trankings-icon');
+  const open = el.classList.contains('hidden');
+  el.classList.toggle('hidden');
+  if(icon) icon.style.transform = open ? 'rotate(90deg)' : '';
 }
 
 function toggleTrendsCat(cat) {
