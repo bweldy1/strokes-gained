@@ -143,6 +143,7 @@ function confirmRestore() {
 
   const existingRounds = getRounds();
   const existingKeys = new Set(existingRounds.map(roundDuplicateKey));
+  const existingIds = new Set(existingRounds.map(r => r.id));
 
   let merged, addedRounds;
   if(mode === 'all') {
@@ -152,14 +153,18 @@ function confirmRestore() {
     merged = [...incoming, ...kept];
     addedRounds = incoming.length;
   } else {
-    // New only: skip duplicates
-    const newRounds = incoming.filter(r => !existingKeys.has(roundDuplicateKey(r)));
+    // New only: skip duplicates by key or by id
+    const newRounds = incoming.filter(r => !existingKeys.has(roundDuplicateKey(r)) && !existingIds.has(r.id));
     merged = [...existingRounds, ...newRounds];
     addedRounds = newRounds.length;
   }
 
   // Sort rounds newest first (match existing order convention)
   merged.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+
+  // Safety net: deduplicate by id (last occurrence wins) before saving
+  const seenIds = new Set();
+  merged = merged.filter(r => seenIds.has(r.id) ? false : seenIds.add(r.id));
   saveRounds(merged);
 
   // Courses: always merge by id, never duplicate
