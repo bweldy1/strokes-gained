@@ -71,7 +71,7 @@ Each shot stored in `round.holes[n].shots[]`:
 ### State
 Single `state` object — never persisted, resets on page load:
 ```js
-let state = { currentRoundId, currentHole, editingShotIndex, editingCourseId, excludedCategories, shotLie, shotResultLie, shotCategory, shotMissDepth, shotMissSide, shotMissType, trendsFilter }
+let state = { currentRoundId, currentHole, editingShotIndex, editingCourseId, excludedCategories, shotLie, shotResultLie, shotCategory, shotMissDepth, shotMissSide, shotMissType, targetsExpanded, trendsFilter }
 ```
 
 ### Shared Constants and Helpers (`state.js`)
@@ -145,6 +145,21 @@ Short Game = any non-putt, non-drive shot from **under 30 yards** (`autoCategory
 - `selectMissType(val)` — tap to select, tap again to deselect; stored in `state.shotMissType`
 - `updateMissTypeVisibility()` — called from `selectResultLie` and `selectCategory` to show/hide and clear
 - `buildMissType(shots)` in `summary.js` renders a 4-tile breakdown (%, count per type) below `buildMissGrid` in putt drill-downs in both summary and trends screens; only appears when at least one shot has `missType` set
+
+### What If? Targets
+An on-demand shot expectation tool in the SG preview area of the shot entry sheet. Lets the golfer see what result distance corresponds to neutral SG (0.00) and a good result (+0.25) before — or after — recording a shot.
+
+- **Trigger:** "What If? ›" link appears in the SG preview area as soon as `shotLie` and `distFrom` are set; stays visible even after a result is entered
+- **Toggle:** `toggleTargets()` expands/collapses `#sg-targets-expand`; chevron changes › / ∨; state tracked in `state.targetsExpanded`
+- **Compute:** `updateTargets()` calls `getExpected(shotLie, dist)` for the starting expected strokes, then inverts the table via `findResultDist(targetExpected, resultLie)` — a 40-iteration binary search returning the distance where `getExpected(resultLie, x) ≈ targetExpected`
+- **Result lie selection:**
+  - Compute neutral target on green first
+  - If that distance > 50 ft or out of range → shot is not realistically going for the green → use `'fairway'`, display as "≤ X yds remaining"
+  - Otherwise → use `'green'`, display as "≤ X ft on green"
+  - This single rule handles tee shots, long par-5 approaches, and short-range shots consistently
+- **Null result:** if the target requires holing out (green) or is out of table range (fairway), shows "Hole out" or "—" respectively
+- `findResultDist` bounds: green = 1–120 ft, fairway = 10–400 yds
+- Called from `updateSGPreview` whenever targets are expanded and start data changes
 
 ### Penalty Shots
 `resultLie: 'penalty'` is a secondary result pill (alongside Sand and Recovery). Behavior:

@@ -4,7 +4,10 @@
 
 function openShotSheet(editIndex) {
   state.editingShotIndex = editIndex !== undefined ? editIndex : null;
-  state.shotLie = null; state.shotResultLie = null; state.shotCategory = null; state.shotMissDepth = null; state.shotMissSide = null; state.shotMissType = null;
+  state.shotLie = null; state.shotResultLie = null; state.shotCategory = null; state.shotMissDepth = null; state.shotMissSide = null; state.shotMissType = null; state.targetsExpanded = false;
+  document.getElementById('sg-targets-toggle').classList.add('hidden');
+  document.getElementById('sg-targets-toggle').textContent = 'What If? ›';
+  document.getElementById('sg-targets-expand').classList.add('hidden');
   document.getElementById('shot-sheet-title').textContent = editIndex !== undefined ? 'Edit Shot' : 'Add Shot';
   document.getElementById('shot-dist-from').value = '';
   document.getElementById('shot-dist-result').value = '';
@@ -228,12 +231,60 @@ function updateSGPreview() {
   const dFrom = parseFloat(document.getElementById('shot-dist-from').value);
   const dRes = parseFloat(document.getElementById('shot-dist-result').value);
   const pv = document.getElementById('sg-preview-val'), pl = document.getElementById('sg-preview-label'), mk = document.getElementById('sg-quality-marker');
+  const toggle = document.getElementById('sg-targets-toggle'), expand = document.getElementById('sg-targets-expand');
+
+  const hasStart = lie && !isNaN(dFrom) && dFrom > 0;
+  toggle.classList.toggle('hidden', !hasStart);
+  if(state.targetsExpanded) updateTargets();
+
   if(!lie || !rLie || isNaN(dFrom)) { pv.textContent = '—'; pv.style.color = 'var(--text-muted)'; pl.textContent = 'Enter shot details for SG'; mk.style.left = '50%'; return; }
   const sg = calcSG(lie, dFrom, rLie, isNaN(dRes) ? 0 : dRes);
   if(sg === null) { pv.textContent = '—'; pv.style.color = 'var(--text-muted)'; pl.textContent = 'Distance out of range'; mk.style.left = '50%'; return; }
   const q = getQuality(sg, state.shotCategory || 'approach');
   pv.textContent = (sg >= 0 ? '+' : '') + sg.toFixed(2); pv.style.color = q.color; pl.textContent = q.label;
   mk.style.left = Math.max(0, Math.min(100, ((sg + 1.5) / 3.0) * 100)) + '%';
+}
+
+function findResultDist(targetExpected, resultLie) {
+  const lo0 = resultLie === 'fairway' ? 10 : 1;
+  const hi0 = resultLie === 'fairway' ? 400 : 120;
+  if(targetExpected === null || targetExpected <= getExpected(resultLie, lo0)) return null;
+  let lo = lo0, hi = hi0;
+  for(let i = 0; i < 40; i++) {
+    const mid = (lo + hi) / 2;
+    if(getExpected(resultLie, mid) < targetExpected) lo = mid; else hi = mid;
+  }
+  return Math.round((lo + hi) / 2);
+}
+
+function toggleTargets() {
+  state.targetsExpanded = !state.targetsExpanded;
+  const expand = document.getElementById('sg-targets-expand');
+  const toggle = document.getElementById('sg-targets-toggle');
+  expand.classList.toggle('hidden', !state.targetsExpanded);
+  toggle.textContent = state.targetsExpanded ? 'What If? ∨' : 'What If? ›';
+  if(state.targetsExpanded) updateTargets();
+}
+
+function updateTargets() {
+  const neutralEl = document.getElementById('sg-target-neutral');
+  const goodEl = document.getElementById('sg-target-good');
+  if(!neutralEl || !goodEl) return;
+  const lie = state.shotLie;
+  const dist = parseFloat(document.getElementById('shot-dist-from').value);
+  if(!lie || isNaN(dist) || dist <= 0) { neutralEl.textContent = '—'; goodEl.textContent = '—'; return; }
+  const startExpected = getExpected(lie, dist);
+  if(startExpected === null) { neutralEl.textContent = '—'; goodEl.textContent = '—'; return; }
+  // If neutral target on green > 50 ft or out of range, the shot isn't realistically going for the green
+  const neutralGreen = findResultDist(startExpected - 1, 'green');
+  const useFairway = neutralGreen === null || neutralGreen > 50;
+  const resultLie = useFairway ? 'fairway' : 'green';
+  const fmt = d => {
+    if(d === null) return useFairway ? '—' : 'Hole out';
+    return useFairway ? `≤ ${d} yds remaining` : `≤ ${d} ft on green`;
+  };
+  neutralEl.textContent = fmt(useFairway ? findResultDist(startExpected - 1, 'fairway') : neutralGreen);
+  goodEl.textContent    = fmt(findResultDist(startExpected - 1.25, resultLie));
 }
 
 function saveShot() {

@@ -120,7 +120,13 @@ textarea.json-input:focus { border-color: var(--fairway); }
 .prefill-hint { font-size: 12px; color: var(--fairway); margin-bottom: 8px; margin-top:8px; padding: 8px 10px; background: rgba(82,183,136,.1); border-radius: 6px; border: 1px solid rgba(82,183,136,.2); }
 .sg-preview { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 14px; margin-bottom: 20px; text-align: center; }
 .sg-preview-val { font-size: 32px; font-weight: 700; letter-spacing: -1px; }
-.sg-preview-label { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+.sg-preview-meta { display: flex; align-items: center; justify-content: space-between; margin-top: 4px; }
+.sg-preview-label { font-size: 12px; color: var(--text-muted); }
+.sg-targets-toggle { font-size: 11px; color: var(--text-dim); cursor: pointer; padding: 2px 0 2px 8px; -webkit-tap-highlight-color: transparent; flex-shrink: 0; }
+.sg-targets-expand { border-top: 1px solid var(--border); margin-top: 10px; padding-top: 10px; text-align: left; }
+.sg-targets-row { display: flex; justify-content: space-between; align-items: center; padding: 2px 0; }
+.sg-targets-label { font-size: 12px; color: var(--text-muted); }
+.sg-targets-val { font-size: 12px; color: var(--text); font-weight: 500; }
 .sg-quality-bar { height: 4px; border-radius: 2px; margin-top: 10px; background: linear-gradient(90deg,var(--q-terrible),var(--q-poor),var(--q-average),var(--q-good),var(--q-great)); position: relative; }
 .sg-quality-marker { position: absolute; top: -4px; width: 12px; height: 12px; border-radius: 50%; background: #fff; border: 2px solid var(--sky); transform: translateX(-50%); transition: left .3s; }
 .category-badge { display: inline-flex; align-items: center; padding: 2px 7px; border-radius: 12px; font-size: 11px; font-weight: 600; }
@@ -335,7 +341,7 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
     <div class="section-label">Recent Rounds</div>
     <div id="rounds-list"></div>
   </div>
-  <div id="build-version">Build: 2026-05-07 21:10</div>
+  <div id="build-version">Build: 2026-05-07 21:38</div>
 </div>
 
 <!-- COURSE SELECT -->
@@ -542,8 +548,21 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
       <!-- SG Preview -->
       <div class="sg-preview">
         <div class="sg-preview-val" id="sg-preview-val">—</div>
-        <div class="sg-preview-label" id="sg-preview-label">Enter shot details for SG</div>
+        <div class="sg-preview-meta">
+          <div class="sg-preview-label" id="sg-preview-label">Enter shot details for SG</div>
+          <div class="sg-targets-toggle hidden" id="sg-targets-toggle" onclick="toggleTargets()">What If? ›</div>
+        </div>
         <div class="sg-quality-bar"><div class="sg-quality-marker" id="sg-quality-marker" style="left:50%"></div></div>
+        <div class="sg-targets-expand hidden" id="sg-targets-expand">
+          <div class="sg-targets-row">
+            <span class="sg-targets-label">Neutral</span>
+            <span class="sg-targets-val" id="sg-target-neutral">—</span>
+          </div>
+          <div class="sg-targets-row">
+            <span class="sg-targets-label">Good (+0.25)</span>
+            <span class="sg-targets-val" id="sg-target-good">—</span>
+          </div>
+        </div>
       </div>
       <button class="btn btn-primary" id="save-shot-btn" onclick="saveShot()">Save Shot</button>
     </div>
@@ -1041,6 +1060,7 @@ let state = {
   shotMissDepth: null,
   shotMissSide: null,
   shotMissType: null,
+  targetsExpanded: false,
   trendsFilter: 10
 };
 
@@ -1321,7 +1341,10 @@ function handleRoundEditOverlayClick(e) {
 
 function openShotSheet(editIndex) {
   state.editingShotIndex = editIndex !== undefined ? editIndex : null;
-  state.shotLie = null; state.shotResultLie = null; state.shotCategory = null; state.shotMissDepth = null; state.shotMissSide = null; state.shotMissType = null;
+  state.shotLie = null; state.shotResultLie = null; state.shotCategory = null; state.shotMissDepth = null; state.shotMissSide = null; state.shotMissType = null; state.targetsExpanded = false;
+  document.getElementById('sg-targets-toggle').classList.add('hidden');
+  document.getElementById('sg-targets-toggle').textContent = 'What If? ›';
+  document.getElementById('sg-targets-expand').classList.add('hidden');
   document.getElementById('shot-sheet-title').textContent = editIndex !== undefined ? 'Edit Shot' : 'Add Shot';
   document.getElementById('shot-dist-from').value = '';
   document.getElementById('shot-dist-result').value = '';
@@ -1545,12 +1568,60 @@ function updateSGPreview() {
   const dFrom = parseFloat(document.getElementById('shot-dist-from').value);
   const dRes = parseFloat(document.getElementById('shot-dist-result').value);
   const pv = document.getElementById('sg-preview-val'), pl = document.getElementById('sg-preview-label'), mk = document.getElementById('sg-quality-marker');
+  const toggle = document.getElementById('sg-targets-toggle'), expand = document.getElementById('sg-targets-expand');
+
+  const hasStart = lie && !isNaN(dFrom) && dFrom > 0;
+  toggle.classList.toggle('hidden', !hasStart);
+  if(state.targetsExpanded) updateTargets();
+
   if(!lie || !rLie || isNaN(dFrom)) { pv.textContent = '—'; pv.style.color = 'var(--text-muted)'; pl.textContent = 'Enter shot details for SG'; mk.style.left = '50%'; return; }
   const sg = calcSG(lie, dFrom, rLie, isNaN(dRes) ? 0 : dRes);
   if(sg === null) { pv.textContent = '—'; pv.style.color = 'var(--text-muted)'; pl.textContent = 'Distance out of range'; mk.style.left = '50%'; return; }
   const q = getQuality(sg, state.shotCategory || 'approach');
   pv.textContent = (sg >= 0 ? '+' : '') + sg.toFixed(2); pv.style.color = q.color; pl.textContent = q.label;
   mk.style.left = Math.max(0, Math.min(100, ((sg + 1.5) / 3.0) * 100)) + '%';
+}
+
+function findResultDist(targetExpected, resultLie) {
+  const lo0 = resultLie === 'fairway' ? 10 : 1;
+  const hi0 = resultLie === 'fairway' ? 400 : 120;
+  if(targetExpected === null || targetExpected <= getExpected(resultLie, lo0)) return null;
+  let lo = lo0, hi = hi0;
+  for(let i = 0; i < 40; i++) {
+    const mid = (lo + hi) / 2;
+    if(getExpected(resultLie, mid) < targetExpected) lo = mid; else hi = mid;
+  }
+  return Math.round((lo + hi) / 2);
+}
+
+function toggleTargets() {
+  state.targetsExpanded = !state.targetsExpanded;
+  const expand = document.getElementById('sg-targets-expand');
+  const toggle = document.getElementById('sg-targets-toggle');
+  expand.classList.toggle('hidden', !state.targetsExpanded);
+  toggle.textContent = state.targetsExpanded ? 'What If? ∨' : 'What If? ›';
+  if(state.targetsExpanded) updateTargets();
+}
+
+function updateTargets() {
+  const neutralEl = document.getElementById('sg-target-neutral');
+  const goodEl = document.getElementById('sg-target-good');
+  if(!neutralEl || !goodEl) return;
+  const lie = state.shotLie;
+  const dist = parseFloat(document.getElementById('shot-dist-from').value);
+  if(!lie || isNaN(dist) || dist <= 0) { neutralEl.textContent = '—'; goodEl.textContent = '—'; return; }
+  const startExpected = getExpected(lie, dist);
+  if(startExpected === null) { neutralEl.textContent = '—'; goodEl.textContent = '—'; return; }
+  // If neutral target on green > 50 ft or out of range, the shot isn't realistically going for the green
+  const neutralGreen = findResultDist(startExpected - 1, 'green');
+  const useFairway = neutralGreen === null || neutralGreen > 50;
+  const resultLie = useFairway ? 'fairway' : 'green';
+  const fmt = d => {
+    if(d === null) return useFairway ? '—' : 'Hole out';
+    return useFairway ? `≤ ${d} yds remaining` : `≤ ${d} ft on green`;
+  };
+  neutralEl.textContent = fmt(useFairway ? findResultDist(startExpected - 1, 'fairway') : neutralGreen);
+  goodEl.textContent    = fmt(findResultDist(startExpected - 1.25, resultLie));
 }
 
 function saveShot() {
