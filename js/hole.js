@@ -15,8 +15,6 @@ function renderHole() {
   document.getElementById('hole-num-display').textContent = h;
   document.getElementById('hole-par-display').textContent = 'Par ' + hd.par;
   document.getElementById('hole-yards-display').textContent = (hd.yardsOverride || hd.yards) + ' yds';
-  document.getElementById('hole-prev-btn').classList.toggle('disabled', h <= 1);
-  document.getElementById('hole-next-btn').classList.toggle('disabled', h >= round.holes.length);
   renderShotList(hd);
 }
 
@@ -52,8 +50,23 @@ function renderShotList(hd) {
 
 function catLabel(cat) { return CAT_LABELS[cat] || cat; }
 function countStrokes(shots) { return shots.length + shots.filter(s => s.resultLie === 'penalty').length; }
-function prevHole() { if(state.currentHole > 1) { state.currentHole--; renderHole(); updateTally(); } }
-function nextHole() { const r = currentRound(); if(state.currentHole < r.holes.length) { state.currentHole++; renderHole(); updateTally(); } }
+function prevHole() { const r = currentRound(); state.currentHole = state.currentHole > 1 ? state.currentHole - 1 : r.holes.length; closeHolePicker(); renderHole(); updateTally(); }
+function nextHole() { const r = currentRound(); state.currentHole = state.currentHole < r.holes.length ? state.currentHole + 1 : 1; closeHolePicker(); renderHole(); updateTally(); }
+
+function toggleHolePicker() {
+  const picker = document.getElementById('hole-picker');
+  if(picker.classList.contains('hidden')) openHolePicker(); else closeHolePicker();
+}
+function openHolePicker() {
+  const round = currentRound(); if(!round) return;
+  const picker = document.getElementById('hole-picker');
+  picker.innerHTML = round.holes.map(h =>
+    `<div class="hole-pick-btn${h.hole === state.currentHole ? ' selected' : ''}" onclick="goToHole(${h.hole})">${h.hole}</div>`
+  ).join('');
+  picker.classList.remove('hidden');
+}
+function closeHolePicker() { document.getElementById('hole-picker').classList.add('hidden'); }
+function goToHole(n) { state.currentHole = n; closeHolePicker(); renderHole(); updateTally(); }
 
 // ═══════════════════════════════════════════════════════════════
 // TALLY

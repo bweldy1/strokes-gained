@@ -69,9 +69,13 @@ textarea.json-input:focus { border-color: var(--fairway); }
 .hole-nav-btn { width: 44px; height: 44px; border-radius: 50%; background: var(--input-bg); border: 1px solid var(--input-border); color: var(--text); font-size: 22px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
 .hole-nav-btn:active { opacity: .6; transform: scale(.92); }
 .hole-nav-btn.disabled { opacity: .25; pointer-events: none; }
-.hole-num-block { text-align: center; }
+.hole-num-block { text-align: center; cursor: pointer; -webkit-tap-highlight-color: transparent; }
 .hole-num-label { font-size: 11px; color: var(--text-muted); letter-spacing: 1px; text-transform: uppercase; }
 .hole-num { font-size: 48px; font-weight: 700; letter-spacing: -2px; line-height: 1; color: #fff; }
+.hole-picker { display: grid; grid-template-columns: repeat(9, 1fr); gap: 6px; padding: 10px 16px 4px; }
+.hole-pick-btn { height: 34px; border-radius: 8px; background: var(--input-bg); border: 1px solid var(--input-border); color: var(--text-muted); font-size: 13px; font-weight: 600; display: flex; align-items: center; justify-content: center; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.hole-pick-btn:active { opacity: .6; }
+.hole-pick-btn.selected { background: var(--fairway); border-color: var(--fairway); color: #fff; }
 .hole-info { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
 .hole-yardage-edit { display: inline-flex; align-items: center; gap: 4px; cursor: pointer; }
 .hole-yardage-edit:active { opacity: .6; }
@@ -341,7 +345,7 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
     <div class="section-label">Recent Rounds</div>
     <div id="rounds-list"></div>
   </div>
-  <div id="build-version">Build: 2026-05-07 21:38</div>
+  <div id="build-version">Build: 2026-05-07 22:07</div>
 </div>
 
 <!-- COURSE SELECT -->
@@ -373,7 +377,7 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
   </div>
   <div class="hole-nav">
     <button class="hole-nav-btn" id="hole-prev-btn" onclick="prevHole()">‹</button>
-    <div class="hole-num-block">
+    <div class="hole-num-block" onclick="toggleHolePicker()">
       <div class="hole-num-label">Hole</div>
       <div class="hole-num" id="hole-num-display">1</div>
       <div class="hole-info">
@@ -386,6 +390,7 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
     </div>
     <button class="hole-nav-btn" id="hole-next-btn" onclick="nextHole()">›</button>
   </div>
+  <div id="hole-picker" class="hole-picker hidden"></div>
   <div class="tally-bar">
     <div class="tally-chip active" id="tally-total" onclick="toggleTally('total')"><span class="tally-chip-val" id="tv-total">—</span><span class="tally-chip-lbl">Total</span></div>
     <div class="tally-chip active" id="tally-drive" onclick="toggleTally('drive')"><span class="tally-chip-val" id="tv-drive">—</span><span class="tally-chip-lbl">Drive</span></div>
@@ -1203,8 +1208,6 @@ function renderHole() {
   document.getElementById('hole-num-display').textContent = h;
   document.getElementById('hole-par-display').textContent = 'Par ' + hd.par;
   document.getElementById('hole-yards-display').textContent = (hd.yardsOverride || hd.yards) + ' yds';
-  document.getElementById('hole-prev-btn').classList.toggle('disabled', h <= 1);
-  document.getElementById('hole-next-btn').classList.toggle('disabled', h >= round.holes.length);
   renderShotList(hd);
 }
 
@@ -1240,8 +1243,23 @@ function renderShotList(hd) {
 
 function catLabel(cat) { return CAT_LABELS[cat] || cat; }
 function countStrokes(shots) { return shots.length + shots.filter(s => s.resultLie === 'penalty').length; }
-function prevHole() { if(state.currentHole > 1) { state.currentHole--; renderHole(); updateTally(); } }
-function nextHole() { const r = currentRound(); if(state.currentHole < r.holes.length) { state.currentHole++; renderHole(); updateTally(); } }
+function prevHole() { const r = currentRound(); state.currentHole = state.currentHole > 1 ? state.currentHole - 1 : r.holes.length; closeHolePicker(); renderHole(); updateTally(); }
+function nextHole() { const r = currentRound(); state.currentHole = state.currentHole < r.holes.length ? state.currentHole + 1 : 1; closeHolePicker(); renderHole(); updateTally(); }
+
+function toggleHolePicker() {
+  const picker = document.getElementById('hole-picker');
+  if(picker.classList.contains('hidden')) openHolePicker(); else closeHolePicker();
+}
+function openHolePicker() {
+  const round = currentRound(); if(!round) return;
+  const picker = document.getElementById('hole-picker');
+  picker.innerHTML = round.holes.map(h =>
+    `<div class="hole-pick-btn${h.hole === state.currentHole ? ' selected' : ''}" onclick="goToHole(${h.hole})">${h.hole}</div>`
+  ).join('');
+  picker.classList.remove('hidden');
+}
+function closeHolePicker() { document.getElementById('hole-picker').classList.add('hidden'); }
+function goToHole(n) { state.currentHole = n; closeHolePicker(); renderHole(); updateTally(); }
 
 // ═══════════════════════════════════════════════════════════════
 // TALLY
@@ -2316,6 +2334,7 @@ function toggleTrendsCat(cat) {
 // ═══════════════════════════════════════════════════════════════
 
 function showScreen(name) {
+  closeHolePicker();
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById('screen-' + name).classList.add('active');
   window.scrollTo(0, 0);

@@ -3,6 +3,7 @@
 // ═══════════════════════════════════════════════════════════════
 
 function showScreen(name) {
+  closeHolePicker();
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById('screen-' + name).classList.add('active');
   window.scrollTo(0, 0);

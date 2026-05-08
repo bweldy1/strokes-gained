@@ -260,6 +260,10 @@ Shots are aggregated from `round.holes[n].shots[]` across all filtered rounds be
 
 The hole screen topbar uses a `⌂` home icon (`.btn-icon`) to navigate back to the home screen — intentionally distinct from the `‹ ›` hole navigation arrows.
 
+Hole navigation wraps around: `‹` on hole 1 goes to the last hole, `›` on the last hole goes to hole 1. Both arrows are always active (no `disabled` class or `pointer-events: none` at boundaries).
+
+Tapping the hole number block opens an inline hole picker (`#hole-picker`) — a 9-column grid of all holes in the round, rendered dynamically by `openHolePicker()`. The current hole is highlighted (`.selected`). Tapping a hole calls `goToHole(n)`, which sets `state.currentHole`, closes the picker, and re-renders. The picker closes via `closeHolePicker()` in three cases: tapping the hole number again (toggle), pressing either nav arrow, or any `showScreen()` call (prevents stale picker state when switching rounds).
+
 ## Settings & Backup
 
 Accessed via the ⚙ gear button (top-right of the home header). Opens `#settings-sheet`. Logic lives in `home.js`.

@@ -60,9 +60,13 @@ textarea.json-input:focus { border-color: var(--fairway); }
 .hole-nav-btn { width: 44px; height: 44px; border-radius: 50%; background: var(--input-bg); border: 1px solid var(--input-border); color: var(--text); font-size: 22px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
 .hole-nav-btn:active { opacity: .6; transform: scale(.92); }
 .hole-nav-btn.disabled { opacity: .25; pointer-events: none; }
-.hole-num-block { text-align: center; }
+.hole-num-block { text-align: center; cursor: pointer; -webkit-tap-highlight-color: transparent; }
 .hole-num-label { font-size: 11px; color: var(--text-muted); letter-spacing: 1px; text-transform: uppercase; }
 .hole-num { font-size: 48px; font-weight: 700; letter-spacing: -2px; line-height: 1; color: #fff; }
+.hole-picker { display: grid; grid-template-columns: repeat(9, 1fr); gap: 6px; padding: 10px 16px 4px; }
+.hole-pick-btn { height: 34px; border-radius: 8px; background: var(--input-bg); border: 1px solid var(--input-border); color: var(--text-muted); font-size: 13px; font-weight: 600; display: flex; align-items: center; justify-content: center; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.hole-pick-btn:active { opacity: .6; }
+.hole-pick-btn.selected { background: var(--fairway); border-color: var(--fairway); color: #fff; }
 .hole-info { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
 .hole-yardage-edit { display: inline-flex; align-items: center; gap: 4px; cursor: pointer; }
 .hole-yardage-edit:active { opacity: .6; }
