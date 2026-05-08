@@ -80,6 +80,17 @@
         <div class="miss-grid" id="miss-grid"></div>
       </div>
 
+      <!-- Miss Type (putt + non-holed only, conditional) -->
+      <div id="miss-type-group" class="hidden">
+        <div class="miss-label">Miss Type <span style="font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></div>
+        <div class="pill-group" id="miss-type-pills">
+          <div class="pill pill-sm" data-miss-type="read" onclick="selectMissType('read')">Read</div>
+          <div class="pill pill-sm" data-miss-type="pace" onclick="selectMissType('pace')">Pace</div>
+          <div class="pill pill-sm" data-miss-type="push" onclick="selectMissType('push')">Push</div>
+          <div class="pill pill-sm" data-miss-type="pull" onclick="selectMissType('pull')">Pull</div>
+        </div>
+      </div>
+
       <!-- Result Distance -->
       <div class="form-group hidden" id="result-dist-group">
         <div class="form-label">Result Distance <span id="result-dist-unit-label" class="form-unit-label"></span></div>

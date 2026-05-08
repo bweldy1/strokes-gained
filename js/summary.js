@@ -117,6 +117,29 @@ function buildMissGrid(shots, cat) {
   </div>`;
 }
 
+function buildMissType(shots) {
+  const missed = shots.filter(s => s.resultLie !== 'holed');
+  const withType = missed.filter(s => s.missType != null);
+  if(withType.length === 0) return '';
+  const total = withType.length;
+  const metaStr = total < missed.length ? `${total} of ${missed.length} putts` : `${total} putt${total !== 1 ? 's' : ''}`;
+  const types = ['read', 'pace', 'push', 'pull'];
+  const labels = {read: 'Read', pace: 'Pace', push: 'Push', pull: 'Pull'};
+  const cells = types.map(t => {
+    const n = withType.filter(s => s.missType === t).length;
+    const pct = Math.round(n / total * 100);
+    return `<div class="miss-type-item">
+      <span class="miss-type-label">${labels[t]}</span>
+      <span class="miss-type-pct">${n > 0 ? pct + '%' : '—'}</span>
+      <span class="miss-type-n">${n > 0 ? n : ''}</span>
+    </div>`;
+  }).join('');
+  return `<div class="miss-type-section">
+    <div class="miss-type-header">Miss Type <span class="miss-type-meta">${metaStr}</span></div>
+    <div class="miss-type-row">${cells}</div>
+  </div>`;
+}
+
 function buildRankedBuckets(catShots) {
   const fmtSG = v => (v >= 0 ? '+' : '') + v.toFixed(2);
   const cats = ['drive', 'approach', 'shortgame', 'putt'];
@@ -193,7 +216,7 @@ function renderSummary() {
   const sgCls = (v, c) => c === 0 ? 'sg-null' : v >= 0 ? 'sg-pos' : 'sg-neg';
 
   const catHTML = cats.map(c => {
-    const rows = buildBucketRows(catShots[c], c) + buildMissGrid(catShots[c], c);
+    const rows = buildBucketRows(catShots[c], c) + buildMissGrid(catShots[c], c) + (c === 'putt' ? buildMissType(catShots[c]) : '');
     const avg = fmt(cnt[c] > 0 ? tot[c] / cnt[c] : 0, cnt[c]);
     return `<div class="summary-stat summary-cat-row" onclick="toggleSummaryCat('${c}')">
         <span class="summary-stat-label">${CAT_LABELS[c]} <span class="ssum-cat-meta">(${cnt[c]} shots)</span></span>

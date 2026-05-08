@@ -4,7 +4,7 @@
 
 function openShotSheet(editIndex) {
   state.editingShotIndex = editIndex !== undefined ? editIndex : null;
-  state.shotLie = null; state.shotResultLie = null; state.shotCategory = null; state.shotMissDepth = null; state.shotMissSide = null;
+  state.shotLie = null; state.shotResultLie = null; state.shotCategory = null; state.shotMissDepth = null; state.shotMissSide = null; state.shotMissType = null;
   document.getElementById('shot-sheet-title').textContent = editIndex !== undefined ? 'Edit Shot' : 'Add Shot';
   document.getElementById('shot-dist-from').value = '';
   document.getElementById('shot-dist-result').value = '';
@@ -27,6 +27,7 @@ function openShotSheet(editIndex) {
     if(s.resultDist != null) document.getElementById('shot-dist-result').value = s.resultDist;
     if(s.missDepth) state.shotMissDepth = s.missDepth;
     if(s.missSide) state.shotMissSide = s.missSide;
+    if(s.missType) state.shotMissType = s.missType;
     selectCategory(s.category, true);
   } else {
     const sug = getSuggestion(hd);
@@ -92,6 +93,7 @@ function selectResultLie(lie, silent) {
   } else {
     missGroup.classList.remove('hidden');
   }
+  updateMissTypeVisibility();
   if(!silent) { autoSetCategory(); updateSGPreview(); }
   if(!silent && lie !== 'holed') {
     setTimeout(() => {
@@ -119,6 +121,7 @@ function selectCategory(cat, silent) {
   document.querySelectorAll('#category-pills .pill').forEach(p => p.classList.toggle('selected', map[p.textContent.trim()] === cat));
   renderCategoryChip(cat);
   updateMissGrid(cat);
+  updateMissTypeVisibility();
   if(!silent) {
     const exp = document.getElementById('category-pills-expand'); if(exp) exp.classList.add('hidden');
   }
@@ -190,6 +193,27 @@ function selectMissSide(val, silent) {
   updateMissGrid(state.shotCategory);
 }
 
+function updateMissTypeVisibility() {
+  const show = state.shotCategory === 'putt' && state.shotResultLie && state.shotResultLie !== 'holed';
+  const group = document.getElementById('miss-type-group'); if(!group) return;
+  group.classList.toggle('hidden', !show);
+  if(!show) {
+    state.shotMissType = null;
+    document.querySelectorAll('#miss-type-pills .pill').forEach(p => p.classList.remove('selected'));
+  } else {
+    document.querySelectorAll('#miss-type-pills .pill').forEach(p =>
+      p.classList.toggle('selected', p.dataset.missType === state.shotMissType)
+    );
+  }
+}
+
+function selectMissType(val) {
+  state.shotMissType = state.shotMissType === val ? null : val;
+  document.querySelectorAll('#miss-type-pills .pill').forEach(p =>
+    p.classList.toggle('selected', p.dataset.missType === state.shotMissType)
+  );
+}
+
 function autoSetCategory() {
   if(!state.shotLie) return;
   const dist = parseFloat(document.getElementById('shot-dist-from').value) || 0;
@@ -224,7 +248,8 @@ function saveShot() {
   const sg = sgRaw !== null ? Math.round(sgRaw * 10000) / 10000 : null;
   const hd = currentHoleData(), idx = state.editingShotIndex !== null ? state.editingShotIndex : hd.shots.length;
   const cat = state.shotCategory || autoCategory(lie, dFrom, idx, hd.par);
-  const shot = { lie, distFrom:dFrom, resultLie:rLie, resultDist:(rLie !== 'holed' && !isNaN(dRes)) ? dRes : null, category:cat, sg, missDepth:state.shotMissDepth || null, missSide:state.shotMissSide || null };
+  const missType = (cat === 'putt' && rLie !== 'holed') ? (state.shotMissType || null) : null;
+  const shot = { lie, distFrom:dFrom, resultLie:rLie, resultDist:(rLie !== 'holed' && !isNaN(dRes)) ? dRes : null, category:cat, sg, missDepth:state.shotMissDepth || null, missSide:state.shotMissSide || null, missType };
   const round = currentRound();
   if(state.editingShotIndex !== null) round.holes[state.currentHole - 1].shots[state.editingShotIndex] = shot;
   else round.holes[state.currentHole - 1].shots.push(shot);

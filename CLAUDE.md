@@ -61,6 +61,7 @@ Each shot stored in `round.holes[n].shots[]`:
   sg: Number|null,                     // strokes gained, rounded to 4 decimal places on save
   missDepth: 'short'|'even'|'long'|null,   // 'even' = pin high / on-line; null in older data (treated as 'even')
   missSide: 'left'|'middle'|'right'|null,  // OR 'low'|'center'|'high' for putts
+  missType: 'read'|'pace'|'push'|'pull'|null,  // putt miss type; null if non-putt, holed, or not recorded
 }
 ```
 
@@ -69,7 +70,7 @@ Each shot stored in `round.holes[n].shots[]`:
 ### State
 Single `state` object — never persisted, resets on page load:
 ```js
-let state = { currentRoundId, currentHole, editingShotIndex, editingCourseId, excludedCategories, shotLie, shotResultLie, shotCategory, shotMissDepth, shotMissSide, trendsFilter }
+let state = { currentRoundId, currentHole, editingShotIndex, editingCourseId, excludedCategories, shotLie, shotResultLie, shotCategory, shotMissDepth, shotMissSide, shotMissType, trendsFilter }
 ```
 
 ### Shared Constants and Helpers (`state.js`)
@@ -135,6 +136,14 @@ Short Game = any non-putt, non-drive shot from **under 30 yards** (`autoCategory
 - `updateMissGrid(cat)` rebuilds the grid and is called from `selectCategory`; handles putt vs non-putt column labels
 - Grid cells are fixed `40px` tall via `grid-auto-rows`; flexbox centers content within each cell
 - Miss direction group is hidden when result is 'Holed', shown for all other results (including Penalty)
+
+### Putt Miss Type
+- Optional classification of *why* a putt missed; appears as 4 pills below the miss direction grid
+- Only shown when category = Putt and result ≠ Holed; hidden and cleared otherwise
+- Values: `'read'` (wrong line/break), `'pace'` (wrong speed), `'push'` (struck right of intended), `'pull'` (struck left of intended)
+- `selectMissType(val)` — tap to select, tap again to deselect; stored in `state.shotMissType`
+- `updateMissTypeVisibility()` — called from `selectResultLie` and `selectCategory` to show/hide and clear
+- `buildMissType(shots)` in `summary.js` renders a 4-tile breakdown (%, count per type) below `buildMissGrid` in putt drill-downs in both summary and trends screens; only appears when at least one shot has `missType` set
 
 ### Penalty Shots
 `resultLie: 'penalty'` is a secondary result pill (alongside Sand and Recovery). Behavior:

@@ -74,6 +74,7 @@ let state = {
   shotCategory: null,
   shotMissDepth: null,
   shotMissSide: null,
+  shotMissType: null,
   trendsFilter: 10
 };
 
