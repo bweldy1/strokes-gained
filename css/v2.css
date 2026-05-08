@@ -255,6 +255,27 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
 .miss-type-n { font-size: 10px; color: var(--text-dim); }
 #miss-type-group { margin-bottom: 16px; }
 
+/* ── Scorecard ── */
+.sc-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.sc-table { border-collapse: collapse; font-size: 12px; min-width: 100%; }
+.sc-table td { text-align: center; padding: 5px 3px; white-space: nowrap; vertical-align: middle; }
+.sc-lbl { text-align: left !important; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .3px; color: var(--text-dim); padding-right: 6px !important; min-width: 28px; }
+.sc-hole-cell { color: var(--text-dim); font-size: 11px; }
+.sc-sec-lbl { font-size: 11px; font-weight: 700; color: var(--text-muted); border-left: 1px solid var(--border); padding-left: 8px !important; }
+.sc-tot-cell { font-weight: 700; border-left: 1px solid var(--border); padding-left: 8px !important; }
+.sc-par-row td, .sc-yds-row td { color: var(--text-muted); }
+.sc-yds-row td { font-size: 10px; color: var(--text-dim); }
+.sc-divider td { height: 10px; border-top: 1px solid var(--border); }
+.sc-sym { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; }
+.sc-sym-birdie { border: 1.5px solid var(--text-dim); border-radius: 50%; }
+.sc-sym-eagle  { border: 1.5px solid var(--text-dim); border-radius: 50%; box-shadow: 0 0 0 2.5px var(--card), 0 0 0 4px var(--text-dim); }
+.sc-sym-bogey  { border: 1.5px solid var(--text-dim); border-radius: 2px; }
+.sc-sym-double { border: 1.5px solid var(--text-dim); border-radius: 2px; box-shadow: 0 0 0 2.5px var(--card), 0 0 0 4px var(--text-dim); }
+.sc-total-bar { display: flex; align-items: center; gap: 10px; padding: 8px 0 0; border-top: 1px solid var(--border); margin-top: 4px; }
+.sc-total-bar-lbl { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .3px; color: var(--text-dim); flex: 1; }
+.sc-total-bar-val { font-size: 15px; font-weight: 700; }
+.sc-total-bar-rel { font-size: 13px; font-weight: 600; }
+
 /* ── Trends screen ── */
 .trends-filter-row { display: flex; gap: 8px; margin-bottom: 16px; }
 .trends-cat-card { padding: 14px 16px; }

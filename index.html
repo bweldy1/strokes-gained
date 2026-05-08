@@ -264,6 +264,27 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
 .miss-type-n { font-size: 10px; color: var(--text-dim); }
 #miss-type-group { margin-bottom: 16px; }
 
+/* ── Scorecard ── */
+.sc-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.sc-table { border-collapse: collapse; font-size: 12px; min-width: 100%; }
+.sc-table td { text-align: center; padding: 5px 3px; white-space: nowrap; vertical-align: middle; }
+.sc-lbl { text-align: left !important; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .3px; color: var(--text-dim); padding-right: 6px !important; min-width: 28px; }
+.sc-hole-cell { color: var(--text-dim); font-size: 11px; }
+.sc-sec-lbl { font-size: 11px; font-weight: 700; color: var(--text-muted); border-left: 1px solid var(--border); padding-left: 8px !important; }
+.sc-tot-cell { font-weight: 700; border-left: 1px solid var(--border); padding-left: 8px !important; }
+.sc-par-row td, .sc-yds-row td { color: var(--text-muted); }
+.sc-yds-row td { font-size: 10px; color: var(--text-dim); }
+.sc-divider td { height: 10px; border-top: 1px solid var(--border); }
+.sc-sym { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; }
+.sc-sym-birdie { border: 1.5px solid var(--text-dim); border-radius: 50%; }
+.sc-sym-eagle  { border: 1.5px solid var(--text-dim); border-radius: 50%; box-shadow: 0 0 0 2.5px var(--card), 0 0 0 4px var(--text-dim); }
+.sc-sym-bogey  { border: 1.5px solid var(--text-dim); border-radius: 2px; }
+.sc-sym-double { border: 1.5px solid var(--text-dim); border-radius: 2px; box-shadow: 0 0 0 2.5px var(--card), 0 0 0 4px var(--text-dim); }
+.sc-total-bar { display: flex; align-items: center; gap: 10px; padding: 8px 0 0; border-top: 1px solid var(--border); margin-top: 4px; }
+.sc-total-bar-lbl { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .3px; color: var(--text-dim); flex: 1; }
+.sc-total-bar-val { font-size: 15px; font-weight: 700; }
+.sc-total-bar-rel { font-size: 13px; font-weight: 600; }
+
 /* ── Trends screen ── */
 .trends-filter-row { display: flex; gap: 8px; margin-bottom: 16px; }
 .trends-cat-card { padding: 14px 16px; }
@@ -314,7 +335,7 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
     <div class="section-label">Recent Rounds</div>
     <div id="rounds-list"></div>
   </div>
-  <div id="build-version">Build: 2026-05-07 20:43</div>
+  <div id="build-version">Build: 2026-05-07 21:10</div>
 </div>
 
 <!-- COURSE SELECT -->
@@ -382,7 +403,20 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
     <div class="section-label">Statistics</div>
     <div class="card" id="summary-stats"></div>
     <div class="spacer-sm"></div>
+    <button class="btn btn-ghost" onclick="showScreen('scorecard')">Show Scorecard</button>
     <button class="btn btn-ghost" onclick="showScreen('home')">Done</button>
+  </div>
+</div>
+
+<!-- SCORECARD SCREEN -->
+<div class="screen" id="screen-scorecard">
+  <div class="topbar">
+    <button class="btn-icon" onclick="showScreen('summary')">‹</button>
+    <div><div class="topbar-title">Scorecard</div></div>
+    <div class="topbar-spacer"></div>
+  </div>
+  <div class="scroll-body">
+    <div class="card" id="scorecard-content"></div>
   </div>
 </div>
 
@@ -1851,6 +1885,85 @@ function buildShotRow(s, label, labelClass = 'ssum-hole') {
   </div>`;
 }
 
+function renderScorecardScreen() {
+  const round = currentRound(); if(!round) return;
+  document.getElementById('scorecard-content').innerHTML = renderScorecard(round);
+}
+
+function renderScorecard(round) {
+  const holes = round.holes || [];
+  if(holes.length === 0) return '';
+
+  const hd = holes.map(h => {
+    const shots = h.shots || [];
+    const strokes = countStrokes(shots);
+    return { num: h.hole, par: h.par, yds: h.yardsOverride || h.yards || null, strokes, rel: strokes - h.par };
+  });
+
+  const hasYds = hd.some(h => h.yds);
+
+  function symStr(strokes, rel) {
+    if(rel <= -2) return `<span class="sc-sym sc-sym-eagle">${strokes}</span>`;
+    if(rel === -1) return `<span class="sc-sym sc-sym-birdie">${strokes}</span>`;
+    if(rel === 1)  return `<span class="sc-sym sc-sym-bogey">${strokes}</span>`;
+    if(rel >= 2)   return `<span class="sc-sym sc-sym-double">${strokes}</span>`;
+    return `${strokes}`;
+  }
+  function relStr(rel) { return rel === 0 ? 'E' : (rel > 0 ? '+' : '') + rel; }
+
+  function section(data, label) {
+    const tPar = data.reduce((s, h) => s + h.par, 0);
+    const tScr = data.reduce((s, h) => s + h.strokes, 0);
+    const tRel = data.reduce((s, h) => s + h.rel, 0);
+    const tYds = hasYds ? data.reduce((s, h) => s + (h.yds || 0), 0) : null;
+    return `
+      <tr class="sc-hole-row">
+        <td class="sc-lbl"></td>
+        ${data.map(h => `<td class="sc-hole-cell">${h.num}</td>`).join('')}
+        <td class="sc-sec-lbl">${label}</td>
+      </tr>
+      <tr class="sc-par-row">
+        <td class="sc-lbl">Par</td>
+        ${data.map(h => `<td>${h.par}</td>`).join('')}
+        <td class="sc-tot-cell">${tPar}</td>
+      </tr>
+      ${hasYds ? `<tr class="sc-yds-row">
+        <td class="sc-lbl">Yds</td>
+        ${data.map(h => `<td>${h.yds || '—'}</td>`).join('')}
+        <td class="sc-tot-cell">${tYds || '—'}</td>
+      </tr>` : ''}
+      <tr class="sc-scr-row">
+        <td class="sc-lbl">Scr</td>
+        ${data.map(h => `<td>${h.strokes === 0 ? '' : symStr(h.strokes, h.rel)}</td>`).join('')}
+        <td class="sc-tot-cell">${tScr}</td>
+      </tr>
+      `;
+  }
+
+  let tableRows;
+  if(hd.length <= 9) {
+    tableRows = section(hd, 'TOT');
+  } else {
+    const front = hd.slice(0, 9), back = hd.slice(9);
+    tableRows = section(front, 'OUT')
+      + `<tr class="sc-divider"><td colspan="${front.length + 2}"></td></tr>`
+      + section(back, 'IN');
+  }
+
+  let totalBar = '';
+  if(hd.length > 9) {
+    const tPar = hd.reduce((s, h) => s + h.par, 0);
+    const tScr = hd.reduce((s, h) => s + h.strokes, 0);
+    const tRel = hd.reduce((s, h) => s + h.rel, 0);
+    totalBar = `<div class="sc-total-bar">
+      <span class="sc-total-bar-lbl">Total</span>
+      <span class="sc-total-bar-val">${tScr}</span>
+    </div>`;
+  }
+
+  return `<div class="sc-wrap"><table class="sc-table"><tbody>${tableRows}</tbody></table></div>${totalBar}`;
+}
+
 function renderSummary() {
   const round = currentRound(); if(!round) return;
   const cats = ['drive', 'approach', 'shortgame', 'putt'];
@@ -2138,8 +2251,9 @@ function showScreen(name) {
   if(name === 'home')    renderHome();
   if(name === 'courses') renderCourses();
   if(name === 'hole')    renderHoleScreen();
-  if(name === 'summary') renderSummary();
-  if(name === 'trends')  renderTrends();
+  if(name === 'summary')    renderSummary();
+  if(name === 'scorecard')  renderScorecardScreen();
+  if(name === 'trends')     renderTrends();
 }
 
 // ═══════════════════════════════════════════════════════════════

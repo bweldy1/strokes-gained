@@ -9,8 +9,9 @@ function showScreen(name) {
   if(name === 'home')    renderHome();
   if(name === 'courses') renderCourses();
   if(name === 'hole')    renderHoleScreen();
-  if(name === 'summary') renderSummary();
-  if(name === 'trends')  renderTrends();
+  if(name === 'summary')    renderSummary();
+  if(name === 'scorecard')  renderScorecardScreen();
+  if(name === 'trends')     renderTrends();
 }
 
 // ═══════════════════════════════════════════════════════════════

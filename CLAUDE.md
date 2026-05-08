@@ -22,6 +22,7 @@ html/
     screen-courses.html     # Course select + JSON import
     screen-hole.html        # Hole entry (nav, tally bar, shot list)
     screen-summary.html     # Round summary + CSV export
+    screen-scorecard.html   # Scorecard view (reached via "Show Scorecard" button on summary)
     screen-trends.html      # Cross-round trends: filter + category avg SG + bucket drill-down
     sheet-shot.html         # Bottom sheet: shot entry form
     sheet-course-edit.html  # Bottom sheet: course name/tees editor
@@ -240,7 +241,7 @@ Shots are aggregated from `round.holes[n].shots[]` across all filtered rounds be
 
 ## Screen Navigation
 
-`showScreen(name)` — shows `#screen-{name}`, hides all others, calls the matching render function. Screens: `home`, `courses`, `hole`, `summary`, `trends`.
+`showScreen(name)` — shows `#screen-{name}`, hides all others, calls the matching render function. Screens: `home`, `courses`, `hole`, `summary`, `scorecard`, `trends`.
 
 The hole screen topbar uses a `⌂` home icon (`.btn-icon`) to navigate back to the home screen — intentionally distinct from the `‹ ›` hole navigation arrows.
 
@@ -261,6 +262,17 @@ Accessed via the ⚙ gear button (top-right of the home header). Opens `#setting
 - After restore: rounds sorted newest-first, `renderHome()` called, toast shows count + skipped
 
 Duplicate key: `roundDuplicateKey(r)` = `courseName|date(YYYY-MM-DD)|name` joined by `|`.
+
+## Scorecard Screen
+
+Accessed via the "Show Scorecard" button above "Done" on the round summary. Navigates to `screen-scorecard`, which renders `#scorecard-content` via `renderScorecardScreen()` (defined in `summary.js`).
+
+`renderScorecard(round)` builds an HTML table split into front 9 / back 9 sections (or a single section for ≤9 holes). Rows: hole numbers, Par, Yds (omitted if no yardage data), Scr. No +/− row.
+
+- **Scoring symbols** — each hole's score cell wraps the number in a `<span class="sc-sym sc-sym-{type}">`. Symbols are monochrome outlines using `var(--text-dim)`; double shapes (eagle, double bogey) use a `box-shadow` outer ring with `var(--card)` gap. Types: `sc-sym-eagle` (double circle, −2 or better), `sc-sym-birdie` (circle, −1), `sc-sym-bogey` (square, +1), `sc-sym-double` (double square, +2 or worse). Par = plain number, no span.
+- **Unplayed holes** — score cells with 0 strokes render blank (the hole was not played).
+- **Totals column** — OUT / IN / TOT labels; shows stroke count only, no +/− to par.
+- For 18-hole rounds a "Total" bar below the table shows combined stroke count.
 
 ## CSV Export
 

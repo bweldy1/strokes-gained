@@ -196,6 +196,85 @@ function buildShotRow(s, label, labelClass = 'ssum-hole') {
   </div>`;
 }
 
+function renderScorecardScreen() {
+  const round = currentRound(); if(!round) return;
+  document.getElementById('scorecard-content').innerHTML = renderScorecard(round);
+}
+
+function renderScorecard(round) {
+  const holes = round.holes || [];
+  if(holes.length === 0) return '';
+
+  const hd = holes.map(h => {
+    const shots = h.shots || [];
+    const strokes = countStrokes(shots);
+    return { num: h.hole, par: h.par, yds: h.yardsOverride || h.yards || null, strokes, rel: strokes - h.par };
+  });
+
+  const hasYds = hd.some(h => h.yds);
+
+  function symStr(strokes, rel) {
+    if(rel <= -2) return `<span class="sc-sym sc-sym-eagle">${strokes}</span>`;
+    if(rel === -1) return `<span class="sc-sym sc-sym-birdie">${strokes}</span>`;
+    if(rel === 1)  return `<span class="sc-sym sc-sym-bogey">${strokes}</span>`;
+    if(rel >= 2)   return `<span class="sc-sym sc-sym-double">${strokes}</span>`;
+    return `${strokes}`;
+  }
+  function relStr(rel) { return rel === 0 ? 'E' : (rel > 0 ? '+' : '') + rel; }
+
+  function section(data, label) {
+    const tPar = data.reduce((s, h) => s + h.par, 0);
+    const tScr = data.reduce((s, h) => s + h.strokes, 0);
+    const tRel = data.reduce((s, h) => s + h.rel, 0);
+    const tYds = hasYds ? data.reduce((s, h) => s + (h.yds || 0), 0) : null;
+    return `
+      <tr class="sc-hole-row">
+        <td class="sc-lbl"></td>
+        ${data.map(h => `<td class="sc-hole-cell">${h.num}</td>`).join('')}
+        <td class="sc-sec-lbl">${label}</td>
+      </tr>
+      <tr class="sc-par-row">
+        <td class="sc-lbl">Par</td>
+        ${data.map(h => `<td>${h.par}</td>`).join('')}
+        <td class="sc-tot-cell">${tPar}</td>
+      </tr>
+      ${hasYds ? `<tr class="sc-yds-row">
+        <td class="sc-lbl">Yds</td>
+        ${data.map(h => `<td>${h.yds || '—'}</td>`).join('')}
+        <td class="sc-tot-cell">${tYds || '—'}</td>
+      </tr>` : ''}
+      <tr class="sc-scr-row">
+        <td class="sc-lbl">Scr</td>
+        ${data.map(h => `<td>${h.strokes === 0 ? '' : symStr(h.strokes, h.rel)}</td>`).join('')}
+        <td class="sc-tot-cell">${tScr}</td>
+      </tr>
+      `;
+  }
+
+  let tableRows;
+  if(hd.length <= 9) {
+    tableRows = section(hd, 'TOT');
+  } else {
+    const front = hd.slice(0, 9), back = hd.slice(9);
+    tableRows = section(front, 'OUT')
+      + `<tr class="sc-divider"><td colspan="${front.length + 2}"></td></tr>`
+      + section(back, 'IN');
+  }
+
+  let totalBar = '';
+  if(hd.length > 9) {
+    const tPar = hd.reduce((s, h) => s + h.par, 0);
+    const tScr = hd.reduce((s, h) => s + h.strokes, 0);
+    const tRel = hd.reduce((s, h) => s + h.rel, 0);
+    totalBar = `<div class="sc-total-bar">
+      <span class="sc-total-bar-lbl">Total</span>
+      <span class="sc-total-bar-val">${tScr}</span>
+    </div>`;
+  }
+
+  return `<div class="sc-wrap"><table class="sc-table"><tbody>${tableRows}</tbody></table></div>${totalBar}`;
+}
+
 function renderSummary() {
   const round = currentRound(); if(!round) return;
   const cats = ['drive', 'approach', 'shortgame', 'putt'];
