@@ -7,10 +7,23 @@
   </div>
   <div class="scroll-body">
     <div id="courses-list"></div>
-    <div class="section-label" style="margin-top:24px">Add Course</div>
-    <p class="course-json-hint">Paste course JSON. <span class="link-fairway" onclick="showSampleJSON()">Load Wild Wood example ›</span></p>
-    <textarea class="json-input" id="course-json-input" placeholder='[{"name":"My Club","tees":"Blue","holes":[{"hole":1,"par":4,"yards":385},...]}]'></textarea>
-    <button class="btn btn-primary" style="margin-top:10px" onclick="saveCourseJSON()">Save Course</button>
-    <div id="json-error" class="hidden"></div>
+    <div class="section-label section-label-toggle" id="add-course-toggle" onclick="toggleAddCourse()" style="margin-top:24px">
+      <span>Add Course</span>
+      <span id="add-course-chevron">›</span>
+    </div>
+    <div id="add-course-section" class="hidden">
+      <button class="btn btn-primary" style="width:100%;margin-top:4px" onclick="addWildWoodCourse()">+ Add Wild Wood Golf Club</button>
+      <div class="course-json-hint" style="margin-top:6px;margin-bottom:0">18-hole example course · Blue tees</div>
+      <div class="section-label section-label-toggle" id="advanced-json-toggle" onclick="toggleAdvancedJSON()" style="margin-top:18px">
+        <span>Advanced: import JSON</span>
+        <span id="advanced-json-chevron">›</span>
+      </div>
+      <div id="advanced-json-section" class="hidden">
+        <p class="course-json-hint">Paste course JSON to add any course.</p>
+        <textarea class="json-input" id="course-json-input" placeholder='[{"name":"My Club","tees":"Blue","holes":[{"hole":1,"par":4,"yards":385},...]}]'></textarea>
+        <button class="btn btn-primary" style="margin-top:10px" onclick="saveCourseJSON()">Save Course</button>
+        <div id="json-error" class="hidden"></div>
+      </div>
+    </div>
   </div>
 </div>

@@ -345,7 +345,7 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
     <div class="section-label">Recent Rounds</div>
     <div id="rounds-list"></div>
   </div>
-  <div id="build-version">Build: 2026-05-07 22:07</div>
+  <div id="build-version">Build: 2026-05-16 17:59</div>
 </div>
 
 <!-- COURSE SELECT -->
@@ -357,11 +357,24 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
   </div>
   <div class="scroll-body">
     <div id="courses-list"></div>
-    <div class="section-label" style="margin-top:24px">Add Course</div>
-    <p class="course-json-hint">Paste course JSON. <span class="link-fairway" onclick="showSampleJSON()">Load Wild Wood example ›</span></p>
-    <textarea class="json-input" id="course-json-input" placeholder='[{"name":"My Club","tees":"Blue","holes":[{"hole":1,"par":4,"yards":385},...]}]'></textarea>
-    <button class="btn btn-primary" style="margin-top:10px" onclick="saveCourseJSON()">Save Course</button>
-    <div id="json-error" class="hidden"></div>
+    <div class="section-label section-label-toggle" id="add-course-toggle" onclick="toggleAddCourse()" style="margin-top:24px">
+      <span>Add Course</span>
+      <span id="add-course-chevron">›</span>
+    </div>
+    <div id="add-course-section" class="hidden">
+      <button class="btn btn-primary" style="width:100%;margin-top:4px" onclick="addWildWoodCourse()">+ Add Wild Wood Golf Club</button>
+      <div class="course-json-hint" style="margin-top:6px;margin-bottom:0">18-hole example course · Blue tees</div>
+      <div class="section-label section-label-toggle" id="advanced-json-toggle" onclick="toggleAdvancedJSON()" style="margin-top:18px">
+        <span>Advanced: import JSON</span>
+        <span id="advanced-json-chevron">›</span>
+      </div>
+      <div id="advanced-json-section" class="hidden">
+        <p class="course-json-hint">Paste course JSON to add any course.</p>
+        <textarea class="json-input" id="course-json-input" placeholder='[{"name":"My Club","tees":"Blue","holes":[{"hole":1,"par":4,"yards":385},...]}]'></textarea>
+        <button class="btn btn-primary" style="margin-top:10px" onclick="saveCourseJSON()">Save Course</button>
+        <div id="json-error" class="hidden"></div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -1711,11 +1724,41 @@ function saveCourseEdit() {
   showToast('Course updated!');
 }
 
+const WILDWOOD_DATA = [{"name":"Wild Wood Golf Club","tees":"Blue","holes":[{"hole":1,"par":4,"yards":354},{"hole":2,"par":4,"yards":417},{"hole":3,"par":5,"yards":471},{"hole":4,"par":4,"yards":353},{"hole":5,"par":3,"yards":154},{"hole":6,"par":5,"yards":514},{"hole":7,"par":4,"yards":342},{"hole":8,"par":3,"yards":197},{"hole":9,"par":4,"yards":397},{"hole":10,"par":4,"yards":383},{"hole":11,"par":4,"yards":377},{"hole":12,"par":4,"yards":371},{"hole":13,"par":3,"yards":135},{"hole":14,"par":4,"yards":346},{"hole":15,"par":4,"yards":342},{"hole":16,"par":4,"yards":326},{"hole":17,"par":3,"yards":201},{"hole":18,"par":5,"yards":465}]}];
+
+function toggleAddCourse(forceOpen) {
+  const section = document.getElementById('add-course-section');
+  const chevron = document.getElementById('add-course-chevron');
+  const open = forceOpen !== undefined ? forceOpen : section.classList.contains('hidden');
+  section.classList.toggle('hidden', !open);
+  chevron.textContent = open ? '∨' : '›';
+}
+
+function toggleAdvancedJSON(forceOpen) {
+  const section = document.getElementById('advanced-json-section');
+  const chevron = document.getElementById('advanced-json-chevron');
+  const open = forceOpen !== undefined ? forceOpen : section.classList.contains('hidden');
+  section.classList.toggle('hidden', !open);
+  chevron.textContent = open ? '∨' : '›';
+}
+
+function addWildWoodCourse() {
+  const courses = getCourses();
+  if(courses.some(c => c.name === WILDWOOD_DATA[0].name)) { showToast('Wild Wood already added'); return; }
+  const c = Object.assign({}, WILDWOOD_DATA[0], { id: 'course_' + Date.now() });
+  saveCourses([...courses, c]);
+  renderCourses();
+  toggleAddCourse(false);
+  showToast('Wild Wood Golf Club added!');
+}
+
 function loadCourseHolesJSON() {
   if(!state.editingCourseId) return;
   const c = getCourses().find(x => x.id === state.editingCourseId); if(!c) return;
   document.getElementById('course-edit-sheet').classList.remove('open');
   document.getElementById('course-json-input').value = JSON.stringify({name:c.name, tees:c.tees, holes:c.holes}, null, 2);
+  toggleAddCourse(true);
+  toggleAdvancedJSON(true);
   showToast('JSON loaded — edit and save below');
 }
 
@@ -1754,9 +1797,6 @@ function saveCourseJSON() {
   showToast('Course saved!');
 }
 
-function showSampleJSON() {
-  document.getElementById('course-json-input').value = JSON.stringify([{"name":"Wild Wood Golf Club","tees":"Blue","holes":[{"hole":1,"par":4,"yards":354},{"hole":2,"par":4,"yards":417},{"hole":3,"par":5,"yards":471},{"hole":4,"par":4,"yards":353},{"hole":5,"par":3,"yards":154},{"hole":6,"par":5,"yards":514},{"hole":7,"par":4,"yards":342},{"hole":8,"par":3,"yards":197},{"hole":9,"par":4,"yards":397},{"hole":10,"par":4,"yards":383},{"hole":11,"par":4,"yards":377},{"hole":12,"par":4,"yards":371},{"hole":13,"par":3,"yards":135},{"hole":14,"par":4,"yards":346},{"hole":15,"par":4,"yards":342},{"hole":16,"par":4,"yards":326},{"hole":17,"par":3,"yards":201},{"hole":18,"par":5,"yards":465}]}], null, 2);
-}
 
 function startRound(courseId) {
   const course = getCourses().find(c => c.id === courseId); if(!course) return;
