@@ -353,7 +353,7 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
     <div class="section-label">Recent Rounds</div>
     <div id="rounds-list"></div>
   </div>
-  <div id="build-version">Build: 2026-05-16 18:49</div>
+  <div id="build-version">Build: 2026-05-16 18:52</div>
 </div>
 
 <!-- COURSE SELECT -->
@@ -435,11 +435,12 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
     <div class="topbar-spacer"></div>
   </div>
   <div class="scroll-body">
+    <button class="btn btn-ghost" onclick="showScreen('scorecard')">Show Scorecard</button>
+    <div class="spacer-sm"></div>
     <div class="card" id="summary-totals"></div>
     <div class="section-label">Statistics</div>
     <div class="card" id="summary-stats"></div>
     <div class="spacer-sm"></div>
-    <button class="btn btn-ghost" onclick="showScreen('scorecard')">Show Scorecard</button>
     <button class="btn btn-ghost" onclick="showScreen('home')">Done</button>
   </div>
 </div>
