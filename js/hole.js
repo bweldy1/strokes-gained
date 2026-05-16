@@ -21,10 +21,13 @@ function renderHole() {
 function renderShotList(hd) {
   const shots = hd.shots || [], el = document.getElementById('shot-list');
   const last = shots[shots.length - 1];
-  const showPrompt = last && last.resultLie === 'green' && last.resultDist != null && last.resultDist <= getHoleOutDist();
+  const isHoled = last && last.resultLie === 'holed';
+  const showPrompt = !isHoled && last && last.resultLie === 'green' && last.resultDist != null && last.resultDist <= getHoleOutDist();
   const prompt = document.getElementById('hole-out-prompt');
   prompt.classList.toggle('hidden', !showPrompt);
   if(showPrompt) document.getElementById('hole-out-dist').textContent = last.resultDist;
+  document.getElementById('add-shot-btn').classList.toggle('hidden', isHoled);
+  document.getElementById('next-hole-btn').classList.toggle('hidden', !isHoled);
   if(shots.length === 0) {
     el.innerHTML = `<div class="list-empty">No shots yet — tap Add Shot below</div>`;
     return;

@@ -353,7 +353,7 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
     <div class="section-label">Recent Rounds</div>
     <div id="rounds-list"></div>
   </div>
-  <div id="build-version">Build: 2026-05-16 18:44</div>
+  <div id="build-version">Build: 2026-05-16 18:49</div>
 </div>
 
 <!-- COURSE SELECT -->
@@ -422,7 +422,8 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
   <div class="shot-list" id="shot-list"></div>
   <div id="hole-actions">
     <button id="hole-out-prompt" class="add-shot-btn hidden" onclick="holeOut()">⛳ Holed · <span id="hole-out-dist"></span> ft</button>
-    <button class="add-shot-btn" onclick="openShotSheet()"><span class="add-shot-icon">+</span> Add Shot</button>
+    <button id="add-shot-btn" class="add-shot-btn" onclick="openShotSheet()"><span class="add-shot-icon">+</span> Add Shot</button>
+    <button id="next-hole-btn" class="add-shot-btn hidden" onclick="nextHole()">Next Hole ›</button>
   </div>
 </div>
 
@@ -1255,10 +1256,13 @@ function renderHole() {
 function renderShotList(hd) {
   const shots = hd.shots || [], el = document.getElementById('shot-list');
   const last = shots[shots.length - 1];
-  const showPrompt = last && last.resultLie === 'green' && last.resultDist != null && last.resultDist <= getHoleOutDist();
+  const isHoled = last && last.resultLie === 'holed';
+  const showPrompt = !isHoled && last && last.resultLie === 'green' && last.resultDist != null && last.resultDist <= getHoleOutDist();
   const prompt = document.getElementById('hole-out-prompt');
   prompt.classList.toggle('hidden', !showPrompt);
   if(showPrompt) document.getElementById('hole-out-dist').textContent = last.resultDist;
+  document.getElementById('add-shot-btn').classList.toggle('hidden', isHoled);
+  document.getElementById('next-hole-btn').classList.toggle('hidden', !isHoled);
   if(shots.length === 0) {
     el.innerHTML = `<div class="list-empty">No shots yet — tap Add Shot below</div>`;
     return;
