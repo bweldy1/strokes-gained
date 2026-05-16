@@ -33,6 +33,8 @@ body { font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-se
 .topbar-sub { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
 .btn-icon { width: 36px; height: 36px; border-radius: 50%; background: var(--input-bg); border: 1px solid var(--input-border); color: var(--text); font-size: 18px; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
 .btn-icon:active { opacity: .6; }
+.btn-topbar { height: 32px; padding: 0 12px; border-radius: 16px; background: var(--input-bg); border: 1px solid var(--input-border); color: var(--text); font-size: 13px; font-weight: 500; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; gap: 4px; }
+.btn-topbar:active { opacity: .6; }
 .scroll-body { flex: 1; overflow-y: auto; padding: 16px 20px 100px; -webkit-overflow-scrolling: touch; }
 .btn { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 16px; border-radius: var(--radius); font-size: 16px; font-weight: 600; cursor: pointer; border: none; transition: opacity .15s, transform .1s; }
 .btn:active { opacity: .8; transform: scale(.98); }
@@ -353,7 +355,7 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
     <div class="section-label">Recent Rounds</div>
     <div id="rounds-list"></div>
   </div>
-  <div id="build-version">Build: 2026-05-16 18:52</div>
+  <div id="build-version">Build: 2026-05-16 19:01</div>
 </div>
 
 <!-- COURSE SELECT -->
@@ -389,12 +391,12 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
 <!-- HOLE ENTRY -->
 <div class="screen" id="screen-hole">
   <div class="topbar">
-    <button class="btn-icon" onclick="showScreen('home')">⌂</button>
+    <button class="btn-topbar" onclick="showScreen('home')">⌂ Home</button>
     <div class="topbar-center">
       <div class="topbar-title topbar-clickable" id="hole-course-name" onclick="openRoundEdit()"></div>
       <div class="topbar-sub topbar-clickable" id="hole-round-date" onclick="openRoundEdit()"></div>
     </div>
-    <button class="btn-icon" onclick="showScreen('summary')">⊞</button>
+    <button class="btn-topbar" onclick="showScreen('summary')">Summary ›</button>
   </div>
   <div class="hole-nav">
     <button class="hole-nav-btn" id="hole-prev-btn" onclick="prevHole()">‹</button>
