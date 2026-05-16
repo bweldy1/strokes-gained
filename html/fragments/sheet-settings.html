@@ -5,6 +5,13 @@
     <div class="sheet-title">Settings</div>
     <div class="sheet-body">
 
+      <div class="settings-section-label">Appearance</div>
+      <div class="settings-hint" style="margin-bottom:8px">Color scheme for shot quality</div>
+      <div style="display:flex;gap:8px;margin-bottom:20px">
+        <button class="pill scheme-pill" data-scheme="classic" onclick="setColorScheme('classic')">Classic</button>
+        <button class="pill scheme-pill" data-scheme="dusk" onclick="setColorScheme('dusk')">Dusk</button>
+      </div>
+
       <div class="settings-section-label">Data</div>
 
       <button class="btn btn-secondary settings-btn" onclick="backupData()">Backup</button>

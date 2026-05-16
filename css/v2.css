@@ -9,6 +9,10 @@
   --q-exceptional: #00e676; --q-great: #69f0ae; --q-good: #a5d6a7; --q-average: #ffca28;
   --q-below-avg: #ffa726; --q-poor: #ef5350; --q-terrible: #c62828;
 }
+[data-scheme="dusk"] {
+  --q-exceptional: #FFD600; --q-great: #F5C518; --q-good: #B8A000; --q-average: #9E9E9E;
+  --q-below-avg: #CE93D8; --q-poor: #AB47BC; --q-terrible: #7B1FA2;
+}
 
 
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }

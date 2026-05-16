@@ -3,13 +3,13 @@
 // ═══════════════════════════════════════════════════════════════
 
 const quality_band_global = [
-  {label:'Exceptional',   min:1,    color:'#00e676'},  // --q-exceptional
-  {label:'Excellent',     min:0.5,  color:'#69f0ae'},  // --q-great
-  {label:'Above Average', min:0.2,  color:'#a5d6a7'},  // --q-good
-  {label:'Neutral',       min:-0.2, color:'#ffca28'},  // --q-average
-  {label:'Below Average', min:-0.5, color:'#ffa726'},  // --q-below-avg
-  {label:'Poor',          min:-1,   color:'#ef5350'},  // --q-poor
-  {label:'Very Poor',     min:-999, color:'#c62828'}   // --q-terrible
+  {label:'Exceptional',   min:1,    color:'var(--q-exceptional)'},
+  {label:'Excellent',     min:0.5,  color:'var(--q-great)'},
+  {label:'Above Average', min:0.2,  color:'var(--q-good)'},
+  {label:'Neutral',       min:-0.2, color:'var(--q-average)'},
+  {label:'Below Average', min:-0.5, color:'var(--q-below-avg)'},
+  {label:'Poor',          min:-1,   color:'var(--q-poor)'},
+  {label:'Very Poor',     min:-999, color:'var(--q-terrible)'}
 ];
 
 

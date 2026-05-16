@@ -18,6 +18,10 @@
   --q-exceptional: #00e676; --q-great: #69f0ae; --q-good: #a5d6a7; --q-average: #ffca28;
   --q-below-avg: #ffa726; --q-poor: #ef5350; --q-terrible: #c62828;
 }
+[data-scheme="dusk"] {
+  --q-exceptional: #FFD600; --q-great: #F5C518; --q-good: #B8A000; --q-average: #9E9E9E;
+  --q-below-avg: #CE93D8; --q-poor: #AB47BC; --q-terrible: #7B1FA2;
+}
 
 
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -345,7 +349,7 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
     <div class="section-label">Recent Rounds</div>
     <div id="rounds-list"></div>
   </div>
-  <div id="build-version">Build: 2026-05-16 17:59</div>
+  <div id="build-version">Build: 2026-05-16 18:10</div>
 </div>
 
 <!-- COURSE SELECT -->
@@ -650,6 +654,13 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
     <div class="sheet-handle"></div>
     <div class="sheet-title">Settings</div>
     <div class="sheet-body">
+
+      <div class="settings-section-label">Appearance</div>
+      <div class="settings-hint" style="margin-bottom:8px">Color scheme for shot quality</div>
+      <div style="display:flex;gap:8px;margin-bottom:20px">
+        <button class="pill scheme-pill" data-scheme="classic" onclick="setColorScheme('classic')">Classic</button>
+        <button class="pill scheme-pill" data-scheme="dusk" onclick="setColorScheme('dusk')">Dusk</button>
+      </div>
 
       <div class="settings-section-label">Data</div>
 
@@ -1006,13 +1017,13 @@ const SG_TABLES = {
 // ═══════════════════════════════════════════════════════════════
 
 const quality_band_global = [
-  {label:'Exceptional',   min:1,    color:'#00e676'},  // --q-exceptional
-  {label:'Excellent',     min:0.5,  color:'#69f0ae'},  // --q-great
-  {label:'Above Average', min:0.2,  color:'#a5d6a7'},  // --q-good
-  {label:'Neutral',       min:-0.2, color:'#ffca28'},  // --q-average
-  {label:'Below Average', min:-0.5, color:'#ffa726'},  // --q-below-avg
-  {label:'Poor',          min:-1,   color:'#ef5350'},  // --q-poor
-  {label:'Very Poor',     min:-999, color:'#c62828'}   // --q-terrible
+  {label:'Exceptional',   min:1,    color:'var(--q-exceptional)'},
+  {label:'Excellent',     min:0.5,  color:'var(--q-great)'},
+  {label:'Above Average', min:0.2,  color:'var(--q-good)'},
+  {label:'Neutral',       min:-0.2, color:'var(--q-average)'},
+  {label:'Below Average', min:-0.5, color:'var(--q-below-avg)'},
+  {label:'Poor',          min:-1,   color:'var(--q-poor)'},
+  {label:'Very Poor',     min:-999, color:'var(--q-terrible)'}
 ];
 
 
@@ -2558,10 +2569,30 @@ function confirmRestore() {
 }
 
 // ═══════════════════════════════════════════════════════════════
+// APPEARANCE
+// ═══════════════════════════════════════════════════════════════
+
+function applyColorScheme(scheme) {
+  scheme = scheme || 'classic';
+  document.documentElement.setAttribute('data-scheme', scheme);
+  document.querySelectorAll('.scheme-pill').forEach(p => {
+    p.classList.toggle('selected', p.dataset.scheme === scheme);
+  });
+}
+
+function setColorScheme(scheme) {
+  localStorage.setItem('sg_colorScheme', scheme);
+  applyColorScheme(scheme);
+}
+
+// ═══════════════════════════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════════════════════════
 
-(function() { renderHome(); })();
+(function() {
+  applyColorScheme(localStorage.getItem('sg_colorScheme'));
+  renderHome();
+})();
 
 </script>
 </body>

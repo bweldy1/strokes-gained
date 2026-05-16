@@ -187,7 +187,27 @@ function confirmRestore() {
 }
 
 // ═══════════════════════════════════════════════════════════════
+// APPEARANCE
+// ═══════════════════════════════════════════════════════════════
+
+function applyColorScheme(scheme) {
+  scheme = scheme || 'classic';
+  document.documentElement.setAttribute('data-scheme', scheme);
+  document.querySelectorAll('.scheme-pill').forEach(p => {
+    p.classList.toggle('selected', p.dataset.scheme === scheme);
+  });
+}
+
+function setColorScheme(scheme) {
+  localStorage.setItem('sg_colorScheme', scheme);
+  applyColorScheme(scheme);
+}
+
+// ═══════════════════════════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════════════════════════
 
-(function() { renderHome(); })();
+(function() {
+  applyColorScheme(localStorage.getItem('sg_colorScheme'));
+  renderHome();
+})();
