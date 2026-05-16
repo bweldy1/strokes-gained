@@ -18,7 +18,7 @@ Reads `html/app.html`, resolves `<!-- INCLUDE: fragments/foo.html -->` directive
 html/
   app.html                  # Template: head + INCLUDE directives + script tags
   fragments/
-    screen-home.html        # Home screen (recent rounds list + Trends button)
+    screen-home.html        # Home screen (recent rounds list + Analysis button)
     screen-courses.html     # Course select + JSON import
     screen-hole.html        # Hole entry (nav, tally bar, shot list)
     screen-summary.html     # Round summary + CSV export
@@ -108,6 +108,12 @@ Two tiers of coloring:
 - `.sg-null` → `var(--text-muted)`
 
 Quality bands and CSS variables are aligned — each band color has a matching CSS var (`--q-exceptional`, `--q-great`, `--q-good`, `--q-average`, `--q-below-avg`, `--q-poor`, `--q-terrible`). The quality dot has been removed from the shot list — the SG number color alone conveys quality.
+
+**Color scheme:** The user can switch schemes in Settings. `quality_band_global` colors are `var(--q-*)` references (not hardcoded hex), so all inline-styled shot colors and CSS-class-based aggregate colors respond automatically when the scheme changes. Schemes are defined as CSS attribute selectors and applied by setting `data-scheme` on `<html>`:
+- `classic` (default): green → amber → red
+- `dusk`: gold → gray → purple (avoids red)
+
+`applyColorScheme(scheme)` sets the attribute and syncs the settings pill UI. `setColorScheme(scheme)` persists to `localStorage` (`sg_colorScheme`) then calls `applyColorScheme`. Called once in the init IIFE on page load.
 
 ### Collapsed chip UI (Category, Starting Lie, Distance)
 Category, Starting Lie, and Distance from Pin all use a chip-based collapsed pattern:
@@ -241,9 +247,9 @@ Buckets filter by `distFrom >= b.min && distFrom <= b.max` (inclusive). Buckets 
 
 Both use `countStrokes(shots)` for stroke totals (adds +1 per penalty shot).
 
-## Trends Screen
+## Analysis Screen
 
-`renderTrends()` builds the cross-round analysis view. Accessible via the "Trends" button on the home screen.
+`renderTrends()` builds the cross-round analysis view. Accessible via the "Analysis" button on the home screen. Internal identifiers (`screen-trends`, `renderTrends`, `trendsFilter`, etc.) all use `trends` — only the UI label changed.
 
 **Filter:** Last 5 / Last 10 / All rounds toggle (`state.trendsFilter`, default `10`). Pills use `.selected` class. `setTrendsFilter(n)` updates state and re-renders; `n=0` means all rounds.
 
@@ -267,6 +273,8 @@ Tapping the hole number block opens an inline hole picker (`#hole-picker`) — a
 ## Settings & Backup
 
 Accessed via the ⚙ gear button (top-right of the home header). Opens `#settings-sheet`. Logic lives in `home.js`.
+
+**Color Scheme** — Appearance section at the top of the sheet. Two pills (Classic / Dusk) backed by `sg_colorScheme` in `localStorage`. See [SG Value Colors](#sg-value-colors) for implementation details.
 
 **Backup** (`backupData()`): Serializes `{ version, exported, rounds, courses }` as JSON and triggers a file download (`sg-backup-YYYY-MM-DD.json`) via a Blob URL. Falls back to `showExportModal(json)` if Blob download fails (e.g. restrictive browser).
 - `version`: hardcoded `1` — reserved for future migration logic if the data model changes. Currently written but not read by `confirmRestore()`; restore only validates that `payload.rounds` is an array.
