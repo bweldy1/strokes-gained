@@ -203,11 +203,26 @@ function setColorScheme(scheme) {
   applyColorScheme(scheme);
 }
 
+function applyHoleOutDist(dist) {
+  dist = parseInt(dist) || getHoleOutDist();
+  const slider = document.getElementById('holeout-dist-slider');
+  const label = document.getElementById('holeout-dist-label');
+  if(slider) slider.value = dist;
+  if(label) label.textContent = dist + ' ft';
+}
+
+function setHoleOutDist(dist) {
+  dist = parseInt(dist);
+  localStorage.setItem('sg_holeOutDist', dist);
+  applyHoleOutDist(dist);
+}
+
 // ═══════════════════════════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════════════════════════
 
 (function() {
   applyColorScheme(localStorage.getItem('sg_colorScheme'));
+  applyHoleOutDist();
   renderHome();
 })();

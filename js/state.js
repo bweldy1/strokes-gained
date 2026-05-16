@@ -89,6 +89,10 @@ function formatDist(dist, lie) {
   return lie === 'green' ? dist + ' ft' : dist + ' yds';
 }
 
+function getHoleOutDist() {
+  return parseInt(localStorage.getItem('sg_holeOutDist')) || 2;
+}
+
 // CSS class for SG value coloring
 function sgClass(sg) {
   return sg == null ? 'sg-null' : sg >= 0 ? 'sg-pos' : 'sg-neg';

@@ -12,6 +12,12 @@
         <button class="pill scheme-pill" data-scheme="dusk" onclick="setColorScheme('dusk')">Dusk</button>
       </div>
 
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px">
+        <span class="settings-hint">Hole-out prompt distance</span>
+        <span class="settings-hint" id="holeout-dist-label" style="color:var(--fairway);font-weight:600">2 ft</span>
+      </div>
+      <input type="range" id="holeout-dist-slider" class="sg-slider" min="1" max="10" value="2" oninput="setHoleOutDist(this.value)" style="margin-bottom:20px">
+
       <div class="settings-section-label">Data</div>
 
       <button class="btn btn-secondary settings-btn" onclick="backupData()">Backup</button>

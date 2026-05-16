@@ -96,7 +96,8 @@ textarea.json-input:focus { border-color: var(--fairway); }
 .shot-quality-dot { width: 8px; height: 8px; border-radius: 50%; margin: 2px auto 0; }
 .shot-del { color: var(--text-dim); font-size: 18px; padding: 0 4px; cursor: pointer; }
 .shot-del:active { color: var(--accent); }
-.add-shot-btn { display: flex; align-items: center; justify-content: center; gap: 8px; margin: 8px 20px 0; padding: 14px; border-radius: var(--radius-sm); background: transparent; border: 1px dashed var(--border2); color: var(--fairway); font-size: 15px; font-weight: 500; cursor: pointer; }
+#hole-actions { display: flex; gap: 8px; margin: 8px 20px 0; }
+.add-shot-btn { display: flex; align-items: center; justify-content: center; gap: 8px; flex: 1; padding: 14px; border-radius: var(--radius-sm); background: transparent; border: 1px dashed var(--border2); color: var(--fairway); font-size: 15px; font-weight: 500; cursor: pointer; }
 .add-shot-btn:active { opacity: .6; }
 .sheet-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.6); z-index: 100; display: none; align-items: flex-end; backdrop-filter: blur(4px); }
 .sheet-overlay.open { display: flex; }
@@ -305,6 +306,9 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
 .settings-section-label { font-size: 11px; font-weight: 600; letter-spacing: 1px; color: var(--text-dim); text-transform: uppercase; margin: 4px 0 12px; }
 .settings-btn { margin-bottom: 6px; }
 .settings-hint { font-size: 12px; color: var(--text-dim); margin-bottom: 16px; padding: 0 2px; }
+.sg-slider { -webkit-appearance: none; appearance: none; width: 100%; height: 4px; border-radius: 2px; background: var(--border2); outline: none; }
+.sg-slider::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 22px; height: 22px; border-radius: 50%; background: var(--fairway); cursor: pointer; box-shadow: 0 1px 4px rgba(0,0,0,.4); }
+.sg-slider::-moz-range-thumb { width: 22px; height: 22px; border-radius: 50%; background: var(--fairway); cursor: pointer; border: none; box-shadow: 0 1px 4px rgba(0,0,0,.4); }
 .restore-preview-summary { font-size: 14px; color: var(--text-muted); margin-bottom: 14px; }
 .restore-options { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
 .restore-option-row { display: flex; align-items: center; gap: 10px; font-size: 15px; color: var(--text); cursor: pointer; }

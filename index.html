@@ -105,7 +105,8 @@ textarea.json-input:focus { border-color: var(--fairway); }
 .shot-quality-dot { width: 8px; height: 8px; border-radius: 50%; margin: 2px auto 0; }
 .shot-del { color: var(--text-dim); font-size: 18px; padding: 0 4px; cursor: pointer; }
 .shot-del:active { color: var(--accent); }
-.add-shot-btn { display: flex; align-items: center; justify-content: center; gap: 8px; margin: 8px 20px 0; padding: 14px; border-radius: var(--radius-sm); background: transparent; border: 1px dashed var(--border2); color: var(--fairway); font-size: 15px; font-weight: 500; cursor: pointer; }
+#hole-actions { display: flex; gap: 8px; margin: 8px 20px 0; }
+.add-shot-btn { display: flex; align-items: center; justify-content: center; gap: 8px; flex: 1; padding: 14px; border-radius: var(--radius-sm); background: transparent; border: 1px dashed var(--border2); color: var(--fairway); font-size: 15px; font-weight: 500; cursor: pointer; }
 .add-shot-btn:active { opacity: .6; }
 .sheet-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.6); z-index: 100; display: none; align-items: flex-end; backdrop-filter: blur(4px); }
 .sheet-overlay.open { display: flex; }
@@ -314,6 +315,9 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
 .settings-section-label { font-size: 11px; font-weight: 600; letter-spacing: 1px; color: var(--text-dim); text-transform: uppercase; margin: 4px 0 12px; }
 .settings-btn { margin-bottom: 6px; }
 .settings-hint { font-size: 12px; color: var(--text-dim); margin-bottom: 16px; padding: 0 2px; }
+.sg-slider { -webkit-appearance: none; appearance: none; width: 100%; height: 4px; border-radius: 2px; background: var(--border2); outline: none; }
+.sg-slider::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 22px; height: 22px; border-radius: 50%; background: var(--fairway); cursor: pointer; box-shadow: 0 1px 4px rgba(0,0,0,.4); }
+.sg-slider::-moz-range-thumb { width: 22px; height: 22px; border-radius: 50%; background: var(--fairway); cursor: pointer; border: none; box-shadow: 0 1px 4px rgba(0,0,0,.4); }
 .restore-preview-summary { font-size: 14px; color: var(--text-muted); margin-bottom: 14px; }
 .restore-options { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
 .restore-option-row { display: flex; align-items: center; gap: 10px; font-size: 15px; color: var(--text); cursor: pointer; }
@@ -349,7 +353,7 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
     <div class="section-label">Recent Rounds</div>
     <div id="rounds-list"></div>
   </div>
-  <div id="build-version">Build: 2026-05-16 18:17</div>
+  <div id="build-version">Build: 2026-05-16 18:44</div>
 </div>
 
 <!-- COURSE SELECT -->
@@ -416,7 +420,10 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
     <div class="tally-chip active" id="tally-putt" onclick="toggleTally('putt')"><span class="tally-chip-val" id="tv-putt">—</span><span class="tally-chip-lbl">Putt</span></div>
   </div>
   <div class="shot-list" id="shot-list"></div>
-  <button class="add-shot-btn" onclick="openShotSheet()"><span class="add-shot-icon">+</span> Add Shot</button>
+  <div id="hole-actions">
+    <button id="hole-out-prompt" class="add-shot-btn hidden" onclick="holeOut()">⛳ Holed · <span id="hole-out-dist"></span> ft</button>
+    <button class="add-shot-btn" onclick="openShotSheet()"><span class="add-shot-icon">+</span> Add Shot</button>
+  </div>
 </div>
 
 <!-- ROUND SUMMARY -->
@@ -661,6 +668,12 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
         <button class="pill scheme-pill" data-scheme="classic" onclick="setColorScheme('classic')">Classic</button>
         <button class="pill scheme-pill" data-scheme="dusk" onclick="setColorScheme('dusk')">Dusk</button>
       </div>
+
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px">
+        <span class="settings-hint">Hole-out prompt distance</span>
+        <span class="settings-hint" id="holeout-dist-label" style="color:var(--fairway);font-weight:600">2 ft</span>
+      </div>
+      <input type="range" id="holeout-dist-slider" class="sg-slider" min="1" max="10" value="2" oninput="setHoleOutDist(this.value)" style="margin-bottom:20px">
 
       <div class="settings-section-label">Data</div>
 
@@ -1103,6 +1116,10 @@ function formatDist(dist, lie) {
   return lie === 'green' ? dist + ' ft' : dist + ' yds';
 }
 
+function getHoleOutDist() {
+  return parseInt(localStorage.getItem('sg_holeOutDist')) || 2;
+}
+
 // CSS class for SG value coloring
 function sgClass(sg) {
   return sg == null ? 'sg-null' : sg >= 0 ? 'sg-pos' : 'sg-neg';
@@ -1237,6 +1254,11 @@ function renderHole() {
 
 function renderShotList(hd) {
   const shots = hd.shots || [], el = document.getElementById('shot-list');
+  const last = shots[shots.length - 1];
+  const showPrompt = last && last.resultLie === 'green' && last.resultDist != null && last.resultDist <= getHoleOutDist();
+  const prompt = document.getElementById('hole-out-prompt');
+  prompt.classList.toggle('hidden', !showPrompt);
+  if(showPrompt) document.getElementById('hole-out-dist').textContent = last.resultDist;
   if(shots.length === 0) {
     el.innerHTML = `<div class="list-empty">No shots yet — tap Add Shot below</div>`;
     return;
@@ -1263,6 +1285,24 @@ function renderShotList(hd) {
       <div class="shot-del" onclick="event.stopPropagation();deleteShot(${i})">×</div>
     </div>`;
   }).join('');
+}
+
+function holeOut() {
+  const round = currentRound();
+  const hd = round.holes[state.currentHole - 1];
+  const last = hd.shots[hd.shots.length - 1];
+  if(!last || last.resultLie !== 'green' || last.resultDist > getHoleOutDist()) return;
+  const dist = last.resultDist;
+  const rawSg = calcSG('green', dist, 'holed', null);
+  hd.shots.push({
+    lie: 'green', distFrom: dist, resultLie: 'holed', resultDist: null,
+    category: 'putt', sg: rawSg != null ? Math.round(rawSg * 10000) / 10000 : null,
+    missDepth: null, missSide: null, missType: null
+  });
+  updateRound(round);
+  renderHole();
+  updateTally();
+  showToast('Holed out ⛳');
 }
 
 function catLabel(cat) { return CAT_LABELS[cat] || cat; }
@@ -2585,12 +2625,27 @@ function setColorScheme(scheme) {
   applyColorScheme(scheme);
 }
 
+function applyHoleOutDist(dist) {
+  dist = parseInt(dist) || getHoleOutDist();
+  const slider = document.getElementById('holeout-dist-slider');
+  const label = document.getElementById('holeout-dist-label');
+  if(slider) slider.value = dist;
+  if(label) label.textContent = dist + ' ft';
+}
+
+function setHoleOutDist(dist) {
+  dist = parseInt(dist);
+  localStorage.setItem('sg_holeOutDist', dist);
+  applyHoleOutDist(dist);
+}
+
 // ═══════════════════════════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════════════════════════
 
 (function() {
   applyColorScheme(localStorage.getItem('sg_colorScheme'));
+  applyHoleOutDist();
   renderHome();
 })();
 

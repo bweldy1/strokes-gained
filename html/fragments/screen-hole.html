@@ -32,5 +32,8 @@
     <div class="tally-chip active" id="tally-putt" onclick="toggleTally('putt')"><span class="tally-chip-val" id="tv-putt">—</span><span class="tally-chip-lbl">Putt</span></div>
   </div>
   <div class="shot-list" id="shot-list"></div>
-  <button class="add-shot-btn" onclick="openShotSheet()"><span class="add-shot-icon">+</span> Add Shot</button>
+  <div id="hole-actions">
+    <button id="hole-out-prompt" class="add-shot-btn hidden" onclick="holeOut()">⛳ Holed · <span id="hole-out-dist"></span> ft</button>
+    <button class="add-shot-btn" onclick="openShotSheet()"><span class="add-shot-icon">+</span> Add Shot</button>
+  </div>
 </div>

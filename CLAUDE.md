@@ -36,7 +36,7 @@ js/
   state.js                  # Quality bands, shared constants/helpers, state object, showToast, formatDate
   storage.js                # localStorage helpers: getRounds, getCourses, currentRound, updateRound, etc.
   sg-engine.js              # interpolate, getExpected, calcSG, getQuality, autoCategory, getSuggestion
-  hole.js                   # Hole screen: renderHole, renderShotList, tally, yardage override, round edit
+  hole.js                   # Hole screen: renderHole, renderShotList, holeOut, tally, yardage override, round edit
   shot-entry.js             # Shot sheet: all form interactions, selectLie/Category/ResultLie, saveShot
   courses.js                # Courses screen: renderCourses, openCourseEdit, saveCourseJSON, startRound
   summary.js                # Summary screen: renderSummary, stats, CSV export, clipboard
@@ -131,6 +131,17 @@ Category, Starting Lie, and Distance from Pin all use a chip-based collapsed pat
 - The pre-filled distance is shown in the collapsed chip — no separate hint text
 
 When `lie='green'`, `selectLie` also auto-sets `resultLie='green'` if no result lie is set yet.
+
+### Hole-Out Prompt
+A one-tap shortcut that appears on the hole screen when the last recorded shot has `resultLie === 'green'` and `resultDist <= getHoleOutDist()`. Rendered as a `<button#hole-out-prompt>` using the same `.add-shot-btn` class, sitting side-by-side with the Add Shot button inside `#hole-actions` (a flex row). `renderShotList` shows/hides it and populates `#hole-out-dist` with the distance in feet.
+
+Tapping calls `holeOut()` (`hole.js`), which auto-saves a shot with no confirmation:
+- `lie: 'green'`, `distFrom: <prev resultDist>`, `resultLie: 'holed'`, `resultDist: null`
+- `category: 'putt'`, SG calculated via `calcSG`, no miss data (`missDepth/missSide/missType: null`)
+
+After saving: `renderHole()`, `updateTally()`, and a "Holed out ⛳" toast. The prompt disappears because the new last shot is `resultLie: 'holed'`, which fails the trigger condition. If the user ignores the prompt and taps Add Shot instead, the normal shot sheet opens pre-filled to green at the remaining distance.
+
+**Threshold setting:** `getHoleOutDist()` (`state.js`) reads `sg_holeOutDist` from `localStorage`, defaulting to `2`. Configurable via a 1–10 ft slider in Settings → Appearance. `setHoleOutDist(n)` persists the value and calls `applyHoleOutDist(n)` to sync the slider position and label. Both `renderShotList` and `holeOut()` call `getHoleOutDist()` so the display and save guard stay in sync.
 
 ### Short Game definition
 Short Game = any non-putt, non-drive shot from **under 30 yards** (`autoCategory` returns `'shortgame'` when `distYards < 30`). Chips, pitches, and bunker shots within 30 yards. Users can manually override category on any shot.
@@ -275,6 +286,8 @@ Tapping the hole number block opens an inline hole picker (`#hole-picker`) — a
 Accessed via the ⚙ gear button (top-right of the home header). Opens `#settings-sheet`. Logic lives in `home.js`.
 
 **Color Scheme** — Appearance section at the top of the sheet. Two pills (Classic / Dusk) backed by `sg_colorScheme` in `localStorage`. See [SG Value Colors](#sg-value-colors) for implementation details.
+
+**Hole-Out Distance** — Appearance section. A range slider (`#holeout-dist-slider`, 1–10 ft) with a live label (`#holeout-dist-label`) showing the current value in green. Backed by `sg_holeOutDist` in `localStorage` (default `2`). See [Hole-Out Prompt](#hole-out-prompt) for implementation details.
 
 **Backup** (`backupData()`): Serializes `{ version, exported, rounds, courses }` as JSON and triggers a file download (`sg-backup-YYYY-MM-DD.json`) via a Blob URL. Falls back to `showExportModal(json)` if Blob download fails (e.g. restrictive browser).
 - `version`: hardcoded `1` — reserved for future migration logic if the data model changes. Currently written but not read by `confirmRestore()`; restore only validates that `payload.rounds` is an array.

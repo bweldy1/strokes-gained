@@ -20,6 +20,11 @@ function renderHole() {
 
 function renderShotList(hd) {
   const shots = hd.shots || [], el = document.getElementById('shot-list');
+  const last = shots[shots.length - 1];
+  const showPrompt = last && last.resultLie === 'green' && last.resultDist != null && last.resultDist <= getHoleOutDist();
+  const prompt = document.getElementById('hole-out-prompt');
+  prompt.classList.toggle('hidden', !showPrompt);
+  if(showPrompt) document.getElementById('hole-out-dist').textContent = last.resultDist;
   if(shots.length === 0) {
     el.innerHTML = `<div class="list-empty">No shots yet — tap Add Shot below</div>`;
     return;
@@ -46,6 +51,24 @@ function renderShotList(hd) {
       <div class="shot-del" onclick="event.stopPropagation();deleteShot(${i})">×</div>
     </div>`;
   }).join('');
+}
+
+function holeOut() {
+  const round = currentRound();
+  const hd = round.holes[state.currentHole - 1];
+  const last = hd.shots[hd.shots.length - 1];
+  if(!last || last.resultLie !== 'green' || last.resultDist > getHoleOutDist()) return;
+  const dist = last.resultDist;
+  const rawSg = calcSG('green', dist, 'holed', null);
+  hd.shots.push({
+    lie: 'green', distFrom: dist, resultLie: 'holed', resultDist: null,
+    category: 'putt', sg: rawSg != null ? Math.round(rawSg * 10000) / 10000 : null,
+    missDepth: null, missSide: null, missType: null
+  });
+  updateRound(round);
+  renderHole();
+  updateTally();
+  showToast('Holed out ⛳');
 }
 
 function catLabel(cat) { return CAT_LABELS[cat] || cat; }
