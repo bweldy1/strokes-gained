@@ -345,9 +345,34 @@ function renderSummary() {
     </div>
     <div id="summary-holes-wrap" class="hidden">${holesHTML}</div>`;
 
+  const conditions = round.conditions || [];
+  let conditionsHTML = '';
+  if(conditions.length > 0) {
+    const catImpacts = cats.map(cat => {
+      const pct = getRoundDifficultyPct(conditions, cat);
+      if(pct === 0) return null;
+      const adj = catShots[cat].reduce((sum, s) => {
+        const exp = getExpected(s.lie, s.distFrom);
+        return sum + (exp !== null ? exp * pct / 100 : 0);
+      }, 0);
+      return { cat, adj };
+    }).filter(Boolean);
+    const tags = conditions.map(id => {
+      const c = DIFFICULTY_CONDITIONS.find(d => d.id === id);
+      return c ? `<span class="conditions-tag">${c.label}</span>` : '';
+    }).join('');
+    const impacts = catImpacts.map(({cat, adj}) =>
+      `<span class="conditions-impact-item"><span class="conditions-impact-cat">${CAT_LABELS[cat]}</span><span class="conditions-impact-val">${adj > 0 ? '+' : ''}${adj.toFixed(2)}</span></span>`
+    ).join('');
+    conditionsHTML = `<div class="conditions-summary">
+      <div class="conditions-summary-top"><span class="conditions-summary-lbl">Conditions</span>${tags}</div>
+      ${impacts ? `<div class="conditions-impact-row">${impacts}</div>` : ''}
+    </div>`;
+  }
+
   document.getElementById('summary-totals').innerHTML = `
     <div class="summary-stat"><span class="summary-total-label">Total SG <span class="summary-total-sub">(${gStrokes} stroke${gStrokes !== 1 ? 's' : ''})</span></span><span class="summary-total-val ${sgCls(gTotal,gCount)}">${fmt(gTotal,gCount)}</span></div>
-    ${catHTML}${rankingsSection}${byHoleSection}`;
+    ${conditionsHTML}${catHTML}${rankingsSection}${byHoleSection}`;
 
   // Statistics
   const allShots = round.holes.flatMap(h => (h.shots || []).map((s, i) => ({...s, holeNum:h.hole, shotIdx:i})));

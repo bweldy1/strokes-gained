@@ -62,7 +62,8 @@ function holeOut() {
   const last = hd.shots[hd.shots.length - 1];
   if(!last || last.resultLie !== 'green' || last.resultDist > getHoleOutDist()) return;
   const dist = last.resultDist;
-  const rawSg = calcSG('green', dist, 'holed', null);
+  const pct = getRoundDifficultyPct(round.conditions, 'putt');
+  const rawSg = calcSG('green', dist, 'holed', null, pct);
   hd.shots.push({
     lie: 'green', distFrom: dist, resultLie: 'holed', resultDist: null,
     category: 'putt', sg: rawSg != null ? Math.round(rawSg * 10000) / 10000 : null,
@@ -162,6 +163,10 @@ function openRoundEdit() {
   const d = new Date(round.date);
   const yyyy = d.getFullYear(), mm = String(d.getMonth() + 1).padStart(2, '0'), dd = String(d.getDate()).padStart(2, '0');
   document.getElementById('round-edit-date').value = `${yyyy}-${mm}-${dd}`;
+  const selected = new Set(round.conditions || []);
+  document.getElementById('round-conditions-pills').innerHTML = DIFFICULTY_CONDITIONS.map(c =>
+    `<button class="pill pill-sm${selected.has(c.id) ? ' selected' : ''}" data-id="${c.id}" onclick="toggleCondition('${c.id}')">${c.label}</button>`
+  ).join('');
   document.getElementById('round-edit-sheet').classList.add('open');
 }
 
@@ -171,8 +176,12 @@ function saveRoundEdit() {
   if(!name) { showToast('Enter a course name'); return; }
   if(!date) { showToast('Select a date'); return; }
   const round = currentRound();
+  const newConditions = [...document.querySelectorAll('#round-conditions-pills .pill.selected')].map(p => p.dataset.id);
+  const conditionsChanged = JSON.stringify(round.conditions || []) !== JSON.stringify(newConditions);
   round.courseName = name;
   round.date = date + 'T12:00:00.000Z';
+  round.conditions = newConditions;
+  if(conditionsChanged) recalcRoundShots(round);
   updateRound(round);
   document.getElementById('round-edit-sheet').classList.remove('open');
   document.getElementById('hole-course-name').textContent = name;
@@ -182,4 +191,20 @@ function saveRoundEdit() {
 
 function handleRoundEditOverlayClick(e) {
   if(e.target === document.getElementById('round-edit-sheet')) document.getElementById('round-edit-sheet').classList.remove('open');
+}
+
+function toggleCondition(id) {
+  const pill = document.querySelector(`#round-conditions-pills [data-id="${id}"]`);
+  if(pill) pill.classList.toggle('selected');
+}
+
+function recalcRoundShots(round) {
+  for(const hole of round.holes) {
+    for(const s of (hole.shots || [])) {
+      if(!s.lie || !s.resultLie) continue;
+      const pct = getRoundDifficultyPct(round.conditions, s.category);
+      const raw = calcSG(s.lie, s.distFrom, s.resultLie, s.resultDist, pct);
+      s.sg = raw !== null ? Math.round(raw * 10000) / 10000 : null;
+    }
+  }
 }

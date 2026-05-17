@@ -118,6 +118,7 @@ function startRound(courseId) {
     date: new Date().toISOString(),
     courseName: course.name,
     courseId: course.id,
+    conditions: [],
     holes: course.holes.map(h => ({hole:h.hole, par:h.par, yards:h.yards, yardsOverride:null, shots:[]}))
   };
   updateRound(round);

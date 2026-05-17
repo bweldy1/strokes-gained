@@ -15,16 +15,17 @@ function interpolate(table, dist) {
 
 function getExpected(lie, dist) { return interpolate(SG_TABLES[lie], dist); }
 
-function calcSG(startLie, startDist, resultLie, resultDist) {
+function calcSG(startLie, startDist, resultLie, resultDist, diffPct) {
+  const s = getExpected(startLie, startDist);
+  const adj = (s !== null && diffPct) ? s * diffPct / 100 : 0;
   if(resultLie === 'holed') {
-    const s = getExpected(startLie, startDist);
-    return s !== null ? s - 1 : null;
+    return s !== null ? s - 1 + adj : null;
   }
   // Penalty: use 'rough' table for drop position, subtract extra stroke for the penalty
   const lookupLie = resultLie === 'penalty' ? 'rough' : resultLie;
-  const s = getExpected(startLie, startDist), e = getExpected(lookupLie, resultDist);
+  const e = getExpected(lookupLie, resultDist);
   const penaltyStroke = resultLie === 'penalty' ? 1 : 0;
-  return (s === null || e === null) ? null : s - e - 1 - penaltyStroke;
+  return (s === null || e === null) ? null : s - e - 1 - penaltyStroke + adj;
 }
 
 function getQuality(sg, category) {

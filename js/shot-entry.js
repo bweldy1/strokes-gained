@@ -295,13 +295,14 @@ function saveShot() {
   if(isNaN(dFrom) || dFrom <= 0) { showToast('Enter distance from pin'); return; }
   if(!rLie) { showToast('Select result location'); return; }
   if(rLie !== 'holed' && (isNaN(dRes) || dRes <= 0)) { showToast('Enter result distance'); return; }
-  const sgRaw = calcSG(lie, dFrom, rLie, isNaN(dRes) ? 0 : dRes);
-  const sg = sgRaw !== null ? Math.round(sgRaw * 10000) / 10000 : null;
   const hd = currentHoleData(), idx = state.editingShotIndex !== null ? state.editingShotIndex : hd.shots.length;
   const cat = state.shotCategory || autoCategory(lie, dFrom, idx, hd.par);
+  const round = currentRound();
+  const pct = getRoundDifficultyPct(round.conditions, cat);
+  const sgRaw = calcSG(lie, dFrom, rLie, isNaN(dRes) ? 0 : dRes, pct);
+  const sg = sgRaw !== null ? Math.round(sgRaw * 10000) / 10000 : null;
   const missType = (cat === 'putt' && rLie !== 'holed') ? (state.shotMissType || null) : null;
   const shot = { lie, distFrom:dFrom, resultLie:rLie, resultDist:(rLie !== 'holed' && !isNaN(dRes)) ? dRes : null, category:cat, sg, missDepth:state.shotMissDepth || null, missSide:state.shotMissSide || null, missType };
-  const round = currentRound();
   if(state.editingShotIndex !== null) round.holes[state.currentHole - 1].shots[state.editingShotIndex] = shot;
   else round.holes[state.currentHole - 1].shots.push(shot);
   updateRound(round); closeShotSheet(); renderHole(); updateTally();

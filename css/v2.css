@@ -166,6 +166,14 @@ textarea.json-input:focus { border-color: var(--fairway); }
 .ssum-bucket-total { font-size: 15px; font-weight: 700; flex-shrink: 0; width: 48px; text-align: right; }
 .summary-stat-label { font-size: 15px; color: var(--text-muted); }
 .summary-stat-val { font-size: 20px; font-weight: 700; }
+.conditions-summary { padding: 10px 0; border-bottom: 1px solid var(--border); }
+.conditions-summary-top { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-bottom: 6px; }
+.conditions-summary-lbl { font-size: 11px; font-weight: 600; letter-spacing: .5px; color: var(--text-dim); text-transform: uppercase; flex-shrink: 0; }
+.conditions-tag { font-size: 11px; padding: 2px 7px; border-radius: 10px; background: rgba(255,255,255,.08); color: var(--text-muted); border: 1px solid var(--border); }
+.conditions-impact-row { display: flex; gap: 14px; flex-wrap: wrap; }
+.conditions-impact-item { display: flex; flex-direction: column; align-items: center; gap: 1px; }
+.conditions-impact-cat { font-size: 10px; color: var(--text-dim); }
+.conditions-impact-val { font-size: 13px; font-weight: 600; color: var(--q-great); }
 .hole-summary-row { display: flex; gap: 8px; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 14px; }
 .hole-summary-row:last-child { border-bottom: none; }
 .hsrow-hole { width: 28px; font-weight: 600; color: var(--text-muted); }

@@ -1,4 +1,20 @@
 // ═══════════════════════════════════════════════════════════════
+// DIFFICULTY CONDITIONS
+// Per-category percentage impact (whole numbers: 5 = 5%).
+// drive/approach/shortgame/putt = 0 means no effect on that category.
+// ═══════════════════════════════════════════════════════════════
+
+const DIFFICULTY_CONDITIONS = [
+  { id: 'cold',       label: 'Cold (below 50°F)', drive: 1, approach: 1, shortgame: 1, putt: 1 },
+  { id: 'rain',       label: 'Rain',              drive: 2, approach: 2, shortgame: 2, putt: 2 },
+  { id: 'wet',        label: 'Wet course',        drive: 1, approach: 0, shortgame: 1, putt: 0 },
+  { id: 'wind',       label: 'Strong wind',       drive: 2, approach: 2, shortgame: 1, putt: 0 },
+  { id: 'bumpy',      label: 'Bumpy greens',      drive: 0, approach: 0, shortgame: 0, putt: 3 },
+  { id: 'rough',      label: 'Thick rough',       drive: 0, approach: 2, shortgame: 2, putt: 0 },
+  { id: 'firmgreens', label: 'Extra firm greens', drive: 0, approach: 2, shortgame: 1, putt: 0 },
+];
+
+// ═══════════════════════════════════════════════════════════════
 // QUALITY BANDS
 // ═══════════════════════════════════════════════════════════════
 
@@ -87,6 +103,14 @@ let state = {
 function formatDist(dist, lie) {
   if(dist == null) return '';
   return lie === 'green' ? dist + ' ft' : dist + ' yds';
+}
+
+function getRoundDifficultyPct(conditions, category) {
+  if(!conditions || conditions.length === 0) return 0;
+  return conditions.reduce((total, id) => {
+    const c = DIFFICULTY_CONDITIONS.find(d => d.id === id);
+    return total + (c ? (c[category] || 0) : 0);
+  }, 0);
 }
 
 function getHoleOutDist() {

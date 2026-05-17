@@ -27,16 +27,16 @@ html/
     sheet-shot.html         # Bottom sheet: shot entry form
     sheet-course-edit.html  # Bottom sheet: course name/tees editor
     sheet-yardage.html      # Bottom sheet: yardage override
-    sheet-round-edit.html   # Bottom sheet: round date/name editor
+    sheet-round-edit.html   # Bottom sheet: round date/name/conditions editor
     sheet-settings.html     # Bottom sheet: settings menu (backup, restore)
 css/
   v2.css                    # All styles
 js/
   sg_tables.js              # SG lookup tables (lie × distance → expected strokes)
-  state.js                  # Quality bands, shared constants/helpers, state object, showToast, formatDate
+  state.js                  # Quality bands, DIFFICULTY_CONDITIONS, shared constants/helpers, state object, showToast, formatDate
   storage.js                # localStorage helpers: getRounds, getCourses, currentRound, updateRound, etc.
   sg-engine.js              # interpolate, getExpected, calcSG, getQuality, autoCategory, getSuggestion
-  hole.js                   # Hole screen: renderHole, renderShotList, holeOut, tally, yardage override, round edit
+  hole.js                   # Hole screen: renderHole, renderShotList, holeOut, tally, yardage override, round edit, recalcRoundShots, toggleCondition
   shot-entry.js             # Shot sheet: all form interactions, selectLie/Category/ResultLie, saveShot
   courses.js                # Courses screen: renderCourses, openCourseEdit, saveCourseJSON, startRound
   summary.js                # Summary screen: renderSummary, stats, CSV export, clipboard
@@ -48,7 +48,24 @@ images/
 
 **Load order matters:** `hole.js` and `shot-entry.js` before `courses.js`/`summary.js` (which use `countStrokes`, `catLabel`); `trends.js` before `home.js`; `home.js` last (contains the init IIFE).
 
-## Shot Data Model
+## Data Models
+
+### Round Data Model
+
+Each round stored in `sg_rounds` (localStorage) includes:
+```js
+{
+  id: 'round_' + Date.now(),
+  date: String,              // ISO date string
+  courseName: String,
+  courseId: String,
+  conditions: [],            // array of DIFFICULTY_CONDITIONS ids (e.g. ['cold', 'wind'])
+  holes: [{ hole, par, yards, yardsOverride, shots }]
+}
+```
+`conditions` defaults to `[]` on new rounds (`startRound`). Older rounds without this field are treated as having no conditions wherever `round.conditions || []` is used.
+
+### Shot Data Model
 
 Each shot stored in `round.holes[n].shots[]`:
 
@@ -188,7 +205,50 @@ An on-demand shot expectation tool in the SG preview area of the shot entry shee
 - `getSuggestion` returns `{ lie: null, dist }` after a penalty; `openShotSheet` guards `selectLie`/`selectCategory` with `if(sug.lie)`
 
 ### SG Calculation
-`calcSG(startLie, startDist, resultLie, resultDist)` uses `sg_tables.js` lookup tables with linear interpolation. Result is rounded to 4 decimal places before being stored on the shot object.
+`calcSG(startLie, startDist, resultLie, resultDist, diffPct)` uses `sg_tables.js` lookup tables with linear interpolation. Result is rounded to 4 decimal places before being stored on the shot object.
+
+`diffPct` is the optional playing conditions adjustment (a whole-number percentage). The adjustment is `adj = E(startLie, startDist) * diffPct / 100`, added to the raw SG — so harder conditions (more expected strokes) yield a larger absolute bonus for the same relative difficulty. When `diffPct` is `0` or omitted, behavior is unchanged.
+
+### Playing Conditions
+
+Rounds can have playing conditions set in Round Details (tap the course name or date on the hole screen). Conditions affect SG by adding a per-category percentage of `E(start)` to each shot's SG value. This means a 30 ft putt gets a larger absolute adjustment than a 3 ft putt, scaling naturally with shot difficulty.
+
+**Condition definitions (`DIFFICULTY_CONDITIONS` in `state.js`):**
+```js
+{ id, label, drive, approach, shortgame, putt }
+// each category field is a whole-number % (0 = no effect on that category)
+```
+
+Current conditions and their per-category percentages:
+
+| Condition       | Drive | Approach | Short Game | Putt |
+|-----------------|-------|----------|------------|------|
+| Cold (<50°F)    | 1%    | 1%       | 1%         | 1%   |
+| Rain            | 2%    | 2%       | 2%         | 2%   |
+| Wet course      | 1%    | 0%       | 1%         | 0%   |
+| Strong wind     | 2%    | 2%       | 1%         | 0%   |
+| Bumpy greens    | 0%    | 0%       | 0%         | 3%   |
+| Thick rough     | 0%    | 2%       | 2%         | 0%   |
+| Extra firm greens | 0%  | 2%       | 1%         | 0%   |
+
+`getRoundDifficultyPct(conditions, category)` — sums percentages for all active condition IDs for the given category.
+
+**UI — Round Details sheet (`sheet-round-edit.html`):**
+- "Playing Conditions" section with 7 `.pill-sm` toggle pills rendered dynamically by `openRoundEdit()` into `#round-conditions-pills`
+- Previously selected conditions are pre-highlighted when the sheet opens
+- `toggleCondition(id)` — toggles `.selected` on the pill with matching `data-id`
+- `saveRoundEdit()` reads all `.selected` pills' `data-id` values, saves as `round.conditions`, then calls `recalcRoundShots(round)` if conditions changed
+
+**Auto-recalc (`recalcRoundShots(round)` in `hole.js`):**
+- Called automatically when conditions change on save
+- Iterates all shots in all holes, re-runs `calcSG` with the updated `pct`, overwrites `s.sg`
+- New shots bake in conditions at save time via `saveShot()` and `holeOut()` — both call `getRoundDifficultyPct(round.conditions, cat)` before `calcSG`
+
+**Summary display (`renderSummary` in `summary.js`):**
+- When `round.conditions` is non-empty, a "Conditions" section appears between the Total SG row and the category rows
+- Shows condition tags and per-category SG adjustment totals (`.conditions-summary`, `.conditions-tag`, `.conditions-impact-row`)
+- Per-category adjustment = `Σ(getExpected(s.lie, s.distFrom) * pct/100)` across all shots in that category
+- Analysis screen uses adjusted SG values automatically since they are baked into `shot.sg`
 
 ## CSS Conventions
 
@@ -212,9 +272,10 @@ Sand, Recovery, and Penalty are infrequent. In lie pill rows, they appear as sec
 
 `renderSummary()` builds two cards: `#summary-totals` and `#summary-stats`. Layout order: SG card → Statistics card → Export.
 
-**summary-totals card** contains three sections:
+**summary-totals card** contains:
 1. Header row: Total SG + stroke count
-2. Category rows (Drive, Approach, Short Game, Putt) — tappable to expand via `toggleSummaryCat(cat)` → `#ssum-{cat}` / `#ssum-icon-{cat}`
+2. **Conditions row** (only when `round.conditions` is non-empty) — condition tags + per-category SG adjustment. See [Playing Conditions](#playing-conditions).
+3. Category rows (Drive, Approach, Short Game, Putt) — tappable to expand via `toggleSummaryCat(cat)` → `#ssum-{cat}` / `#ssum-icon-{cat}`
    - Expanded rows show: `H1  Tee 385y · 235y drive › Fwy 150y Short-Left  +0.32`
    - Lie abbreviations from `LIE_ABBR`: Tee, Fwy, Rgh, Sand, Rcv, Grn, Holed, Pen
    - Miss in `.ssum-miss` (10px, `--text-dim`); drive distance in `.ssum-drive` (10px, `--text-dim`)
