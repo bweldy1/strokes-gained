@@ -49,6 +49,11 @@ body { font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-se
 .round-card-sg { text-align: right; }
 .round-card-sg-val { font-size: 20px; font-weight: 700; }
 .round-card-sg-lbl { font-size: 11px; color: var(--text-muted); }
+.round-card-note { font-size: 12px; color: var(--text-dim); margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px; }
+.notes-input { width: 100%; background: var(--input-bg); border: 1px solid var(--input-border); border-radius: var(--radius-sm); color: var(--text); font-size: 15px; padding: 12px 14px; outline: none; resize: none; font-family: inherit; line-height: 1.5; }
+.notes-input:focus { border-color: var(--fairway); }
+.notes-input::placeholder { color: var(--text-dim); }
+.summary-note { font-size: 14px; color: var(--text-muted); line-height: 1.6; padding-bottom: 12px; white-space: pre-wrap; }
 .round-del-btn { color: var(--text-dim); font-size: 20px; padding: 4px 8px; cursor: pointer; }
 .round-del-btn:active { color: var(--accent); }
 .course-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 10px; display: flex; align-items: center; gap: 12px; cursor: pointer; }

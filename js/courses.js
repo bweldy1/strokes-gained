@@ -119,6 +119,7 @@ function startRound(courseId) {
     courseName: course.name,
     courseId: course.id,
     conditions: [],
+    notes: '',
     holes: course.holes.map(h => ({hole:h.hole, par:h.par, yards:h.yards, yardsOverride:null, shots:[]}))
   };
   updateRound(round);

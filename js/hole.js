@@ -167,6 +167,7 @@ function openRoundEdit() {
   document.getElementById('round-conditions-pills').innerHTML = DIFFICULTY_CONDITIONS.map(c =>
     `<button class="pill pill-sm${selected.has(c.id) ? ' selected' : ''}" data-id="${c.id}" onclick="toggleCondition('${c.id}')">${c.label}</button>`
   ).join('');
+  document.getElementById('round-edit-notes').value = round.notes || '';
   document.getElementById('round-edit-sheet').classList.add('open');
 }
 
@@ -181,6 +182,7 @@ function saveRoundEdit() {
   round.courseName = name;
   round.date = date + 'T12:00:00.000Z';
   round.conditions = newConditions;
+  round.notes = document.getElementById('round-edit-notes').value.trim();
   if(conditionsChanged) recalcRoundShots(round);
   updateRound(round);
   document.getElementById('round-edit-sheet').classList.remove('open');

@@ -30,8 +30,9 @@ function renderHome() {
     const sg = roundTotalSG(r, null);
     const sgStr = sg !== null ? (sg >= 0 ? '+' : '') + sg.toFixed(1) : '—';
     const strokes = r.holes.reduce((s, h) => s + countStrokes(h.shots || []), 0);
+    const noteSnippet = r.notes ? `<div class="round-card-note">${r.notes.length > 55 ? r.notes.slice(0, 55) + '…' : r.notes}</div>` : '';
     return `<div class="round-card" onclick="resumeRound('${r.id}')">
-      <div class="round-card-info"><div class="round-card-name">${r.courseName}</div><div class="round-card-meta">${formatDate(r.date)} · ${strokes} stroke${strokes !== 1 ? 's' : ''}</div></div>
+      <div class="round-card-info"><div class="round-card-name">${r.courseName}</div><div class="round-card-meta">${formatDate(r.date)} · ${strokes} stroke${strokes !== 1 ? 's' : ''}</div>${noteSnippet}</div>
       <div class="round-card-sg"><div class="round-card-sg-val ${sgClass(sg)}">${sgStr}</div><div class="round-card-sg-lbl">Total SG</div></div>
       <div class="round-del-btn" onclick="event.stopPropagation();deleteRound('${r.id}')">×</div>
     </div>`;

@@ -58,6 +58,11 @@ body { font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-se
 .round-card-sg { text-align: right; }
 .round-card-sg-val { font-size: 20px; font-weight: 700; }
 .round-card-sg-lbl { font-size: 11px; color: var(--text-muted); }
+.round-card-note { font-size: 12px; color: var(--text-dim); margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px; }
+.notes-input { width: 100%; background: var(--input-bg); border: 1px solid var(--input-border); border-radius: var(--radius-sm); color: var(--text); font-size: 15px; padding: 12px 14px; outline: none; resize: none; font-family: inherit; line-height: 1.5; }
+.notes-input:focus { border-color: var(--fairway); }
+.notes-input::placeholder { color: var(--text-dim); }
+.summary-note { font-size: 14px; color: var(--text-muted); line-height: 1.6; padding-bottom: 12px; white-space: pre-wrap; }
 .round-del-btn { color: var(--text-dim); font-size: 20px; padding: 4px 8px; cursor: pointer; }
 .round-del-btn:active { color: var(--accent); }
 .course-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 10px; display: flex; align-items: center; gap: 12px; cursor: pointer; }
@@ -363,7 +368,7 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
     <div class="section-label">Recent Rounds</div>
     <div id="rounds-list"></div>
   </div>
-  <div id="build-version">Build: 2026-05-17 20:08</div>
+  <div id="build-version">Build: 2026-05-17 21:39</div>
 </div>
 
 <!-- COURSE SELECT -->
@@ -447,6 +452,7 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
   <div class="scroll-body">
     <button class="btn btn-ghost" onclick="showScreen('scorecard')">Show Scorecard</button>
     <div class="spacer-sm"></div>
+    <div id="summary-note-block" class="hidden"></div>
     <div class="card" id="summary-totals"></div>
     <div class="section-label">Statistics</div>
     <div class="card" id="summary-stats"></div>
@@ -665,6 +671,10 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
       <div class="form-group">
         <div class="form-label">Playing Conditions</div>
         <div id="round-conditions-pills" class="pill-group"></div>
+      </div>
+      <div class="form-group">
+        <div class="form-label">Notes</div>
+        <textarea class="notes-input" id="round-edit-notes" placeholder="Add notes about this round…" rows="3"></textarea>
       </div>
       <button class="btn btn-primary" onclick="saveRoundEdit()">Save</button>
     </div>
@@ -1442,6 +1452,7 @@ function openRoundEdit() {
   document.getElementById('round-conditions-pills').innerHTML = DIFFICULTY_CONDITIONS.map(c =>
     `<button class="pill pill-sm${selected.has(c.id) ? ' selected' : ''}" data-id="${c.id}" onclick="toggleCondition('${c.id}')">${c.label}</button>`
   ).join('');
+  document.getElementById('round-edit-notes').value = round.notes || '';
   document.getElementById('round-edit-sheet').classList.add('open');
 }
 
@@ -1456,6 +1467,7 @@ function saveRoundEdit() {
   round.courseName = name;
   round.date = date + 'T12:00:00.000Z';
   round.conditions = newConditions;
+  round.notes = document.getElementById('round-edit-notes').value.trim();
   if(conditionsChanged) recalcRoundShots(round);
   updateRound(round);
   document.getElementById('round-edit-sheet').classList.remove('open');
@@ -1927,6 +1939,7 @@ function startRound(courseId) {
     courseName: course.name,
     courseId: course.id,
     conditions: [],
+    notes: '',
     holes: course.holes.map(h => ({hole:h.hole, par:h.par, yards:h.yards, yardsOverride:null, shots:[]}))
   };
   updateRound(round);
@@ -2217,6 +2230,14 @@ function renderScorecard(round) {
 
 function renderSummary() {
   const round = currentRound(); if(!round) return;
+  const noteBlock = document.getElementById('summary-note-block');
+  if(round.notes) {
+    noteBlock.innerHTML = `<div class="summary-note">${round.notes}</div>`;
+    noteBlock.classList.remove('hidden');
+  } else {
+    noteBlock.classList.add('hidden');
+  }
+
   const cats = ['drive', 'approach', 'shortgame', 'putt'];
   const tot = {drive:0, approach:0, shortgame:0, putt:0}, cnt = {drive:0, approach:0, shortgame:0, putt:0};
   const catShots = {drive:[], approach:[], shortgame:[], putt:[]};
@@ -2548,8 +2569,9 @@ function renderHome() {
     const sg = roundTotalSG(r, null);
     const sgStr = sg !== null ? (sg >= 0 ? '+' : '') + sg.toFixed(1) : '—';
     const strokes = r.holes.reduce((s, h) => s + countStrokes(h.shots || []), 0);
+    const noteSnippet = r.notes ? `<div class="round-card-note">${r.notes.length > 55 ? r.notes.slice(0, 55) + '…' : r.notes}</div>` : '';
     return `<div class="round-card" onclick="resumeRound('${r.id}')">
-      <div class="round-card-info"><div class="round-card-name">${r.courseName}</div><div class="round-card-meta">${formatDate(r.date)} · ${strokes} stroke${strokes !== 1 ? 's' : ''}</div></div>
+      <div class="round-card-info"><div class="round-card-name">${r.courseName}</div><div class="round-card-meta">${formatDate(r.date)} · ${strokes} stroke${strokes !== 1 ? 's' : ''}</div>${noteSnippet}</div>
       <div class="round-card-sg"><div class="round-card-sg-val ${sgClass(sg)}">${sgStr}</div><div class="round-card-sg-lbl">Total SG</div></div>
       <div class="round-del-btn" onclick="event.stopPropagation();deleteRound('${r.id}')">×</div>
     </div>`;

@@ -277,6 +277,14 @@ function renderScorecard(round) {
 
 function renderSummary() {
   const round = currentRound(); if(!round) return;
+  const noteBlock = document.getElementById('summary-note-block');
+  if(round.notes) {
+    noteBlock.innerHTML = `<div class="summary-note">${round.notes}</div>`;
+    noteBlock.classList.remove('hidden');
+  } else {
+    noteBlock.classList.add('hidden');
+  }
+
   const cats = ['drive', 'approach', 'shortgame', 'putt'];
   const tot = {drive:0, approach:0, shortgame:0, putt:0}, cnt = {drive:0, approach:0, shortgame:0, putt:0};
   const catShots = {drive:[], approach:[], shortgame:[], putt:[]};
