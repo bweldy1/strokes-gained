@@ -140,6 +140,30 @@ function buildMissType(shots) {
   </div>`;
 }
 
+function buildClubRows(shots) {
+  const withClub = shots.filter(s => s.club);
+  if(withClub.length === 0) return '';
+  const totals = {};
+  for(const s of withClub) {
+    if(!totals[s.club]) totals[s.club] = { sg: 0, count: 0 };
+    totals[s.club].sg += (s.sg || 0);
+    totals[s.club].count++;
+  }
+  const fmtSG = v => (v >= 0 ? '+' : '') + v.toFixed(2);
+  const rows = CLUBS.filter(c => totals[c.id]).map(c => {
+    const { sg, count } = totals[c.id];
+    const avg = sg / count;
+    return `<div class="ssum-bucket">
+      <span class="ssum-bucket-label">${c.label}</span>
+      <span class="ssum-bucket-count">${count} shot${count !== 1 ? 's' : ''}</span>
+      <span class="ssum-bucket-avg ${avg >= 0 ? 'sg-pos' : 'sg-neg'}">${fmtSG(avg)}</span>
+      <span class="ssum-bucket-total ${sg >= 0 ? 'sg-pos' : 'sg-neg'}">${fmtSG(sg)}</span>
+    </div>`;
+  }).join('');
+  const meta = withClub.length < shots.length ? `${withClub.length} of ${shots.length} shots` : `${withClub.length} shot${withClub.length !== 1 ? 's' : ''}`;
+  return `<div class="miss-pct-section"><div class="miss-pct-header">By Club <span class="miss-pct-meta">${meta}</span></div>${rows}</div>`;
+}
+
 function buildRankedBuckets(catShots) {
   const fmtSG = v => (v >= 0 ? '+' : '') + v.toFixed(2);
   const cats = ['drive', 'approach', 'shortgame', 'putt'];
@@ -296,7 +320,7 @@ function renderSummary() {
   const sgCls = (v, c) => c === 0 ? 'sg-null' : v >= 0 ? 'sg-pos' : 'sg-neg';
 
   const catHTML = cats.map(c => {
-    const rows = buildBucketRows(catShots[c], c) + buildMissGrid(catShots[c], c) + (c === 'putt' ? buildMissType(catShots[c]) : '');
+    const rows = buildBucketRows(catShots[c], c) + buildMissGrid(catShots[c], c) + (c === 'putt' ? buildMissType(catShots[c]) : '') + (c !== 'putt' ? buildClubRows(catShots[c]) : '');
     const avg = fmt(cnt[c] > 0 ? tot[c] / cnt[c] : 0, cnt[c]);
     return `<div class="summary-stat summary-cat-row" onclick="toggleSummaryCat('${c}')">
         <span class="summary-stat-label">${CAT_LABELS[c]} <span class="ssum-cat-meta">(${cnt[c]} shots)</span></span>

@@ -33,7 +33,7 @@ css/
   v2.css                    # All styles
 js/
   sg_tables.js              # SG lookup tables (lie × distance → expected strokes)
-  state.js                  # Quality bands, DIFFICULTY_CONDITIONS, shared constants/helpers, state object, showToast, formatDate
+  state.js                  # Quality bands, DIFFICULTY_CONDITIONS, CLUBS, shared constants/helpers, state object, showToast, formatDate
   storage.js                # localStorage helpers: getRounds, getCourses, currentRound, updateRound, etc.
   sg-engine.js              # interpolate, getExpected, calcSG, getQuality, autoCategory, getSuggestion
   hole.js                   # Hole screen: renderHole, renderShotList, holeOut, tally, yardage override, round edit, recalcRoundShots, toggleCondition
@@ -83,6 +83,7 @@ Each shot stored in `round.holes[n].shots[]`:
   missDepth: 'short'|'even'|'long'|null,   // 'even' = pin high / on-line; null in older data (treated as 'even')
   missSide: 'left'|'middle'|'right'|null,  // OR 'low'|'center'|'high' for putts
   missType: 'read'|'pace'|'push'|'pull'|null,  // putt miss type; null if non-putt, holed, or not recorded
+  club: String|null,                           // club used (CLUBS id); null if not recorded or putt
 }
 ```
 
@@ -91,7 +92,7 @@ Each shot stored in `round.holes[n].shots[]`:
 ### State
 Single `state` object — never persisted, resets on page load:
 ```js
-let state = { currentRoundId, currentHole, editingShotIndex, editingCourseId, excludedCategories, shotLie, shotResultLie, shotCategory, shotMissDepth, shotMissSide, shotMissType, targetsExpanded, trendsFilter }
+let state = { currentRoundId, currentHole, editingShotIndex, editingCourseId, excludedCategories, shotLie, shotResultLie, shotCategory, shotMissDepth, shotMissSide, shotMissType, shotClub, targetsExpanded, trendsFilter }
 ```
 
 ### Shared Constants and Helpers (`state.js`)
@@ -182,6 +183,25 @@ Short Game = any non-putt, non-drive shot from **under 30 yards** (`autoCategory
 - `selectMissType(val)` — tap to select, tap again to deselect; stored in `state.shotMissType`
 - `updateMissTypeVisibility()` — called from `selectResultLie` and `selectCategory` to show/hide and clear
 - `buildMissType(shots)` in `summary.js` renders a 4-tile breakdown (%, count per type) below `buildMissGrid` in putt drill-downs in both summary and trends screens; only appears when at least one shot has `missType` set
+
+### Club Tracking
+
+An optional field on the shot entry form for recording which club was used. Appears between Distance and Result Lie; hidden entirely for putts.
+
+- **`CLUBS` constant (`state.js`)** — ordered array of `{ id, label, cats }` where `cats` is the list of categories the club appears in:
+  - **Drive only**: Driver
+  - **Drive + Approach**: 3-Wood, 5-Wood, 3-Hybrid, 4-Hybrid, 5-Hybrid
+  - **Approach only**: 3i–6i
+  - **Approach + Short Game**: 7i–9i, PW, GW, SW, LW
+- `state.shotClub` — the selected club id, or `null`
+- `updateClubGroup(cat)` — shows/hides `#club-group` and rebuilds `#club-pills` filtered to the current category; called from `selectCategory()`. Hidden when `cat` is `null` or `'putt'`, clears `state.shotClub` in those cases.
+- `selectClub(id, silent)` — tap to select, tap again to deselect; updates `state.shotClub`, toggles `.selected` on pills via `data-club` attribute, updates chip; collapses expand on non-silent select
+- `renderClubChip(club)` — updates `#club-chip` with the club label or `—`
+- `toggleClubOverride()` — expands/collapses `#club-pills-expand`
+- Saved as `club: state.shotClub || null` on the shot object; older shots without the field are treated as `null`
+- Pre-filled on edit via `if(s.club) selectClub(s.club, true)` after `selectCategory` (which builds the pill list first)
+
+`buildClubRows(shots)` (`summary.js`) — renders a "By Club" breakdown below miss direction in each non-putt category's expand section (summary + analysis). Uses `CLUBS` ordering. Shows avg SG and total SG per club alongside shot count. Only appears when at least one shot has a club recorded; shows metadata of how many shots have club data vs total.
 
 ### What If? Targets
 An on-demand shot expectation tool in the SG preview area of the shot entry sheet. Lets the golfer see what result distance corresponds to neutral SG (0.00) and a good result (+0.25) before — or after — recording a shot.

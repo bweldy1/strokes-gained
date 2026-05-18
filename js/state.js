@@ -1,4 +1,29 @@
 // ═══════════════════════════════════════════════════════════════
+// CLUBS
+// cats: which categories this club appears in on the shot entry form.
+// ═══════════════════════════════════════════════════════════════
+
+const CLUBS = [
+  { id: 'driver', label: 'Driver',    cats: ['drive'] },
+  { id: '3w',     label: '3-Wood',    cats: ['drive', 'approach'] },
+  { id: '5w',     label: '5-Wood',    cats: ['drive', 'approach'] },
+  { id: '3h',     label: '3-Hybrid',  cats: ['drive', 'approach'] },
+  { id: '4h',     label: '4-Hybrid',  cats: ['drive', 'approach'] },
+  { id: '5h',     label: '5-Hybrid',  cats: ['drive', 'approach'] },
+  { id: '3i',     label: '3-Iron',    cats: ['approach'] },
+  { id: '4i',     label: '4-Iron',    cats: ['approach'] },
+  { id: '5i',     label: '5-Iron',    cats: ['approach'] },
+  { id: '6i',     label: '6-Iron',    cats: ['approach'] },
+  { id: '7i',     label: '7-Iron',    cats: ['approach', 'shortgame'] },
+  { id: '8i',     label: '8-Iron',    cats: ['approach', 'shortgame'] },
+  { id: '9i',     label: '9-Iron',    cats: ['approach', 'shortgame'] },
+  { id: 'pw',     label: 'PW',        cats: ['approach', 'shortgame'] },
+  { id: 'gw',     label: 'GW',        cats: ['approach', 'shortgame'] },
+  { id: 'sw',     label: 'SW',        cats: ['approach', 'shortgame'] },
+  { id: 'lw',     label: 'LW',        cats: ['approach', 'shortgame'] },
+];
+
+// ═══════════════════════════════════════════════════════════════
 // DIFFICULTY CONDITIONS
 // Per-category percentage impact (whole numbers: 5 = 5%).
 // drive/approach/shortgame/putt = 0 means no effect on that category.
@@ -91,6 +116,7 @@ let state = {
   shotMissDepth: null,
   shotMissSide: null,
   shotMissType: null,
+  shotClub: null,
   targetsExpanded: false,
   trendsFilter: 10
 };

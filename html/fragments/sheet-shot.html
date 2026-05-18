@@ -58,6 +58,18 @@
         </div>
       </div>
 
+      <!-- Club (hidden for putts, hidden until category is set) -->
+      <div class="form-group hidden" id="club-group">
+        <div class="category-override-row" onclick="toggleClubOverride()">
+          <span class="form-label form-label-inline">Club</span>
+          <span id="club-chip"></span>
+          <span class="category-override-hint">tap to select ›</span>
+        </div>
+        <div id="club-pills-expand" class="pill-expand hidden">
+          <div class="pill-group" id="club-pills"></div>
+        </div>
+      </div>
+
       <!-- Result Lie -->
       <div class="form-group">
         <div class="form-label">Result Lie</div>

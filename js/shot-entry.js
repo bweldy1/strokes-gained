@@ -4,7 +4,7 @@
 
 function openShotSheet(editIndex) {
   state.editingShotIndex = editIndex !== undefined ? editIndex : null;
-  state.shotLie = null; state.shotResultLie = null; state.shotCategory = null; state.shotMissDepth = null; state.shotMissSide = null; state.shotMissType = null; state.targetsExpanded = false;
+  state.shotLie = null; state.shotResultLie = null; state.shotCategory = null; state.shotMissDepth = null; state.shotMissSide = null; state.shotMissType = null; state.shotClub = null; state.targetsExpanded = false;
   document.getElementById('sg-targets-toggle').classList.add('hidden');
   document.getElementById('sg-targets-toggle').textContent = 'What If? ›';
   document.getElementById('sg-targets-expand').classList.add('hidden');
@@ -14,8 +14,11 @@ function openShotSheet(editIndex) {
   document.getElementById('result-dist-group').classList.add('hidden');
   document.getElementById('miss-dir-group').classList.add('hidden');
   document.getElementById('category-pills-expand').classList.add('hidden');
+  document.getElementById('club-pills-expand').classList.add('hidden');
+  document.getElementById('club-group').classList.add('hidden');
   document.getElementById('lie-pills-expand').classList.add('hidden');
   document.getElementById('dist-from-expand').classList.add('hidden');
+  renderClubChip(null);
   renderCategoryChip(null);
   renderLieChip(null);
   renderDistChip('', 'yds');
@@ -32,6 +35,7 @@ function openShotSheet(editIndex) {
     if(s.missSide) state.shotMissSide = s.missSide;
     if(s.missType) state.shotMissType = s.missType;
     selectCategory(s.category, true);
+    if(s.club) selectClub(s.club, true);
   } else {
     const sug = getSuggestion(hd);
     if(sug) {
@@ -125,6 +129,7 @@ function selectCategory(cat, silent) {
   renderCategoryChip(cat);
   updateMissGrid(cat);
   updateMissTypeVisibility();
+  updateClubGroup(cat);
   if(!silent) {
     const exp = document.getElementById('category-pills-expand'); if(exp) exp.classList.add('hidden');
   }
@@ -208,6 +213,42 @@ function updateMissTypeVisibility() {
       p.classList.toggle('selected', p.dataset.missType === state.shotMissType)
     );
   }
+}
+
+function updateClubGroup(cat) {
+  const group = document.getElementById('club-group'); if(!group) return;
+  if(!cat || cat === 'putt') {
+    group.classList.add('hidden');
+    state.shotClub = null;
+    renderClubChip(null);
+    return;
+  }
+  group.classList.remove('hidden');
+  const filtered = CLUBS.filter(c => c.cats.includes(cat));
+  document.getElementById('club-pills').innerHTML = filtered.map(c =>
+    `<div class="pill pill-sm${state.shotClub === c.id ? ' selected' : ''}" data-club="${c.id}" onclick="selectClub('${c.id}')">${c.label}</div>`
+  ).join('');
+}
+
+function selectClub(id, silent) {
+  state.shotClub = state.shotClub === id ? null : id;
+  document.querySelectorAll('#club-pills .pill').forEach(p =>
+    p.classList.toggle('selected', p.dataset.club === state.shotClub)
+  );
+  renderClubChip(state.shotClub);
+  if(!silent) document.getElementById('club-pills-expand').classList.add('hidden');
+}
+
+function renderClubChip(club) {
+  const el = document.getElementById('club-chip'); if(!el) return;
+  const c = CLUBS.find(x => x.id === club);
+  el.textContent = c ? c.label : '—';
+  el.className = club ? 'lie-chip' : '';
+}
+
+function toggleClubOverride() {
+  const exp = document.getElementById('club-pills-expand'); if(!exp) return;
+  exp.classList.toggle('hidden');
 }
 
 function selectMissType(val) {
@@ -302,7 +343,7 @@ function saveShot() {
   const sgRaw = calcSG(lie, dFrom, rLie, isNaN(dRes) ? 0 : dRes, pct);
   const sg = sgRaw !== null ? Math.round(sgRaw * 10000) / 10000 : null;
   const missType = (cat === 'putt' && rLie !== 'holed') ? (state.shotMissType || null) : null;
-  const shot = { lie, distFrom:dFrom, resultLie:rLie, resultDist:(rLie !== 'holed' && !isNaN(dRes)) ? dRes : null, category:cat, sg, missDepth:state.shotMissDepth || null, missSide:state.shotMissSide || null, missType };
+  const shot = { lie, distFrom:dFrom, resultLie:rLie, resultDist:(rLie !== 'holed' && !isNaN(dRes)) ? dRes : null, category:cat, sg, club:state.shotClub || null, missDepth:state.shotMissDepth || null, missSide:state.shotMissSide || null, missType };
   if(state.editingShotIndex !== null) round.holes[state.currentHole - 1].shots[state.editingShotIndex] = shot;
   else round.holes[state.currentHole - 1].shots.push(shot);
   updateRound(round); closeShotSheet(); renderHole(); updateTally();

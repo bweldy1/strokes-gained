@@ -368,7 +368,7 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
     <div class="section-label">Recent Rounds</div>
     <div id="rounds-list"></div>
   </div>
-  <div id="build-version">Build: 2026-05-17 21:44</div>
+  <div id="build-version">Build: 2026-05-17 21:53</div>
 </div>
 
 <!-- COURSE SELECT -->
@@ -546,6 +546,18 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
             <input class="num-input" type="number" id="shot-dist-from" inputmode="numeric" placeholder="0" oninput="onDistInput()">
             <span class="num-unit" id="dist-from-unit">yds</span>
           </div>
+        </div>
+      </div>
+
+      <!-- Club (hidden for putts, hidden until category is set) -->
+      <div class="form-group hidden" id="club-group">
+        <div class="category-override-row" onclick="toggleClubOverride()">
+          <span class="form-label form-label-inline">Club</span>
+          <span id="club-chip"></span>
+          <span class="category-override-hint">tap to select ›</span>
+        </div>
+        <div id="club-pills-expand" class="pill-expand hidden">
+          <div class="pill-group" id="club-pills"></div>
         </div>
       </div>
 
@@ -1051,6 +1063,31 @@ const SG_TABLES = {
 </script>
 <script>
 // ═══════════════════════════════════════════════════════════════
+// CLUBS
+// cats: which categories this club appears in on the shot entry form.
+// ═══════════════════════════════════════════════════════════════
+
+const CLUBS = [
+  { id: 'driver', label: 'Driver',    cats: ['drive'] },
+  { id: '3w',     label: '3-Wood',    cats: ['drive', 'approach'] },
+  { id: '5w',     label: '5-Wood',    cats: ['drive', 'approach'] },
+  { id: '3h',     label: '3-Hybrid',  cats: ['drive', 'approach'] },
+  { id: '4h',     label: '4-Hybrid',  cats: ['drive', 'approach'] },
+  { id: '5h',     label: '5-Hybrid',  cats: ['drive', 'approach'] },
+  { id: '3i',     label: '3-Iron',    cats: ['approach'] },
+  { id: '4i',     label: '4-Iron',    cats: ['approach'] },
+  { id: '5i',     label: '5-Iron',    cats: ['approach'] },
+  { id: '6i',     label: '6-Iron',    cats: ['approach'] },
+  { id: '7i',     label: '7-Iron',    cats: ['approach', 'shortgame'] },
+  { id: '8i',     label: '8-Iron',    cats: ['approach', 'shortgame'] },
+  { id: '9i',     label: '9-Iron',    cats: ['approach', 'shortgame'] },
+  { id: 'pw',     label: 'PW',        cats: ['approach', 'shortgame'] },
+  { id: 'gw',     label: 'GW',        cats: ['approach', 'shortgame'] },
+  { id: 'sw',     label: 'SW',        cats: ['approach', 'shortgame'] },
+  { id: 'lw',     label: 'LW',        cats: ['approach', 'shortgame'] },
+];
+
+// ═══════════════════════════════════════════════════════════════
 // DIFFICULTY CONDITIONS
 // Per-category percentage impact (whole numbers: 5 = 5%).
 // drive/approach/shortgame/putt = 0 means no effect on that category.
@@ -1143,6 +1180,7 @@ let state = {
   shotMissDepth: null,
   shotMissSide: null,
   shotMissType: null,
+  shotClub: null,
   targetsExpanded: false,
   trendsFilter: 10
 };
@@ -1503,7 +1541,7 @@ function recalcRoundShots(round) {
 
 function openShotSheet(editIndex) {
   state.editingShotIndex = editIndex !== undefined ? editIndex : null;
-  state.shotLie = null; state.shotResultLie = null; state.shotCategory = null; state.shotMissDepth = null; state.shotMissSide = null; state.shotMissType = null; state.targetsExpanded = false;
+  state.shotLie = null; state.shotResultLie = null; state.shotCategory = null; state.shotMissDepth = null; state.shotMissSide = null; state.shotMissType = null; state.shotClub = null; state.targetsExpanded = false;
   document.getElementById('sg-targets-toggle').classList.add('hidden');
   document.getElementById('sg-targets-toggle').textContent = 'What If? ›';
   document.getElementById('sg-targets-expand').classList.add('hidden');
@@ -1513,8 +1551,11 @@ function openShotSheet(editIndex) {
   document.getElementById('result-dist-group').classList.add('hidden');
   document.getElementById('miss-dir-group').classList.add('hidden');
   document.getElementById('category-pills-expand').classList.add('hidden');
+  document.getElementById('club-pills-expand').classList.add('hidden');
+  document.getElementById('club-group').classList.add('hidden');
   document.getElementById('lie-pills-expand').classList.add('hidden');
   document.getElementById('dist-from-expand').classList.add('hidden');
+  renderClubChip(null);
   renderCategoryChip(null);
   renderLieChip(null);
   renderDistChip('', 'yds');
@@ -1531,6 +1572,7 @@ function openShotSheet(editIndex) {
     if(s.missSide) state.shotMissSide = s.missSide;
     if(s.missType) state.shotMissType = s.missType;
     selectCategory(s.category, true);
+    if(s.club) selectClub(s.club, true);
   } else {
     const sug = getSuggestion(hd);
     if(sug) {
@@ -1624,6 +1666,7 @@ function selectCategory(cat, silent) {
   renderCategoryChip(cat);
   updateMissGrid(cat);
   updateMissTypeVisibility();
+  updateClubGroup(cat);
   if(!silent) {
     const exp = document.getElementById('category-pills-expand'); if(exp) exp.classList.add('hidden');
   }
@@ -1707,6 +1750,42 @@ function updateMissTypeVisibility() {
       p.classList.toggle('selected', p.dataset.missType === state.shotMissType)
     );
   }
+}
+
+function updateClubGroup(cat) {
+  const group = document.getElementById('club-group'); if(!group) return;
+  if(!cat || cat === 'putt') {
+    group.classList.add('hidden');
+    state.shotClub = null;
+    renderClubChip(null);
+    return;
+  }
+  group.classList.remove('hidden');
+  const filtered = CLUBS.filter(c => c.cats.includes(cat));
+  document.getElementById('club-pills').innerHTML = filtered.map(c =>
+    `<div class="pill pill-sm${state.shotClub === c.id ? ' selected' : ''}" data-club="${c.id}" onclick="selectClub('${c.id}')">${c.label}</div>`
+  ).join('');
+}
+
+function selectClub(id, silent) {
+  state.shotClub = state.shotClub === id ? null : id;
+  document.querySelectorAll('#club-pills .pill').forEach(p =>
+    p.classList.toggle('selected', p.dataset.club === state.shotClub)
+  );
+  renderClubChip(state.shotClub);
+  if(!silent) document.getElementById('club-pills-expand').classList.add('hidden');
+}
+
+function renderClubChip(club) {
+  const el = document.getElementById('club-chip'); if(!el) return;
+  const c = CLUBS.find(x => x.id === club);
+  el.textContent = c ? c.label : '—';
+  el.className = club ? 'lie-chip' : '';
+}
+
+function toggleClubOverride() {
+  const exp = document.getElementById('club-pills-expand'); if(!exp) return;
+  exp.classList.toggle('hidden');
 }
 
 function selectMissType(val) {
@@ -1801,7 +1880,7 @@ function saveShot() {
   const sgRaw = calcSG(lie, dFrom, rLie, isNaN(dRes) ? 0 : dRes, pct);
   const sg = sgRaw !== null ? Math.round(sgRaw * 10000) / 10000 : null;
   const missType = (cat === 'putt' && rLie !== 'holed') ? (state.shotMissType || null) : null;
-  const shot = { lie, distFrom:dFrom, resultLie:rLie, resultDist:(rLie !== 'holed' && !isNaN(dRes)) ? dRes : null, category:cat, sg, missDepth:state.shotMissDepth || null, missSide:state.shotMissSide || null, missType };
+  const shot = { lie, distFrom:dFrom, resultLie:rLie, resultDist:(rLie !== 'holed' && !isNaN(dRes)) ? dRes : null, category:cat, sg, club:state.shotClub || null, missDepth:state.shotMissDepth || null, missSide:state.shotMissSide || null, missType };
   if(state.editingShotIndex !== null) round.holes[state.currentHole - 1].shots[state.editingShotIndex] = shot;
   else round.holes[state.currentHole - 1].shots.push(shot);
   updateRound(round); closeShotSheet(); renderHole(); updateTally();
@@ -2092,6 +2171,30 @@ function buildMissType(shots) {
   </div>`;
 }
 
+function buildClubRows(shots) {
+  const withClub = shots.filter(s => s.club);
+  if(withClub.length === 0) return '';
+  const totals = {};
+  for(const s of withClub) {
+    if(!totals[s.club]) totals[s.club] = { sg: 0, count: 0 };
+    totals[s.club].sg += (s.sg || 0);
+    totals[s.club].count++;
+  }
+  const fmtSG = v => (v >= 0 ? '+' : '') + v.toFixed(2);
+  const rows = CLUBS.filter(c => totals[c.id]).map(c => {
+    const { sg, count } = totals[c.id];
+    const avg = sg / count;
+    return `<div class="ssum-bucket">
+      <span class="ssum-bucket-label">${c.label}</span>
+      <span class="ssum-bucket-count">${count} shot${count !== 1 ? 's' : ''}</span>
+      <span class="ssum-bucket-avg ${avg >= 0 ? 'sg-pos' : 'sg-neg'}">${fmtSG(avg)}</span>
+      <span class="ssum-bucket-total ${sg >= 0 ? 'sg-pos' : 'sg-neg'}">${fmtSG(sg)}</span>
+    </div>`;
+  }).join('');
+  const meta = withClub.length < shots.length ? `${withClub.length} of ${shots.length} shots` : `${withClub.length} shot${withClub.length !== 1 ? 's' : ''}`;
+  return `<div class="miss-pct-section"><div class="miss-pct-header">By Club <span class="miss-pct-meta">${meta}</span></div>${rows}</div>`;
+}
+
 function buildRankedBuckets(catShots) {
   const fmtSG = v => (v >= 0 ? '+' : '') + v.toFixed(2);
   const cats = ['drive', 'approach', 'shortgame', 'putt'];
@@ -2248,7 +2351,7 @@ function renderSummary() {
   const sgCls = (v, c) => c === 0 ? 'sg-null' : v >= 0 ? 'sg-pos' : 'sg-neg';
 
   const catHTML = cats.map(c => {
-    const rows = buildBucketRows(catShots[c], c) + buildMissGrid(catShots[c], c) + (c === 'putt' ? buildMissType(catShots[c]) : '');
+    const rows = buildBucketRows(catShots[c], c) + buildMissGrid(catShots[c], c) + (c === 'putt' ? buildMissType(catShots[c]) : '') + (c !== 'putt' ? buildClubRows(catShots[c]) : '');
     const avg = fmt(cnt[c] > 0 ? tot[c] / cnt[c] : 0, cnt[c]);
     return `<div class="summary-stat summary-cat-row" onclick="toggleSummaryCat('${c}')">
         <span class="summary-stat-label">${CAT_LABELS[c]} <span class="ssum-cat-meta">(${cnt[c]} shots)</span></span>
@@ -2493,7 +2596,7 @@ function renderTrends() {
     const tot = valid.reduce((sum, s) => sum + s.sg, 0);
     const avg = cnt > 0 ? tot / cnt : null;
     const avgStr = avg !== null ? (avg >= 0 ? '+' : '') + avg.toFixed(2) : '—';
-    const bucketRows = buildBucketRows(shots, cat, false) + buildMissGrid(shots, cat) + (cat === 'putt' ? buildMissType(shots) : '');
+    const bucketRows = buildBucketRows(shots, cat, false) + buildMissGrid(shots, cat) + (cat === 'putt' ? buildMissType(shots) : '') + (cat !== 'putt' ? buildClubRows(shots) : '');
 
     return `<div class="card trends-cat-card">
       <div class="trends-cat-header" onclick="toggleTrendsCat('${cat}')">
