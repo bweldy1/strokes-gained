@@ -6,7 +6,8 @@
 const CLUBS = [
   { id: 'driver', label: 'Driver',    cats: ['drive'] },
   { id: '3w',     label: '3-Wood',    cats: ['drive', 'approach'] },
-  { id: '5w',     label: '5-Wood',    cats: ['drive', 'approach'] },
+  { id: '5w',     label: '5-Wood',    cats: ['drive', 'approach'] }, 
+  { id: '7w',     label: '7-Wood',    cats: ['drive', 'approach'] },
   { id: '3h',     label: '3-Hybrid',  cats: ['drive', 'approach'] },
   { id: '4h',     label: '4-Hybrid',  cats: ['drive', 'approach'] },
   { id: '5h',     label: '5-Hybrid',  cats: ['drive', 'approach'] },
@@ -141,6 +142,12 @@ function getRoundDifficultyPct(conditions, category) {
 
 function getHoleOutDist() {
   return parseInt(localStorage.getItem('sg_holeOutDist')) || 2;
+}
+
+function getActiveClubs() {
+  const stored = localStorage.getItem('sg_activeClubs');
+  if(!stored) return new Set(CLUBS.map(c => c.id));
+  try { return new Set(JSON.parse(stored)); } catch { return new Set(CLUBS.map(c => c.id)); }
 }
 
 // CSS class for SG value coloring

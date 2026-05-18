@@ -368,7 +368,7 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
     <div class="section-label">Recent Rounds</div>
     <div id="rounds-list"></div>
   </div>
-  <div id="build-version">Build: 2026-05-17 21:53</div>
+  <div id="build-version">Build: 2026-05-17 22:05</div>
 </div>
 
 <!-- COURSE SELECT -->
@@ -711,6 +711,29 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
         <span class="settings-hint" id="holeout-dist-label" style="color:var(--fairway);font-weight:600">2 ft</span>
       </div>
       <input type="range" id="holeout-dist-slider" class="sg-slider" min="1" max="10" value="2" oninput="setHoleOutDist(this.value)" style="margin-bottom:20px">
+
+      <div class="settings-section-label">My Clubs</div>
+      <div class="settings-hint" style="margin-bottom:8px">Select the clubs in your bag</div>
+      <div class="pill-group" style="margin-bottom:20px">
+        <button class="pill pill-sm club-toggle-pill" data-club="driver" onclick="toggleActiveClub('driver')">Driver</button>
+        <button class="pill pill-sm club-toggle-pill" data-club="3w" onclick="toggleActiveClub('3w')">3-Wood</button>
+        <button class="pill pill-sm club-toggle-pill" data-club="5w" onclick="toggleActiveClub('5w')">5-Wood</button>
+        <button class="pill pill-sm club-toggle-pill" data-club="7w" onclick="toggleActiveClub('7w')">7-Wood</button>
+        <button class="pill pill-sm club-toggle-pill" data-club="3h" onclick="toggleActiveClub('3h')">3-Hybrid</button>
+        <button class="pill pill-sm club-toggle-pill" data-club="4h" onclick="toggleActiveClub('4h')">4-Hybrid</button>
+        <button class="pill pill-sm club-toggle-pill" data-club="5h" onclick="toggleActiveClub('5h')">5-Hybrid</button>
+        <button class="pill pill-sm club-toggle-pill" data-club="3i" onclick="toggleActiveClub('3i')">3-Iron</button>
+        <button class="pill pill-sm club-toggle-pill" data-club="4i" onclick="toggleActiveClub('4i')">4-Iron</button>
+        <button class="pill pill-sm club-toggle-pill" data-club="5i" onclick="toggleActiveClub('5i')">5-Iron</button>
+        <button class="pill pill-sm club-toggle-pill" data-club="6i" onclick="toggleActiveClub('6i')">6-Iron</button>
+        <button class="pill pill-sm club-toggle-pill" data-club="7i" onclick="toggleActiveClub('7i')">7-Iron</button>
+        <button class="pill pill-sm club-toggle-pill" data-club="8i" onclick="toggleActiveClub('8i')">8-Iron</button>
+        <button class="pill pill-sm club-toggle-pill" data-club="9i" onclick="toggleActiveClub('9i')">9-Iron</button>
+        <button class="pill pill-sm club-toggle-pill" data-club="pw" onclick="toggleActiveClub('pw')">PW</button>
+        <button class="pill pill-sm club-toggle-pill" data-club="gw" onclick="toggleActiveClub('gw')">GW</button>
+        <button class="pill pill-sm club-toggle-pill" data-club="sw" onclick="toggleActiveClub('sw')">SW</button>
+        <button class="pill pill-sm club-toggle-pill" data-club="lw" onclick="toggleActiveClub('lw')">LW</button>
+      </div>
 
       <div class="settings-section-label">Data</div>
 
@@ -1070,7 +1093,8 @@ const SG_TABLES = {
 const CLUBS = [
   { id: 'driver', label: 'Driver',    cats: ['drive'] },
   { id: '3w',     label: '3-Wood',    cats: ['drive', 'approach'] },
-  { id: '5w',     label: '5-Wood',    cats: ['drive', 'approach'] },
+  { id: '5w',     label: '5-Wood',    cats: ['drive', 'approach'] }, 
+  { id: '7w',     label: '7-Wood',    cats: ['drive', 'approach'] },
   { id: '3h',     label: '3-Hybrid',  cats: ['drive', 'approach'] },
   { id: '4h',     label: '4-Hybrid',  cats: ['drive', 'approach'] },
   { id: '5h',     label: '5-Hybrid',  cats: ['drive', 'approach'] },
@@ -1205,6 +1229,12 @@ function getRoundDifficultyPct(conditions, category) {
 
 function getHoleOutDist() {
   return parseInt(localStorage.getItem('sg_holeOutDist')) || 2;
+}
+
+function getActiveClubs() {
+  const stored = localStorage.getItem('sg_activeClubs');
+  if(!stored) return new Set(CLUBS.map(c => c.id));
+  try { return new Set(JSON.parse(stored)); } catch { return new Set(CLUBS.map(c => c.id)); }
 }
 
 // CSS class for SG value coloring
@@ -1761,7 +1791,8 @@ function updateClubGroup(cat) {
     return;
   }
   group.classList.remove('hidden');
-  const filtered = CLUBS.filter(c => c.cats.includes(cat));
+  const active = getActiveClubs();
+  const filtered = CLUBS.filter(c => c.cats.includes(cat) && active.has(c.id));
   document.getElementById('club-pills').innerHTML = filtered.map(c =>
     `<div class="pill pill-sm${state.shotClub === c.id ? ' selected' : ''}" data-club="${c.id}" onclick="selectClub('${c.id}')">${c.label}</div>`
   ).join('');
@@ -2825,6 +2856,20 @@ function confirmRestore() {
 // APPEARANCE
 // ═══════════════════════════════════════════════════════════════
 
+function applyActiveClubs() {
+  const active = getActiveClubs();
+  document.querySelectorAll('.club-toggle-pill').forEach(p =>
+    p.classList.toggle('selected', active.has(p.dataset.club))
+  );
+}
+
+function toggleActiveClub(id) {
+  const active = getActiveClubs();
+  if(active.has(id)) active.delete(id); else active.add(id);
+  localStorage.setItem('sg_activeClubs', JSON.stringify([...active]));
+  applyActiveClubs();
+}
+
 function applyColorScheme(scheme) {
   scheme = scheme || 'classic';
   document.documentElement.setAttribute('data-scheme', scheme);
@@ -2859,6 +2904,7 @@ function setHoleOutDist(dist) {
 (function() {
   applyColorScheme(localStorage.getItem('sg_colorScheme'));
   applyHoleOutDist();
+  applyActiveClubs();
   renderHome();
 })();
 

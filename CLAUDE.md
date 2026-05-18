@@ -107,7 +107,7 @@ sgClass(sg)            // → 'sg-pos' | 'sg-neg' | 'sg-null' (CSS class for SG 
 `buildShotRow` in `summary.js` uses compact distance abbreviations (`y`/`ft`) directly — does **not** use `formatDist` since those are summary-view abbreviations, not full units.
 
 ### Storage
-All data in `localStorage` as JSON. Keys: `sg_rounds`, `sg_courses`.
+All data in `localStorage` as JSON. Keys: `sg_rounds`, `sg_courses`, `sg_colorScheme`, `sg_holeOutDist`, `sg_activeClubs`.
 
 ### Show/Hide Pattern
 All conditional visibility uses the `.hidden` CSS utility class (`display: none !important`). Never set `element.style.display` directly.
@@ -383,6 +383,12 @@ Accessed via the ⚙ gear button (top-right of the home header). Opens `#setting
 **Color Scheme** — Appearance section at the top of the sheet. Two pills (Classic / Dusk) backed by `sg_colorScheme` in `localStorage`. See [SG Value Colors](#sg-value-colors) for implementation details.
 
 **Hole-Out Distance** — Appearance section. A range slider (`#holeout-dist-slider`, 1–10 ft) with a live label (`#holeout-dist-label`) showing the current value in green. Backed by `sg_holeOutDist` in `localStorage` (default `2`). See [Hole-Out Prompt](#hole-out-prompt) for implementation details.
+
+**My Clubs** — "My Clubs" section between Appearance and Data. A set of toggle pills for each club in the `CLUBS` constant. Backed by `sg_activeClubs` in `localStorage` (JSON array of club IDs). When unset, all clubs are active (backwards compatible). Logic in `home.js`:
+- `applyActiveClubs()` — reads `getActiveClubs()` and syncs the selected state of all `.club-toggle-pill` elements; called on init and after each toggle
+- `toggleActiveClub(id)` — adds/removes the club from the active set, persists to `localStorage`, calls `applyActiveClubs()`
+- `getActiveClubs()` (`state.js`) — returns a `Set<string>` of active club IDs; defaults to all clubs if key is missing or invalid JSON
+- The club group on the shot entry form (`updateClubGroup(cat)`) filters the rendered pills by both category (`c.cats.includes(cat)`) and user preference (`active.has(c.id)`), so deactivated clubs never appear during shot entry
 
 **Backup** (`backupData()`): Serializes `{ version, exported, rounds, courses }` as JSON and triggers a file download (`sg-backup-YYYY-MM-DD.json`) via a Blob URL. Falls back to `showExportModal(json)` if Blob download fails (e.g. restrictive browser).
 - `version`: hardcoded `1` — reserved for future migration logic if the data model changes. Currently written but not read by `confirmRestore()`; restore only validates that `payload.rounds` is an array.

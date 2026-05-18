@@ -18,6 +18,29 @@
       </div>
       <input type="range" id="holeout-dist-slider" class="sg-slider" min="1" max="10" value="2" oninput="setHoleOutDist(this.value)" style="margin-bottom:20px">
 
+      <div class="settings-section-label">My Clubs</div>
+      <div class="settings-hint" style="margin-bottom:8px">Select the clubs in your bag</div>
+      <div class="pill-group" style="margin-bottom:20px">
+        <button class="pill pill-sm club-toggle-pill" data-club="driver" onclick="toggleActiveClub('driver')">Driver</button>
+        <button class="pill pill-sm club-toggle-pill" data-club="3w" onclick="toggleActiveClub('3w')">3-Wood</button>
+        <button class="pill pill-sm club-toggle-pill" data-club="5w" onclick="toggleActiveClub('5w')">5-Wood</button>
+        <button class="pill pill-sm club-toggle-pill" data-club="7w" onclick="toggleActiveClub('7w')">7-Wood</button>
+        <button class="pill pill-sm club-toggle-pill" data-club="3h" onclick="toggleActiveClub('3h')">3-Hybrid</button>
+        <button class="pill pill-sm club-toggle-pill" data-club="4h" onclick="toggleActiveClub('4h')">4-Hybrid</button>
+        <button class="pill pill-sm club-toggle-pill" data-club="5h" onclick="toggleActiveClub('5h')">5-Hybrid</button>
+        <button class="pill pill-sm club-toggle-pill" data-club="3i" onclick="toggleActiveClub('3i')">3-Iron</button>
+        <button class="pill pill-sm club-toggle-pill" data-club="4i" onclick="toggleActiveClub('4i')">4-Iron</button>
+        <button class="pill pill-sm club-toggle-pill" data-club="5i" onclick="toggleActiveClub('5i')">5-Iron</button>
+        <button class="pill pill-sm club-toggle-pill" data-club="6i" onclick="toggleActiveClub('6i')">6-Iron</button>
+        <button class="pill pill-sm club-toggle-pill" data-club="7i" onclick="toggleActiveClub('7i')">7-Iron</button>
+        <button class="pill pill-sm club-toggle-pill" data-club="8i" onclick="toggleActiveClub('8i')">8-Iron</button>
+        <button class="pill pill-sm club-toggle-pill" data-club="9i" onclick="toggleActiveClub('9i')">9-Iron</button>
+        <button class="pill pill-sm club-toggle-pill" data-club="pw" onclick="toggleActiveClub('pw')">PW</button>
+        <button class="pill pill-sm club-toggle-pill" data-club="gw" onclick="toggleActiveClub('gw')">GW</button>
+        <button class="pill pill-sm club-toggle-pill" data-club="sw" onclick="toggleActiveClub('sw')">SW</button>
+        <button class="pill pill-sm club-toggle-pill" data-club="lw" onclick="toggleActiveClub('lw')">LW</button>
+      </div>
+
       <div class="settings-section-label">Data</div>
 
       <button class="btn btn-secondary settings-btn" onclick="backupData()">Backup</button>

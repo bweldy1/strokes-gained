@@ -191,6 +191,20 @@ function confirmRestore() {
 // APPEARANCE
 // ═══════════════════════════════════════════════════════════════
 
+function applyActiveClubs() {
+  const active = getActiveClubs();
+  document.querySelectorAll('.club-toggle-pill').forEach(p =>
+    p.classList.toggle('selected', active.has(p.dataset.club))
+  );
+}
+
+function toggleActiveClub(id) {
+  const active = getActiveClubs();
+  if(active.has(id)) active.delete(id); else active.add(id);
+  localStorage.setItem('sg_activeClubs', JSON.stringify([...active]));
+  applyActiveClubs();
+}
+
 function applyColorScheme(scheme) {
   scheme = scheme || 'classic';
   document.documentElement.setAttribute('data-scheme', scheme);
@@ -225,5 +239,6 @@ function setHoleOutDist(dist) {
 (function() {
   applyColorScheme(localStorage.getItem('sg_colorScheme'));
   applyHoleOutDist();
+  applyActiveClubs();
   renderHome();
 })();

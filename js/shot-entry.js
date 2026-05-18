@@ -224,7 +224,8 @@ function updateClubGroup(cat) {
     return;
   }
   group.classList.remove('hidden');
-  const filtered = CLUBS.filter(c => c.cats.includes(cat));
+  const active = getActiveClubs();
+  const filtered = CLUBS.filter(c => c.cats.includes(cat) && active.has(c.id));
   document.getElementById('club-pills').innerHTML = filtered.map(c =>
     `<div class="pill pill-sm${state.shotClub === c.id ? ' selected' : ''}" data-club="${c.id}" onclick="selectClub('${c.id}')">${c.label}</div>`
   ).join('');
