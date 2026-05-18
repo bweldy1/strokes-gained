@@ -368,7 +368,7 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
     <div class="section-label">Recent Rounds</div>
     <div id="rounds-list"></div>
   </div>
-  <div id="build-version">Build: 2026-05-17 21:39</div>
+  <div id="build-version">Build: 2026-05-17 21:44</div>
 </div>
 
 <!-- COURSE SELECT -->
@@ -452,7 +452,6 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
   <div class="scroll-body">
     <button class="btn btn-ghost" onclick="showScreen('scorecard')">Show Scorecard</button>
     <div class="spacer-sm"></div>
-    <div id="summary-note-block" class="hidden"></div>
     <div class="card" id="summary-totals"></div>
     <div class="section-label">Statistics</div>
     <div class="card" id="summary-stats"></div>
@@ -2230,13 +2229,6 @@ function renderScorecard(round) {
 
 function renderSummary() {
   const round = currentRound(); if(!round) return;
-  const noteBlock = document.getElementById('summary-note-block');
-  if(round.notes) {
-    noteBlock.innerHTML = `<div class="summary-note">${round.notes}</div>`;
-    noteBlock.classList.remove('hidden');
-  } else {
-    noteBlock.classList.add('hidden');
-  }
 
   const cats = ['drive', 'approach', 'shortgame', 'putt'];
   const tot = {drive:0, approach:0, shortgame:0, putt:0}, cnt = {drive:0, approach:0, shortgame:0, putt:0};

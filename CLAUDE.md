@@ -27,7 +27,7 @@ html/
     sheet-shot.html         # Bottom sheet: shot entry form
     sheet-course-edit.html  # Bottom sheet: course name/tees editor
     sheet-yardage.html      # Bottom sheet: yardage override
-    sheet-round-edit.html   # Bottom sheet: round date/name/conditions editor
+    sheet-round-edit.html   # Bottom sheet: round date/name/conditions/notes editor
     sheet-settings.html     # Bottom sheet: settings menu (backup, restore)
 css/
   v2.css                    # All styles
@@ -60,10 +60,13 @@ Each round stored in `sg_rounds` (localStorage) includes:
   courseName: String,
   courseId: String,
   conditions: [],            // array of DIFFICULTY_CONDITIONS ids (e.g. ['cold', 'wind'])
+  notes: '',                 // free-text round notes (empty string default)
   holes: [{ hole, par, yards, yardsOverride, shots }]
 }
 ```
 `conditions` defaults to `[]` on new rounds (`startRound`). Older rounds without this field are treated as having no conditions wherever `round.conditions || []` is used.
+
+`notes` defaults to `''`. Older rounds without the field are treated as having no note wherever `round.notes || ''` is used.
 
 ### Shot Data Model
 
@@ -237,7 +240,8 @@ Current conditions and their per-category percentages:
 - "Playing Conditions" section with 7 `.pill-sm` toggle pills rendered dynamically by `openRoundEdit()` into `#round-conditions-pills`
 - Previously selected conditions are pre-highlighted when the sheet opens
 - `toggleCondition(id)` — toggles `.selected` on the pill with matching `data-id`
-- `saveRoundEdit()` reads all `.selected` pills' `data-id` values, saves as `round.conditions`, then calls `recalcRoundShots(round)` if conditions changed
+- "Notes" textarea (`#round-edit-notes`, `.notes-input`) below conditions — pre-filled with `round.notes` on open
+- `saveRoundEdit()` reads all `.selected` pills' `data-id` values, saves as `round.conditions`, reads the textarea and saves as `round.notes`, then calls `recalcRoundShots(round)` if conditions changed
 
 **Auto-recalc (`recalcRoundShots(round)` in `hole.js`):**
 - Called automatically when conditions change on save
@@ -341,6 +345,16 @@ The hole screen topbar uses a `⌂` home icon (`.btn-icon`) to navigate back to 
 Hole navigation wraps around: `‹` on hole 1 goes to the last hole, `›` on the last hole goes to hole 1. Both arrows are always active (no `disabled` class or `pointer-events: none` at boundaries).
 
 Tapping the hole number block opens an inline hole picker (`#hole-picker`) — a 9-column grid of all holes in the round, rendered dynamically by `openHolePicker()`. The current hole is highlighted (`.selected`). Tapping a hole calls `goToHole(n)`, which sets `state.currentHole`, closes the picker, and re-renders. The picker closes via `closeHolePicker()` in three cases: tapping the hole number again (toggle), pressing either nav arrow, or any `showScreen()` call (prevents stale picker state when switching rounds).
+
+## Home Screen
+
+`renderHome()` builds the recent rounds list (`#rounds-list`). Each round renders as a `.round-card` showing:
+- Course name, date, stroke count (`.round-card-meta`)
+- Note snippet (`.round-card-note`) — up to 55 characters, truncated with `…`; only shown when `r.notes` is non-empty
+- Total SG value (colored via `sgClass`) and "Total SG" label
+- Delete button (×)
+
+Tapping a card calls `resumeRound(id)`, which sets `state.currentRoundId`, seeks to the last hole with shots, and navigates to the hole screen.
 
 ## Settings & Backup
 
