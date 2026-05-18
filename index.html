@@ -363,7 +363,7 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
     <div class="section-label">Recent Rounds</div>
     <div id="rounds-list"></div>
   </div>
-  <div id="build-version">Build: 2026-05-16 22:24</div>
+  <div id="build-version">Build: 2026-05-17 20:08</div>
 </div>
 
 <!-- COURSE SELECT -->
@@ -1296,7 +1296,7 @@ function renderHole() {
 function renderShotList(hd) {
   const shots = hd.shots || [], el = document.getElementById('shot-list');
   const last = shots[shots.length - 1];
-  const isHoled = last && last.resultLie === 'holed';
+  const isHoled = !!(last && last.resultLie === 'holed');
   const showPrompt = !isHoled && last && last.resultLie === 'green' && last.resultDist != null && last.resultDist <= getHoleOutDist();
   const prompt = document.getElementById('hole-out-prompt');
   prompt.classList.toggle('hidden', !showPrompt);

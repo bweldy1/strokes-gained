@@ -21,7 +21,7 @@ function renderHole() {
 function renderShotList(hd) {
   const shots = hd.shots || [], el = document.getElementById('shot-list');
   const last = shots[shots.length - 1];
-  const isHoled = last && last.resultLie === 'holed';
+  const isHoled = !!(last && last.resultLie === 'holed');
   const showPrompt = !isHoled && last && last.resultLie === 'green' && last.resultDist != null && last.resultDist <= getHoleOutDist();
   const prompt = document.getElementById('hole-out-prompt');
   prompt.classList.toggle('hidden', !showPrompt);
