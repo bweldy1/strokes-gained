@@ -156,6 +156,10 @@ function getActiveClubs() {
   try { return new Set(JSON.parse(stored)); } catch { return new Set(CLUBS.map(c => c.id)); }
 }
 
+function getClubAutoExpand() {
+  return localStorage.getItem('sg_clubAutoExpand') === 'true';
+}
+
 // CSS class for SG value coloring
 function sgClass(sg) {
   return sg == null ? 'sg-null' : sg >= 0 ? 'sg-pos' : 'sg-neg';

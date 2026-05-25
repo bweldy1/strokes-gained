@@ -205,6 +205,18 @@ function toggleActiveClub(id) {
   applyActiveClubs();
 }
 
+function applyClubAutoExpand() {
+  const val = getClubAutoExpand();
+  document.querySelectorAll('.club-expand-pill').forEach(p =>
+    p.classList.toggle('selected', p.dataset.expand === String(val))
+  );
+}
+
+function setClubAutoExpand(val) {
+  localStorage.setItem('sg_clubAutoExpand', val);
+  applyClubAutoExpand();
+}
+
 function applyColorScheme(scheme) {
   scheme = scheme || 'classic';
   document.documentElement.setAttribute('data-scheme', scheme);
@@ -240,5 +252,6 @@ function setHoleOutDist(dist) {
   applyColorScheme(localStorage.getItem('sg_colorScheme'));
   applyHoleOutDist();
   applyActiveClubs();
+  applyClubAutoExpand();
   renderHome();
 })();

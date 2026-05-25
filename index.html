@@ -376,7 +376,7 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
     <div class="section-label">Recent Rounds</div>
     <div id="rounds-list"></div>
   </div>
-  <div id="build-version">Build: 2026-05-24 22:22</div>
+  <div id="build-version">Build: 2026-05-24 22:30</div>
 </div>
 
 <!-- COURSE SELECT -->
@@ -756,6 +756,12 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
         <button class="pill pill-sm club-toggle-pill" data-club="56" onclick="toggleActiveClub('56')">56°</button>
         <button class="pill pill-sm club-toggle-pill" data-club="58" onclick="toggleActiveClub('58')">58°</button>
         <button class="pill pill-sm club-toggle-pill" data-club="60" onclick="toggleActiveClub('60')">60°</button>
+      </div>
+
+      <div class="settings-hint" style="margin-bottom:8px">Club selection on shot form</div>
+      <div style="display:flex;gap:8px;margin-bottom:20px">
+        <button class="pill club-expand-pill" data-expand="false" onclick="setClubAutoExpand(false)">Collapsed</button>
+        <button class="pill club-expand-pill" data-expand="true" onclick="setClubAutoExpand(true)">Expanded</button>
       </div>
 
       <div class="settings-section-label">Data</div>
@@ -1264,6 +1270,10 @@ function getActiveClubs() {
   const stored = localStorage.getItem('sg_activeClubs');
   if(!stored) return new Set(CLUBS.map(c => c.id));
   try { return new Set(JSON.parse(stored)); } catch { return new Set(CLUBS.map(c => c.id)); }
+}
+
+function getClubAutoExpand() {
+  return localStorage.getItem('sg_clubAutoExpand') === 'true';
 }
 
 // CSS class for SG value coloring
@@ -1840,6 +1850,7 @@ function updateClubGroup(cat) {
   document.getElementById('club-pills').innerHTML = filtered.map(c =>
     `<div class="pill pill-sm${state.shotClub === c.id ? ' selected' : ''}" data-club="${c.id}" onclick="selectClub('${c.id}')">${c.label}</div>`
   ).join('');
+  if(getClubAutoExpand()) document.getElementById('club-pills-expand').classList.remove('hidden');
 }
 
 function selectClub(id, silent) {
@@ -2944,6 +2955,18 @@ function toggleActiveClub(id) {
   applyActiveClubs();
 }
 
+function applyClubAutoExpand() {
+  const val = getClubAutoExpand();
+  document.querySelectorAll('.club-expand-pill').forEach(p =>
+    p.classList.toggle('selected', p.dataset.expand === String(val))
+  );
+}
+
+function setClubAutoExpand(val) {
+  localStorage.setItem('sg_clubAutoExpand', val);
+  applyClubAutoExpand();
+}
+
 function applyColorScheme(scheme) {
   scheme = scheme || 'classic';
   document.documentElement.setAttribute('data-scheme', scheme);
@@ -2979,6 +3002,7 @@ function setHoleOutDist(dist) {
   applyColorScheme(localStorage.getItem('sg_colorScheme'));
   applyHoleOutDist();
   applyActiveClubs();
+  applyClubAutoExpand();
   renderHome();
 })();
 

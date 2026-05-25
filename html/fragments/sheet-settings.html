@@ -47,6 +47,12 @@
         <button class="pill pill-sm club-toggle-pill" data-club="60" onclick="toggleActiveClub('60')">60°</button>
       </div>
 
+      <div class="settings-hint" style="margin-bottom:8px">Club selection on shot form</div>
+      <div style="display:flex;gap:8px;margin-bottom:20px">
+        <button class="pill club-expand-pill" data-expand="false" onclick="setClubAutoExpand(false)">Collapsed</button>
+        <button class="pill club-expand-pill" data-expand="true" onclick="setClubAutoExpand(true)">Expanded</button>
+      </div>
+
       <div class="settings-section-label">Data</div>
 
       <button class="btn btn-secondary settings-btn" onclick="backupData()">Backup</button>

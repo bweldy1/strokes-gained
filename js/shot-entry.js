@@ -244,6 +244,7 @@ function updateClubGroup(cat) {
   document.getElementById('club-pills').innerHTML = filtered.map(c =>
     `<div class="pill pill-sm${state.shotClub === c.id ? ' selected' : ''}" data-club="${c.id}" onclick="selectClub('${c.id}')">${c.label}</div>`
   ).join('');
+  if(getClubAutoExpand()) document.getElementById('club-pills-expand').classList.remove('hidden');
 }
 
 function selectClub(id, silent) {
