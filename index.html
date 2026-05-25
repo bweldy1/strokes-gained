@@ -368,7 +368,7 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
     <div class="section-label">Recent Rounds</div>
     <div id="rounds-list"></div>
   </div>
-  <div id="build-version">Build: 2026-05-17 22:05</div>
+  <div id="build-version">Build: 2026-05-24 21:44</div>
 </div>
 
 <!-- COURSE SELECT -->
@@ -715,24 +715,30 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
       <div class="settings-section-label">My Clubs</div>
       <div class="settings-hint" style="margin-bottom:8px">Select the clubs in your bag</div>
       <div class="pill-group" style="margin-bottom:20px">
-        <button class="pill pill-sm club-toggle-pill" data-club="driver" onclick="toggleActiveClub('driver')">Driver</button>
-        <button class="pill pill-sm club-toggle-pill" data-club="3w" onclick="toggleActiveClub('3w')">3-Wood</button>
-        <button class="pill pill-sm club-toggle-pill" data-club="5w" onclick="toggleActiveClub('5w')">5-Wood</button>
-        <button class="pill pill-sm club-toggle-pill" data-club="7w" onclick="toggleActiveClub('7w')">7-Wood</button>
-        <button class="pill pill-sm club-toggle-pill" data-club="3h" onclick="toggleActiveClub('3h')">3-Hybrid</button>
-        <button class="pill pill-sm club-toggle-pill" data-club="4h" onclick="toggleActiveClub('4h')">4-Hybrid</button>
-        <button class="pill pill-sm club-toggle-pill" data-club="5h" onclick="toggleActiveClub('5h')">5-Hybrid</button>
-        <button class="pill pill-sm club-toggle-pill" data-club="3i" onclick="toggleActiveClub('3i')">3-Iron</button>
-        <button class="pill pill-sm club-toggle-pill" data-club="4i" onclick="toggleActiveClub('4i')">4-Iron</button>
-        <button class="pill pill-sm club-toggle-pill" data-club="5i" onclick="toggleActiveClub('5i')">5-Iron</button>
-        <button class="pill pill-sm club-toggle-pill" data-club="6i" onclick="toggleActiveClub('6i')">6-Iron</button>
-        <button class="pill pill-sm club-toggle-pill" data-club="7i" onclick="toggleActiveClub('7i')">7-Iron</button>
-        <button class="pill pill-sm club-toggle-pill" data-club="8i" onclick="toggleActiveClub('8i')">8-Iron</button>
-        <button class="pill pill-sm club-toggle-pill" data-club="9i" onclick="toggleActiveClub('9i')">9-Iron</button>
+        <button class="pill pill-sm club-toggle-pill" data-club="driver" onclick="toggleActiveClub('driver')">Drv</button>
+        <button class="pill pill-sm club-toggle-pill" data-club="3w" onclick="toggleActiveClub('3w')">3 W</button>
+        <button class="pill pill-sm club-toggle-pill" data-club="5w" onclick="toggleActiveClub('5w')">5-W</button>
+        <button class="pill pill-sm club-toggle-pill" data-club="7w" onclick="toggleActiveClub('7w')">7-W</button>
+        <button class="pill pill-sm club-toggle-pill" data-club="3h" onclick="toggleActiveClub('3h')">3-H</button>
+        <button class="pill pill-sm club-toggle-pill" data-club="4h" onclick="toggleActiveClub('4h')">4-H</button>
+        <button class="pill pill-sm club-toggle-pill" data-club="5h" onclick="toggleActiveClub('5h')">5-H</button>
+        <button class="pill pill-sm club-toggle-pill" data-club="3i" onclick="toggleActiveClub('3i')">3-I</button>
+        <button class="pill pill-sm club-toggle-pill" data-club="4i" onclick="toggleActiveClub('4i')">4-I</button>
+        <button class="pill pill-sm club-toggle-pill" data-club="5i" onclick="toggleActiveClub('5i')">5-I</button>
+        <button class="pill pill-sm club-toggle-pill" data-club="6i" onclick="toggleActiveClub('6i')">6-I</button>
+        <button class="pill pill-sm club-toggle-pill" data-club="7i" onclick="toggleActiveClub('7i')">7-I</button>
+        <button class="pill pill-sm club-toggle-pill" data-club="8i" onclick="toggleActiveClub('8i')">8-I</button>
+        <button class="pill pill-sm club-toggle-pill" data-club="9i" onclick="toggleActiveClub('9i')">9-I</button>
         <button class="pill pill-sm club-toggle-pill" data-club="pw" onclick="toggleActiveClub('pw')">PW</button>
         <button class="pill pill-sm club-toggle-pill" data-club="gw" onclick="toggleActiveClub('gw')">GW</button>
         <button class="pill pill-sm club-toggle-pill" data-club="sw" onclick="toggleActiveClub('sw')">SW</button>
         <button class="pill pill-sm club-toggle-pill" data-club="lw" onclick="toggleActiveClub('lw')">LW</button>
+        <button class="pill pill-sm club-toggle-pill" data-club="50" onclick="toggleActiveClub('50')">50°</button>
+        <button class="pill pill-sm club-toggle-pill" data-club="52" onclick="toggleActiveClub('52')">52°</button>
+        <button class="pill pill-sm club-toggle-pill" data-club="54" onclick="toggleActiveClub('54')">54°</button>
+        <button class="pill pill-sm club-toggle-pill" data-club="56" onclick="toggleActiveClub('56')">56°</button>
+        <button class="pill pill-sm club-toggle-pill" data-club="58" onclick="toggleActiveClub('58')">58°</button>
+        <button class="pill pill-sm club-toggle-pill" data-club="60" onclick="toggleActiveClub('60')">60°</button>
       </div>
 
       <div class="settings-section-label">Data</div>
@@ -1091,24 +1097,30 @@ const SG_TABLES = {
 // ═══════════════════════════════════════════════════════════════
 
 const CLUBS = [
-  { id: 'driver', label: 'Driver',    cats: ['drive'] },
-  { id: '3w',     label: '3-Wood',    cats: ['drive', 'approach'] },
-  { id: '5w',     label: '5-Wood',    cats: ['drive', 'approach'] }, 
-  { id: '7w',     label: '7-Wood',    cats: ['drive', 'approach'] },
-  { id: '3h',     label: '3-Hybrid',  cats: ['drive', 'approach'] },
-  { id: '4h',     label: '4-Hybrid',  cats: ['drive', 'approach'] },
-  { id: '5h',     label: '5-Hybrid',  cats: ['drive', 'approach'] },
-  { id: '3i',     label: '3-Iron',    cats: ['approach'] },
-  { id: '4i',     label: '4-Iron',    cats: ['approach'] },
-  { id: '5i',     label: '5-Iron',    cats: ['approach'] },
-  { id: '6i',     label: '6-Iron',    cats: ['approach'] },
-  { id: '7i',     label: '7-Iron',    cats: ['approach', 'shortgame'] },
-  { id: '8i',     label: '8-Iron',    cats: ['approach', 'shortgame'] },
-  { id: '9i',     label: '9-Iron',    cats: ['approach', 'shortgame'] },
+  { id: 'driver', label: 'Drv',    cats: ['drive'] },
+  { id: '3w',     label: '3 W',    cats: ['drive', 'approach'] },
+  { id: '5w',     label: '5-W',    cats: ['drive', 'approach'] }, 
+  { id: '7w',     label: '7-W',    cats: ['drive', 'approach'] },
+  { id: '3h',     label: '3-H',  cats: ['drive', 'approach'] },
+  { id: '4h',     label: '4-H',  cats: ['drive', 'approach'] },
+  { id: '5h',     label: '5-H',  cats: ['drive', 'approach'] },
+  { id: '3i',     label: '3-I',    cats: ['approach'] },
+  { id: '4i',     label: '4-I',    cats: ['approach'] },
+  { id: '5i',     label: '5-I',    cats: ['approach'] },
+  { id: '6i',     label: '6-I',    cats: ['approach'] },
+  { id: '7i',     label: '7-I',    cats: ['approach', 'shortgame'] },
+  { id: '8i',     label: '8-I',    cats: ['approach', 'shortgame'] },
+  { id: '9i',     label: '9-I',    cats: ['approach', 'shortgame'] },
   { id: 'pw',     label: 'PW',        cats: ['approach', 'shortgame'] },
   { id: 'gw',     label: 'GW',        cats: ['approach', 'shortgame'] },
   { id: 'sw',     label: 'SW',        cats: ['approach', 'shortgame'] },
   { id: 'lw',     label: 'LW',        cats: ['approach', 'shortgame'] },
+  { id: '50',     label: '50',        cats: ['approach', 'shortgame'] },
+  { id: '52',     label: '52',        cats: ['approach', 'shortgame'] },
+  { id: '54',     label: '54',        cats: ['approach', 'shortgame'] },
+  { id: '56',     label: '56',        cats: ['approach', 'shortgame'] },
+  { id: '58',     label: '58',        cats: ['approach', 'shortgame'] },
+  { id: '60',     label: '60',        cats: ['approach', 'shortgame'] }
 ];
 
 // ═══════════════════════════════════════════════════════════════
