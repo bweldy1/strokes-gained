@@ -378,7 +378,7 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
     <div class="section-label">Recent Rounds</div>
     <div id="rounds-list"></div>
   </div>
-  <div id="build-version">Build: 2026-05-24 22:36</div>
+  <div id="build-version">Build: 2026-05-24 22:46</div>
 </div>
 
 <!-- COURSE SELECT -->
@@ -1743,12 +1743,7 @@ function selectResultLie(lie, silent) {
   updateMissTypeVisibility();
   if(!silent) { autoSetCategory(); updateSGPreview(); }
   if(!silent && lie !== 'holed') {
-    setTimeout(() => {
-      const el = document.getElementById('shot-dist-result');
-      el.focus();
-      const btn_el = document.getElementById('save-shot-btn');
-      btn_el.scrollIntoView({behavior:'smooth', block:'end', container:'all'});
-    }, 200);
+    setTimeout(() => document.getElementById('shot-dist-result').focus(), 150);
   }
 }
 
@@ -3046,6 +3041,21 @@ function setHoleOutDist(dist) {
   applyClubAutoExpand();
   applyMissAutoExpand();
   renderHome();
+
+  // Scroll focused inputs into view when iOS keyboard appears
+  if(window.visualViewport) {
+    window.visualViewport.addEventListener('resize', () => {
+      const el = document.activeElement;
+      if(!el || (el.tagName !== 'INPUT' && el.tagName !== 'TEXTAREA')) return;
+      const sheetBody = el.closest('.sheet-body');
+      if(!sheetBody) return;
+      const elRect = el.getBoundingClientRect();
+      const vpHeight = window.visualViewport.height;
+      if(elRect.bottom > vpHeight - 16) {
+        sheetBody.scrollTop += elRect.bottom - vpHeight + 60;
+      }
+    });
+  }
 })();
 
 </script>

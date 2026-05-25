@@ -267,4 +267,19 @@ function setHoleOutDist(dist) {
   applyClubAutoExpand();
   applyMissAutoExpand();
   renderHome();
+
+  // Scroll focused inputs into view when iOS keyboard appears
+  if(window.visualViewport) {
+    window.visualViewport.addEventListener('resize', () => {
+      const el = document.activeElement;
+      if(!el || (el.tagName !== 'INPUT' && el.tagName !== 'TEXTAREA')) return;
+      const sheetBody = el.closest('.sheet-body');
+      if(!sheetBody) return;
+      const elRect = el.getBoundingClientRect();
+      const vpHeight = window.visualViewport.height;
+      if(elRect.bottom > vpHeight - 16) {
+        sheetBody.scrollTop += elRect.bottom - vpHeight + 60;
+      }
+    });
+  }
 })();
