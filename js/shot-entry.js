@@ -112,6 +112,9 @@ function selectResultLie(lie, silent) {
     state.shotMissDepth = null; state.shotMissSide = null;
   } else {
     missGroup.classList.remove('hidden');
+    const expanded = getMissAutoExpand();
+    document.getElementById('miss-dir-expand').classList.toggle('hidden', !expanded);
+    document.getElementById('miss-dir-hint').textContent = expanded ? '∨' : 'expand ›';
   }
   updateMissTypeVisibility();
   if(!silent) { autoSetCategory(); updateSGPreview(); }
@@ -178,6 +181,14 @@ function onDistInput() {
   renderDistChip(val, unit);
   renderShotMetaSummary();
   onShotFormChange();
+}
+
+function toggleMissDirExpand() {
+  const exp = document.getElementById('miss-dir-expand');
+  const hint = document.getElementById('miss-dir-hint');
+  const closing = !exp.classList.contains('hidden');
+  exp.classList.toggle('hidden');
+  hint.textContent = closing ? 'expand ›' : '∨';
 }
 
 function updateMissGrid(cat) {

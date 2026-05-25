@@ -206,6 +206,8 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
 .pill-sm.selected { background: var(--green-light); border-color: var(--green-light); color: #fff; }
 .miss-row { display: flex; align-items: center; gap: 10px; }
 .miss-label { font-size: 11px; font-weight: 600; color: var(--text-dim); text-transform: uppercase; letter-spacing: .5px; flex-shrink: 0; margin-bottom: 8px; }
+.miss-dir-header { display: flex; align-items: center; justify-content: space-between; cursor: pointer; margin-bottom: 8px; }
+.miss-dir-header:active { opacity: .7; }
 .miss-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; grid-auto-rows: 40px; gap: 5px; }
 .miss-grid-cell { padding: 0 4px; border-radius: 8px; background: var(--input-bg); border: 1px solid var(--input-border); color: var(--text-muted); font-size: 12px; font-weight: 500; cursor: pointer; text-align: center; line-height: 1.3; transition: all .15s; -webkit-tap-highlight-color: transparent; display: flex; flex-direction: column; align-items: center; justify-content: center; }
 .miss-grid-cell:active { opacity: .7; }
@@ -376,7 +378,7 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
     <div class="section-label">Recent Rounds</div>
     <div id="rounds-list"></div>
   </div>
-  <div id="build-version">Build: 2026-05-24 22:30</div>
+  <div id="build-version">Build: 2026-05-24 22:36</div>
 </div>
 
 <!-- COURSE SELECT -->
@@ -596,8 +598,13 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
 
       <!-- Miss Direction (grid, conditional) -->
       <div id="miss-dir-group" class="hidden">
-        <div class="miss-label">Miss Direction <span style="font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></div>
-        <div class="miss-grid" id="miss-grid"></div>
+        <div class="miss-dir-header" onclick="toggleMissDirExpand()">
+          <span class="miss-label" style="margin-bottom:0">Miss Direction <span style="font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></span>
+          <span class="category-override-hint" id="miss-dir-hint">expand ›</span>
+        </div>
+        <div id="miss-dir-expand">
+          <div class="miss-grid" id="miss-grid"></div>
+        </div>
       </div>
 
       <!-- Miss Type (putt + non-holed only, conditional) -->
@@ -759,9 +766,15 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
       </div>
 
       <div class="settings-hint" style="margin-bottom:8px">Club selection on shot form</div>
-      <div style="display:flex;gap:8px;margin-bottom:20px">
+      <div style="display:flex;gap:8px;margin-bottom:16px">
         <button class="pill club-expand-pill" data-expand="false" onclick="setClubAutoExpand(false)">Collapsed</button>
         <button class="pill club-expand-pill" data-expand="true" onclick="setClubAutoExpand(true)">Expanded</button>
+      </div>
+
+      <div class="settings-hint" style="margin-bottom:8px">Miss direction on shot form</div>
+      <div style="display:flex;gap:8px;margin-bottom:20px">
+        <button class="pill miss-expand-pill" data-expand="false" onclick="setMissAutoExpand(false)">Collapsed</button>
+        <button class="pill miss-expand-pill" data-expand="true" onclick="setMissAutoExpand(true)">Expanded</button>
       </div>
 
       <div class="settings-section-label">Data</div>
@@ -1276,6 +1289,11 @@ function getClubAutoExpand() {
   return localStorage.getItem('sg_clubAutoExpand') === 'true';
 }
 
+function getMissAutoExpand() {
+  const stored = localStorage.getItem('sg_missAutoExpand');
+  return stored === null ? true : stored === 'true';
+}
+
 // CSS class for SG value coloring
 function sgClass(sg) {
   return sg == null ? 'sg-null' : sg >= 0 ? 'sg-pos' : 'sg-neg';
@@ -1718,6 +1736,9 @@ function selectResultLie(lie, silent) {
     state.shotMissDepth = null; state.shotMissSide = null;
   } else {
     missGroup.classList.remove('hidden');
+    const expanded = getMissAutoExpand();
+    document.getElementById('miss-dir-expand').classList.toggle('hidden', !expanded);
+    document.getElementById('miss-dir-hint').textContent = expanded ? '∨' : 'expand ›';
   }
   updateMissTypeVisibility();
   if(!silent) { autoSetCategory(); updateSGPreview(); }
@@ -1784,6 +1805,14 @@ function onDistInput() {
   renderDistChip(val, unit);
   renderShotMetaSummary();
   onShotFormChange();
+}
+
+function toggleMissDirExpand() {
+  const exp = document.getElementById('miss-dir-expand');
+  const hint = document.getElementById('miss-dir-hint');
+  const closing = !exp.classList.contains('hidden');
+  exp.classList.toggle('hidden');
+  hint.textContent = closing ? 'expand ›' : '∨';
 }
 
 function updateMissGrid(cat) {
@@ -2967,6 +2996,18 @@ function setClubAutoExpand(val) {
   applyClubAutoExpand();
 }
 
+function applyMissAutoExpand() {
+  const val = getMissAutoExpand();
+  document.querySelectorAll('.miss-expand-pill').forEach(p =>
+    p.classList.toggle('selected', p.dataset.expand === String(val))
+  );
+}
+
+function setMissAutoExpand(val) {
+  localStorage.setItem('sg_missAutoExpand', val);
+  applyMissAutoExpand();
+}
+
 function applyColorScheme(scheme) {
   scheme = scheme || 'classic';
   document.documentElement.setAttribute('data-scheme', scheme);
@@ -3003,6 +3044,7 @@ function setHoleOutDist(dist) {
   applyHoleOutDist();
   applyActiveClubs();
   applyClubAutoExpand();
+  applyMissAutoExpand();
   renderHome();
 })();
 

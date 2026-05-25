@@ -97,8 +97,13 @@
 
       <!-- Miss Direction (grid, conditional) -->
       <div id="miss-dir-group" class="hidden">
-        <div class="miss-label">Miss Direction <span style="font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></div>
-        <div class="miss-grid" id="miss-grid"></div>
+        <div class="miss-dir-header" onclick="toggleMissDirExpand()">
+          <span class="miss-label" style="margin-bottom:0">Miss Direction <span style="font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></span>
+          <span class="category-override-hint" id="miss-dir-hint">expand ›</span>
+        </div>
+        <div id="miss-dir-expand">
+          <div class="miss-grid" id="miss-grid"></div>
+        </div>
       </div>
 
       <!-- Miss Type (putt + non-holed only, conditional) -->

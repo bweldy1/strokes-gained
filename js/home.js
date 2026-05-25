@@ -217,6 +217,18 @@ function setClubAutoExpand(val) {
   applyClubAutoExpand();
 }
 
+function applyMissAutoExpand() {
+  const val = getMissAutoExpand();
+  document.querySelectorAll('.miss-expand-pill').forEach(p =>
+    p.classList.toggle('selected', p.dataset.expand === String(val))
+  );
+}
+
+function setMissAutoExpand(val) {
+  localStorage.setItem('sg_missAutoExpand', val);
+  applyMissAutoExpand();
+}
+
 function applyColorScheme(scheme) {
   scheme = scheme || 'classic';
   document.documentElement.setAttribute('data-scheme', scheme);
@@ -253,5 +265,6 @@ function setHoleOutDist(dist) {
   applyHoleOutDist();
   applyActiveClubs();
   applyClubAutoExpand();
+  applyMissAutoExpand();
   renderHome();
 })();

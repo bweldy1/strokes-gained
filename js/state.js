@@ -160,6 +160,11 @@ function getClubAutoExpand() {
   return localStorage.getItem('sg_clubAutoExpand') === 'true';
 }
 
+function getMissAutoExpand() {
+  const stored = localStorage.getItem('sg_missAutoExpand');
+  return stored === null ? true : stored === 'true';
+}
+
 // CSS class for SG value coloring
 function sgClass(sg) {
   return sg == null ? 'sg-null' : sg >= 0 ? 'sg-pos' : 'sg-neg';
