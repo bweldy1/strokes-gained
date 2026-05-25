@@ -230,6 +230,14 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
 .form-label-inline { margin-bottom: 0; }
 .form-unit-label { color: var(--text-dim); font-weight: 400; text-transform: none; letter-spacing: 0; }
 .pill-expand { margin-top: 10px; }
+.shot-meta-summary { display: flex; align-items: center; gap: 6px; cursor: pointer; padding: 2px 0; }
+.shot-meta-summary:active { opacity: .7; }
+.shot-meta-sep { color: var(--text-dim); }
+.shot-meta-summary .category-badge,
+.shot-meta-summary .lie-chip { font-size: 11px; padding: 2px 7px; }
+#shot-meta-expand { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--input-border); }
+.form-group-inner { margin-bottom: 14px; }
+.form-group-inner-last { margin-bottom: 0; }
 .num-input-text { font-size: 18px; font-weight: 400; }
 .add-shot-icon { font-size: 20px; }
 .yardage-edit-icon { font-size: 10px; color: var(--text-dim); }
@@ -368,7 +376,7 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
     <div class="section-label">Recent Rounds</div>
     <div id="rounds-list"></div>
   </div>
-  <div id="build-version">Build: 2026-05-24 21:44</div>
+  <div id="build-version">Build: 2026-05-24 22:22</div>
 </div>
 
 <!-- COURSE SELECT -->
@@ -496,56 +504,65 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
     <div class="sheet-title" id="shot-sheet-title">Add Shot</div>
     <div class="sheet-body">
 
-      <!-- Category (collapsed chip, tap to override) -->
-      <div class="form-group">
-        <div class="category-override-row" onclick="toggleCategoryOverride()">
-          <span class="form-label form-label-inline">Category</span>
-          <span id="category-chip"></span>
-          <span class="category-override-hint">tap to override ›</span>
+      <!-- Category / Lie / Distance (summary group) -->
+      <div class="form-group" id="shot-meta-group">
+        <div class="shot-meta-summary" onclick="toggleShotMetaExpand()">
+          <span class="form-label form-label-inline" id="shot-meta-label">Shot Setup</span>
+          <span id="shot-meta-text"></span>
+          <span class="category-override-hint" id="shot-meta-chevron-hint">expand ›</span>
         </div>
-        <div id="category-pills-expand" class="pill-expand hidden">
-          <div class="pill-group" id="category-pills">
-            <div class="pill" onclick="selectCategory('drive')">Drive</div>
-            <div class="pill" onclick="selectCategory('approach')">Approach</div>
-            <div class="pill" onclick="selectCategory('shortgame')">Short Game</div>
-            <div class="pill" onclick="selectCategory('putt')">Putt</div>
-          </div>
-        </div>
-      </div>
+        <div id="shot-meta-expand" class="hidden">
 
-      <!-- Starting Lie -->
-      <div class="form-group">
-        <div class="category-override-row" onclick="toggleLieOverride()">
-          <span class="form-label form-label-inline">Starting Lie</span>
-          <span id="lie-chip"></span>
-          <span class="category-override-hint">tap to override ›</span>
-        </div>
-        <div id="lie-pills-expand" class="pill-expand hidden">
-          <div class="pill-group" id="lie-pills">
-            <div class="pill" onclick="selectLie('tee')">Tee</div>
-            <div class="pill" onclick="selectLie('fairway')">Fairway</div>
-            <div class="pill" onclick="selectLie('rough')">Rough</div>
-            <div class="pill" onclick="selectLie('green')">Green</div>
+          <div class="form-group-inner">
+            <div class="category-override-row" onclick="toggleCategoryOverride()">
+              <span class="form-label form-label-inline">Category</span>
+              <span id="category-chip"></span>
+              <span class="category-override-hint">override ›</span>
+            </div>
+            <div id="category-pills-expand" class="pill-expand hidden">
+              <div class="pill-group" id="category-pills">
+                <div class="pill" onclick="selectCategory('drive')">Drive</div>
+                <div class="pill" onclick="selectCategory('approach')">Approach</div>
+                <div class="pill" onclick="selectCategory('shortgame')">Short Game</div>
+                <div class="pill" onclick="selectCategory('putt')">Putt</div>
+              </div>
+            </div>
           </div>
-          <div class="pill-group pill-group-secondary" id="lie-pills-secondary">
-            <div class="pill pill-sm" onclick="selectLie('sand')">Sand</div>
-            <div class="pill pill-sm" onclick="selectLie('recovery')">Recovery</div>
-          </div>
-        </div>
-      </div>
 
-      <!-- Distance from Pin -->
-      <div class="form-group">
-        <div class="category-override-row" onclick="toggleDistOverride()">
-          <span class="form-label form-label-inline">Distance <span id="dist-from-unit-label" class="form-unit-label">(yards)</span></span>
-          <span id="dist-chip" class="lie-chip"></span>
-          <span class="category-override-hint">tap to override ›</span>
-        </div>
-        <div id="dist-from-expand" class="pill-expand hidden">
-          <div class="num-input-wrap">
-            <input class="num-input" type="number" id="shot-dist-from" inputmode="numeric" placeholder="0" oninput="onDistInput()">
-            <span class="num-unit" id="dist-from-unit">yds</span>
+          <div class="form-group-inner">
+            <div class="category-override-row" onclick="toggleLieOverride()">
+              <span class="form-label form-label-inline">Starting Lie</span>
+              <span id="lie-chip"></span>
+              <span class="category-override-hint">override ›</span>
+            </div>
+            <div id="lie-pills-expand" class="pill-expand hidden">
+              <div class="pill-group" id="lie-pills">
+                <div class="pill" onclick="selectLie('tee')">Tee</div>
+                <div class="pill" onclick="selectLie('fairway')">Fairway</div>
+                <div class="pill" onclick="selectLie('rough')">Rough</div>
+                <div class="pill" onclick="selectLie('green')">Green</div>
+              </div>
+              <div class="pill-group pill-group-secondary" id="lie-pills-secondary">
+                <div class="pill pill-sm" onclick="selectLie('sand')">Sand</div>
+                <div class="pill pill-sm" onclick="selectLie('recovery')">Recovery</div>
+              </div>
+            </div>
           </div>
+
+          <div class="form-group-inner form-group-inner-last">
+            <div class="category-override-row" onclick="toggleDistOverride()">
+              <span class="form-label form-label-inline">Distance <span id="dist-from-unit-label" class="form-unit-label">(yards)</span></span>
+              <span id="dist-chip" class="lie-chip"></span>
+              <span class="category-override-hint">override ›</span>
+            </div>
+            <div id="dist-from-expand" class="pill-expand hidden">
+              <div class="num-input-wrap">
+                <input class="num-input" type="number" id="shot-dist-from" inputmode="numeric" placeholder="0" oninput="onDistInput()">
+                <span class="num-unit" id="dist-from-unit">yds</span>
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
 
@@ -554,7 +571,7 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
         <div class="category-override-row" onclick="toggleClubOverride()">
           <span class="form-label form-label-inline">Club</span>
           <span id="club-chip"></span>
-          <span class="category-override-hint">tap to select ›</span>
+          <span class="category-override-hint">select ›</span>
         </div>
         <div id="club-pills-expand" class="pill-expand hidden">
           <div class="pill-group" id="club-pills"></div>
@@ -1592,6 +1609,8 @@ function openShotSheet(editIndex) {
   document.getElementById('shot-dist-result').value = '';
   document.getElementById('result-dist-group').classList.add('hidden');
   document.getElementById('miss-dir-group').classList.add('hidden');
+  document.getElementById('shot-meta-expand').classList.add('hidden');
+  document.getElementById('shot-meta-chevron-hint').textContent = 'expand ›';
   document.getElementById('category-pills-expand').classList.add('hidden');
   document.getElementById('club-pills-expand').classList.add('hidden');
   document.getElementById('club-group').classList.add('hidden');
@@ -1625,6 +1644,16 @@ function openShotSheet(editIndex) {
     }
   }
   updateDistFromUnit(); updateResultDistVisibility(); updateSGPreview();
+  renderShotMetaSummary();
+  const anyMissing = !state.shotLie || !state.shotCategory || !document.getElementById('shot-dist-from').value;
+  document.getElementById('shot-meta-expand').classList.toggle('hidden', !anyMissing);
+  document.getElementById('shot-meta-chevron-hint').textContent = anyMissing ? '∨' : 'expand ›';
+  document.getElementById('shot-meta-label').classList.toggle('hidden', anyMissing);
+  if(anyMissing) {
+    if(!state.shotCategory) document.getElementById('category-pills-expand').classList.remove('hidden');
+    if(!state.shotLie) document.getElementById('lie-pills-expand').classList.remove('hidden');
+    if(!document.getElementById('shot-dist-from').value) document.getElementById('dist-from-expand').classList.remove('hidden');
+  }
   document.getElementById('shot-sheet').classList.add('open');
 }
 
@@ -1637,6 +1666,7 @@ function selectLie(lie, silent) {
   document.querySelectorAll('#lie-pills .pill,#lie-pills-secondary .pill').forEach(p => p.classList.toggle('selected', p.textContent.trim().toLowerCase() === lie));
   renderLieChip(lie);
   updateDistFromUnit();
+  renderShotMetaSummary();
   if(lie === 'green' && !state.shotResultLie) selectResultLie('green', true);
   if(!silent) {
     const exp = document.getElementById('lie-pills-expand'); if(exp) exp.classList.add('hidden');
@@ -1706,6 +1736,7 @@ function selectCategory(cat, silent) {
   const map = {'Drive':'drive', 'Approach':'approach', 'Short Game':'shortgame', 'Putt':'putt'};
   document.querySelectorAll('#category-pills .pill').forEach(p => p.classList.toggle('selected', map[p.textContent.trim()] === cat));
   renderCategoryChip(cat);
+  renderShotMetaSummary();
   updateMissGrid(cat);
   updateMissTypeVisibility();
   updateClubGroup(cat);
@@ -1741,6 +1772,7 @@ function onDistInput() {
   const val = document.getElementById('shot-dist-from').value;
   const unit = state.shotLie === 'green' ? 'ft' : 'yds';
   renderDistChip(val, unit);
+  renderShotMetaSummary();
   onShotFormChange();
 }
 
@@ -1836,6 +1868,36 @@ function selectMissType(val) {
   document.querySelectorAll('#miss-type-pills .pill').forEach(p =>
     p.classList.toggle('selected', p.dataset.missType === state.shotMissType)
   );
+}
+
+function renderShotMetaSummary() {
+  const el = document.getElementById('shot-meta-text'); if(!el) return;
+  const catHtml = state.shotCategory
+    ? `<span class="category-badge cat-${state.shotCategory}">${CAT_LABELS[state.shotCategory]}</span>`
+    : '<span style="color:var(--text-dim)">—</span>';
+  const lieNames = {tee:'Tee', fairway:'Fairway', rough:'Rough', green:'Green', sand:'Sand', recovery:'Recovery'};
+  const lieHtml = state.shotLie
+    ? `<span class="lie-chip">${lieNames[state.shotLie] || state.shotLie}</span>`
+    : '<span style="color:var(--text-dim)">—</span>';
+  const distVal = document.getElementById('shot-dist-from').value;
+  const unit = state.shotLie === 'green' ? 'ft' : 'yds';
+  const distLabel = distVal ? `${distVal} ${unit}` : '—';
+  const sep = `<span class="shot-meta-sep"> · </span>`;
+  el.innerHTML = `${catHtml}${sep}${lieHtml}${sep}${distLabel}`;
+}
+
+function toggleShotMetaExpand() {
+  const exp = document.getElementById('shot-meta-expand');
+  const ch = document.getElementById('shot-meta-chevron-hint');
+  const closing = !exp.classList.contains('hidden');
+  exp.classList.toggle('hidden');
+  ch.textContent = closing ? 'expand ›' : '∨';
+  document.getElementById('shot-meta-label').classList.toggle('hidden', !closing);
+  if(closing) {
+    document.getElementById('category-pills-expand').classList.add('hidden');
+    document.getElementById('lie-pills-expand').classList.add('hidden');
+    document.getElementById('dist-from-expand').classList.add('hidden');
+  }
 }
 
 function autoSetCategory() {

@@ -5,56 +5,65 @@
     <div class="sheet-title" id="shot-sheet-title">Add Shot</div>
     <div class="sheet-body">
 
-      <!-- Category (collapsed chip, tap to override) -->
-      <div class="form-group">
-        <div class="category-override-row" onclick="toggleCategoryOverride()">
-          <span class="form-label form-label-inline">Category</span>
-          <span id="category-chip"></span>
-          <span class="category-override-hint">tap to override ›</span>
+      <!-- Category / Lie / Distance (summary group) -->
+      <div class="form-group" id="shot-meta-group">
+        <div class="shot-meta-summary" onclick="toggleShotMetaExpand()">
+          <span class="form-label form-label-inline" id="shot-meta-label">Shot Setup</span>
+          <span id="shot-meta-text"></span>
+          <span class="category-override-hint" id="shot-meta-chevron-hint">expand ›</span>
         </div>
-        <div id="category-pills-expand" class="pill-expand hidden">
-          <div class="pill-group" id="category-pills">
-            <div class="pill" onclick="selectCategory('drive')">Drive</div>
-            <div class="pill" onclick="selectCategory('approach')">Approach</div>
-            <div class="pill" onclick="selectCategory('shortgame')">Short Game</div>
-            <div class="pill" onclick="selectCategory('putt')">Putt</div>
-          </div>
-        </div>
-      </div>
+        <div id="shot-meta-expand" class="hidden">
 
-      <!-- Starting Lie -->
-      <div class="form-group">
-        <div class="category-override-row" onclick="toggleLieOverride()">
-          <span class="form-label form-label-inline">Starting Lie</span>
-          <span id="lie-chip"></span>
-          <span class="category-override-hint">tap to override ›</span>
-        </div>
-        <div id="lie-pills-expand" class="pill-expand hidden">
-          <div class="pill-group" id="lie-pills">
-            <div class="pill" onclick="selectLie('tee')">Tee</div>
-            <div class="pill" onclick="selectLie('fairway')">Fairway</div>
-            <div class="pill" onclick="selectLie('rough')">Rough</div>
-            <div class="pill" onclick="selectLie('green')">Green</div>
+          <div class="form-group-inner">
+            <div class="category-override-row" onclick="toggleCategoryOverride()">
+              <span class="form-label form-label-inline">Category</span>
+              <span id="category-chip"></span>
+              <span class="category-override-hint">override ›</span>
+            </div>
+            <div id="category-pills-expand" class="pill-expand hidden">
+              <div class="pill-group" id="category-pills">
+                <div class="pill" onclick="selectCategory('drive')">Drive</div>
+                <div class="pill" onclick="selectCategory('approach')">Approach</div>
+                <div class="pill" onclick="selectCategory('shortgame')">Short Game</div>
+                <div class="pill" onclick="selectCategory('putt')">Putt</div>
+              </div>
+            </div>
           </div>
-          <div class="pill-group pill-group-secondary" id="lie-pills-secondary">
-            <div class="pill pill-sm" onclick="selectLie('sand')">Sand</div>
-            <div class="pill pill-sm" onclick="selectLie('recovery')">Recovery</div>
-          </div>
-        </div>
-      </div>
 
-      <!-- Distance from Pin -->
-      <div class="form-group">
-        <div class="category-override-row" onclick="toggleDistOverride()">
-          <span class="form-label form-label-inline">Distance <span id="dist-from-unit-label" class="form-unit-label">(yards)</span></span>
-          <span id="dist-chip" class="lie-chip"></span>
-          <span class="category-override-hint">tap to override ›</span>
-        </div>
-        <div id="dist-from-expand" class="pill-expand hidden">
-          <div class="num-input-wrap">
-            <input class="num-input" type="number" id="shot-dist-from" inputmode="numeric" placeholder="0" oninput="onDistInput()">
-            <span class="num-unit" id="dist-from-unit">yds</span>
+          <div class="form-group-inner">
+            <div class="category-override-row" onclick="toggleLieOverride()">
+              <span class="form-label form-label-inline">Starting Lie</span>
+              <span id="lie-chip"></span>
+              <span class="category-override-hint">override ›</span>
+            </div>
+            <div id="lie-pills-expand" class="pill-expand hidden">
+              <div class="pill-group" id="lie-pills">
+                <div class="pill" onclick="selectLie('tee')">Tee</div>
+                <div class="pill" onclick="selectLie('fairway')">Fairway</div>
+                <div class="pill" onclick="selectLie('rough')">Rough</div>
+                <div class="pill" onclick="selectLie('green')">Green</div>
+              </div>
+              <div class="pill-group pill-group-secondary" id="lie-pills-secondary">
+                <div class="pill pill-sm" onclick="selectLie('sand')">Sand</div>
+                <div class="pill pill-sm" onclick="selectLie('recovery')">Recovery</div>
+              </div>
+            </div>
           </div>
+
+          <div class="form-group-inner form-group-inner-last">
+            <div class="category-override-row" onclick="toggleDistOverride()">
+              <span class="form-label form-label-inline">Distance <span id="dist-from-unit-label" class="form-unit-label">(yards)</span></span>
+              <span id="dist-chip" class="lie-chip"></span>
+              <span class="category-override-hint">override ›</span>
+            </div>
+            <div id="dist-from-expand" class="pill-expand hidden">
+              <div class="num-input-wrap">
+                <input class="num-input" type="number" id="shot-dist-from" inputmode="numeric" placeholder="0" oninput="onDistInput()">
+                <span class="num-unit" id="dist-from-unit">yds</span>
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
 
@@ -63,7 +72,7 @@
         <div class="category-override-row" onclick="toggleClubOverride()">
           <span class="form-label form-label-inline">Club</span>
           <span id="club-chip"></span>
-          <span class="category-override-hint">tap to select ›</span>
+          <span class="category-override-hint">select ›</span>
         </div>
         <div id="club-pills-expand" class="pill-expand hidden">
           <div class="pill-group" id="club-pills"></div>

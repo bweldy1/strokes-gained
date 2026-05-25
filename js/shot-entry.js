@@ -13,6 +13,8 @@ function openShotSheet(editIndex) {
   document.getElementById('shot-dist-result').value = '';
   document.getElementById('result-dist-group').classList.add('hidden');
   document.getElementById('miss-dir-group').classList.add('hidden');
+  document.getElementById('shot-meta-expand').classList.add('hidden');
+  document.getElementById('shot-meta-chevron-hint').textContent = 'expand ›';
   document.getElementById('category-pills-expand').classList.add('hidden');
   document.getElementById('club-pills-expand').classList.add('hidden');
   document.getElementById('club-group').classList.add('hidden');
@@ -46,6 +48,16 @@ function openShotSheet(editIndex) {
     }
   }
   updateDistFromUnit(); updateResultDistVisibility(); updateSGPreview();
+  renderShotMetaSummary();
+  const anyMissing = !state.shotLie || !state.shotCategory || !document.getElementById('shot-dist-from').value;
+  document.getElementById('shot-meta-expand').classList.toggle('hidden', !anyMissing);
+  document.getElementById('shot-meta-chevron-hint').textContent = anyMissing ? '∨' : 'expand ›';
+  document.getElementById('shot-meta-label').classList.toggle('hidden', anyMissing);
+  if(anyMissing) {
+    if(!state.shotCategory) document.getElementById('category-pills-expand').classList.remove('hidden');
+    if(!state.shotLie) document.getElementById('lie-pills-expand').classList.remove('hidden');
+    if(!document.getElementById('shot-dist-from').value) document.getElementById('dist-from-expand').classList.remove('hidden');
+  }
   document.getElementById('shot-sheet').classList.add('open');
 }
 
@@ -58,6 +70,7 @@ function selectLie(lie, silent) {
   document.querySelectorAll('#lie-pills .pill,#lie-pills-secondary .pill').forEach(p => p.classList.toggle('selected', p.textContent.trim().toLowerCase() === lie));
   renderLieChip(lie);
   updateDistFromUnit();
+  renderShotMetaSummary();
   if(lie === 'green' && !state.shotResultLie) selectResultLie('green', true);
   if(!silent) {
     const exp = document.getElementById('lie-pills-expand'); if(exp) exp.classList.add('hidden');
@@ -127,6 +140,7 @@ function selectCategory(cat, silent) {
   const map = {'Drive':'drive', 'Approach':'approach', 'Short Game':'shortgame', 'Putt':'putt'};
   document.querySelectorAll('#category-pills .pill').forEach(p => p.classList.toggle('selected', map[p.textContent.trim()] === cat));
   renderCategoryChip(cat);
+  renderShotMetaSummary();
   updateMissGrid(cat);
   updateMissTypeVisibility();
   updateClubGroup(cat);
@@ -162,6 +176,7 @@ function onDistInput() {
   const val = document.getElementById('shot-dist-from').value;
   const unit = state.shotLie === 'green' ? 'ft' : 'yds';
   renderDistChip(val, unit);
+  renderShotMetaSummary();
   onShotFormChange();
 }
 
@@ -257,6 +272,36 @@ function selectMissType(val) {
   document.querySelectorAll('#miss-type-pills .pill').forEach(p =>
     p.classList.toggle('selected', p.dataset.missType === state.shotMissType)
   );
+}
+
+function renderShotMetaSummary() {
+  const el = document.getElementById('shot-meta-text'); if(!el) return;
+  const catHtml = state.shotCategory
+    ? `<span class="category-badge cat-${state.shotCategory}">${CAT_LABELS[state.shotCategory]}</span>`
+    : '<span style="color:var(--text-dim)">—</span>';
+  const lieNames = {tee:'Tee', fairway:'Fairway', rough:'Rough', green:'Green', sand:'Sand', recovery:'Recovery'};
+  const lieHtml = state.shotLie
+    ? `<span class="lie-chip">${lieNames[state.shotLie] || state.shotLie}</span>`
+    : '<span style="color:var(--text-dim)">—</span>';
+  const distVal = document.getElementById('shot-dist-from').value;
+  const unit = state.shotLie === 'green' ? 'ft' : 'yds';
+  const distLabel = distVal ? `${distVal} ${unit}` : '—';
+  const sep = `<span class="shot-meta-sep"> · </span>`;
+  el.innerHTML = `${catHtml}${sep}${lieHtml}${sep}${distLabel}`;
+}
+
+function toggleShotMetaExpand() {
+  const exp = document.getElementById('shot-meta-expand');
+  const ch = document.getElementById('shot-meta-chevron-hint');
+  const closing = !exp.classList.contains('hidden');
+  exp.classList.toggle('hidden');
+  ch.textContent = closing ? 'expand ›' : '∨';
+  document.getElementById('shot-meta-label').classList.toggle('hidden', !closing);
+  if(closing) {
+    document.getElementById('category-pills-expand').classList.add('hidden');
+    document.getElementById('lie-pills-expand').classList.add('hidden');
+    document.getElementById('dist-from-expand').classList.add('hidden');
+  }
 }
 
 function autoSetCategory() {

@@ -136,14 +136,22 @@ Quality bands and CSS variables are aligned — each band color has a matching C
 
 `applyColorScheme(scheme)` sets the attribute and syncs the settings pill UI. `setColorScheme(scheme)` persists to `localStorage` (`sg_colorScheme`) then calls `applyColorScheme`. Called once in the init IIFE on page load.
 
-### Collapsed chip UI (Category, Starting Lie, Distance)
-Category, Starting Lie, and Distance from Pin all use a chip-based collapsed pattern:
+### Shot Setup summary group (Category, Starting Lie, Distance)
+Category, Starting Lie, and Distance are grouped under a single collapsible summary row (`#shot-meta-group`) to reduce form height when values are pre-filled.
+
+**Collapsed state** — a single line: `SHOT SETUP  [cat badge] · [lie chip] · dist  expand ›`
+- `renderShotMetaSummary()` rebuilds this line; called from `selectCategory`, `selectLie`, `onDistInput`, and `openShotSheet`
+- `toggleShotMetaExpand()` toggles `#shot-meta-expand`, updates `#shot-meta-chevron-hint` (`expand ›` / `∨`), and hides/shows `#shot-meta-label`; also closes any open sub-expands when collapsing
+
+**Expanded state** — reveals the three chip rows (Category, Starting Lie, Distance) in their existing individual chip pattern:
 - A chip (`#category-chip`, `#lie-chip`, `#dist-chip`) shows the current value
 - Pills/input expand inline on tap via `toggleCategoryOverride()` / `toggleLieOverride()` / `toggleDistOverride()`
 - Selecting a pill updates the chip and auto-collapses via `silent=false` path in `selectCategory()` / `selectLie()`
 - Distance chip updates on input via `onDistInput()` and on unit change via `updateDistFromUnit()`
 - `renderCategoryChip(cat)`, `renderLieChip(lie)`, `renderDistChip(val, unit)` handle chip DOM updates
-- Distance field no longer auto-focuses on sheet open — user taps chip to expand and focus
+- Nested chip rows use `.form-group-inner` / `.form-group-inner-last` for tighter spacing inside the expand
+
+**Auto-expand on open** — `openShotSheet` checks if any of lie, category, or distance is missing; if so, `#shot-meta-expand` opens automatically and individual sub-rows for the missing fields also open (via `classList.remove('hidden')` on their pill-expand divs). If all values are pre-filled, the section stays collapsed.
 
 ### Shot Pre-fill (getSuggestion)
 `getSuggestion(holeData)` returns `{ lie, dist, hint }` for new shots:
@@ -189,10 +197,12 @@ Short Game = any non-putt, non-drive shot from **under 30 yards** (`autoCategory
 An optional field on the shot entry form for recording which club was used. Appears between Distance and Result Lie; hidden entirely for putts.
 
 - **`CLUBS` constant (`state.js`)** — ordered array of `{ id, label, cats }` where `cats` is the list of categories the club appears in:
-  - **Drive only**: Driver
-  - **Drive + Approach**: 3-Wood, 5-Wood, 3-Hybrid, 4-Hybrid, 5-Hybrid
-  - **Approach only**: 3i–6i
-  - **Approach + Short Game**: 7i–9i, PW, GW, SW, LW
+  - **Drive only**: Drv
+  - **Drive + Approach**: 3 W, 5-W, 7-W, 3-H, 4-H, 5-H
+  - **Approach only**: 3-I–6-I
+  - **Approach + Short Game**: 7-I–9-I, PW, GW, SW, LW, 50°–60° (even degrees)
+- **Labels are short-form** (e.g. `Drv`, `3 W`, `3-H`, `3-I`) to fit pill UI; full names are not used
+- **`sheet-settings.html` hardcodes button labels** for the My Clubs section — these must be kept in sync with `CLUBS[].label` manually whenever labels change
 - `state.shotClub` — the selected club id, or `null`
 - `updateClubGroup(cat)` — shows/hides `#club-group` and rebuilds `#club-pills` filtered to the current category; called from `selectCategory()`. Hidden when `cat` is `null` or `'putt'`, clears `state.shotClub` in those cases.
 - `selectClub(id, silent)` — tap to select, tap again to deselect; updates `state.shotClub`, toggles `.selected` on pills via `data-club` attribute, updates chip; collapses expand on non-silent select

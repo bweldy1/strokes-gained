@@ -221,6 +221,14 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
 .form-label-inline { margin-bottom: 0; }
 .form-unit-label { color: var(--text-dim); font-weight: 400; text-transform: none; letter-spacing: 0; }
 .pill-expand { margin-top: 10px; }
+.shot-meta-summary { display: flex; align-items: center; gap: 6px; cursor: pointer; padding: 2px 0; }
+.shot-meta-summary:active { opacity: .7; }
+.shot-meta-sep { color: var(--text-dim); }
+.shot-meta-summary .category-badge,
+.shot-meta-summary .lie-chip { font-size: 11px; padding: 2px 7px; }
+#shot-meta-expand { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--input-border); }
+.form-group-inner { margin-bottom: 14px; }
+.form-group-inner-last { margin-bottom: 0; }
 .num-input-text { font-size: 18px; font-weight: 400; }
 .add-shot-icon { font-size: 20px; }
 .yardage-edit-icon { font-size: 10px; color: var(--text-dim); }
