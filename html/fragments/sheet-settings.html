@@ -8,8 +8,8 @@
       <div class="settings-section-label">Appearance</div>
       <div class="settings-hint" style="margin-bottom:8px">Color scheme for shot quality</div>
       <div style="display:flex;gap:8px;margin-bottom:20px">
-        <button class="pill scheme-pill" data-scheme="classic" onclick="setColorScheme('classic')">Classic</button>
-        <button class="pill scheme-pill" data-scheme="dusk" onclick="setColorScheme('dusk')">Dusk</button>
+        <button class="pill scheme-pill" data-scheme="classic" onclick="setSetting('sg_colorScheme','classic')">Classic</button>
+        <button class="pill scheme-pill" data-scheme="dusk" onclick="setSetting('sg_colorScheme','dusk')">Dusk</button>
       </div>
 
       <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px">
@@ -24,14 +24,14 @@
 
       <div class="settings-hint" style="margin-bottom:8px">Club selection on shot form</div>
       <div style="display:flex;gap:8px;margin-bottom:16px">
-        <button class="pill club-expand-pill" data-expand="false" onclick="setClubAutoExpand(false)">Collapsed</button>
-        <button class="pill club-expand-pill" data-expand="true" onclick="setClubAutoExpand(true)">Expanded</button>
+        <button class="pill club-expand-pill" data-expand="false" onclick="setSetting('sg_clubAutoExpand',false)">Collapsed</button>
+        <button class="pill club-expand-pill" data-expand="true" onclick="setSetting('sg_clubAutoExpand',true)">Expanded</button>
       </div>
 
       <div class="settings-hint" style="margin-bottom:8px">Miss direction on shot form</div>
       <div style="display:flex;gap:8px;margin-bottom:20px">
-        <button class="pill miss-expand-pill" data-expand="false" onclick="setMissAutoExpand(false)">Collapsed</button>
-        <button class="pill miss-expand-pill" data-expand="true" onclick="setMissAutoExpand(true)">Expanded</button>
+        <button class="pill miss-expand-pill" data-expand="false" onclick="setSetting('sg_missAutoExpand',false)">Collapsed</button>
+        <button class="pill miss-expand-pill" data-expand="true" onclick="setSetting('sg_missAutoExpand',true)">Expanded</button>
       </div>
 
       <div class="settings-section-label">Data</div>

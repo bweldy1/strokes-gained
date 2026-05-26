@@ -156,13 +156,45 @@ function getActiveClubs() {
   try { return new Set(JSON.parse(stored)); } catch { return new Set(CLUBS.map(c => c.id)); }
 }
 
-function getClubAutoExpand() {
-  return localStorage.getItem('sg_clubAutoExpand') === 'true';
+// ═══════════════════════════════════════════════════════════════
+// SETTINGS REGISTRY
+// ═══════════════════════════════════════════════════════════════
+
+const SETTINGS = {};
+
+// Register a pill-based setting. selector/dataAttr identify the toggle pills;
+// onApply handles any side effects beyond pill highlighting.
+function registerSetting(key, defaultVal, selector, dataAttr, onApply) {
+  SETTINGS[key] = {
+    get() {
+      const stored = localStorage.getItem(key);
+      if(stored === null) return defaultVal;
+      return typeof defaultVal === 'boolean' ? stored === 'true' : stored;
+    },
+    apply() {
+      const val = this.get();
+      if(selector) document.querySelectorAll(selector).forEach(p =>
+        p.classList.toggle('selected', p.dataset[dataAttr] === String(val))
+      );
+      if(onApply) onApply(val);
+    },
+    set(val) {
+      localStorage.setItem(key, String(val));
+      this.apply();
+    }
+  };
 }
 
-function getMissAutoExpand() {
-  const stored = localStorage.getItem('sg_missAutoExpand');
-  return stored === null ? true : stored === 'true';
+function getSetting(key) {
+  return SETTINGS[key] ? SETTINGS[key].get() : null;
+}
+
+function setSetting(key, val) {
+  if(SETTINGS[key]) SETTINGS[key].set(val);
+}
+
+function applyAllSettings() {
+  Object.values(SETTINGS).forEach(s => s.apply());
 }
 
 // CSS class for SG value coloring

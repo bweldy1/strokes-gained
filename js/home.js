@@ -211,42 +211,15 @@ function toggleActiveClub(id) {
   applyActiveClubs();
 }
 
-function applyClubAutoExpand() {
-  const val = getClubAutoExpand();
-  document.querySelectorAll('.club-expand-pill').forEach(p =>
-    p.classList.toggle('selected', p.dataset.expand === String(val))
-  );
-}
+// ═══════════════════════════════════════════════════════════════
+// SETTINGS REGISTRATIONS
+// ═══════════════════════════════════════════════════════════════
 
-function setClubAutoExpand(val) {
-  localStorage.setItem('sg_clubAutoExpand', val);
-  applyClubAutoExpand();
-}
-
-function applyMissAutoExpand() {
-  const val = getMissAutoExpand();
-  document.querySelectorAll('.miss-expand-pill').forEach(p =>
-    p.classList.toggle('selected', p.dataset.expand === String(val))
-  );
-}
-
-function setMissAutoExpand(val) {
-  localStorage.setItem('sg_missAutoExpand', val);
-  applyMissAutoExpand();
-}
-
-function applyColorScheme(scheme) {
-  scheme = scheme || 'classic';
-  document.documentElement.setAttribute('data-scheme', scheme);
-  document.querySelectorAll('.scheme-pill').forEach(p => {
-    p.classList.toggle('selected', p.dataset.scheme === scheme);
-  });
-}
-
-function setColorScheme(scheme) {
-  localStorage.setItem('sg_colorScheme', scheme);
-  applyColorScheme(scheme);
-}
+registerSetting('sg_colorScheme', 'classic', '.scheme-pill', 'scheme', val => {
+  document.documentElement.setAttribute('data-scheme', val || 'classic');
+});
+registerSetting('sg_clubAutoExpand', false, '.club-expand-pill', 'expand');
+registerSetting('sg_missAutoExpand', true,  '.miss-expand-pill', 'expand');
 
 function applyHoleOutDist(dist) {
   dist = parseInt(dist) || getHoleOutDist();
@@ -267,11 +240,9 @@ function setHoleOutDist(dist) {
 // ═══════════════════════════════════════════════════════════════
 
 (function() {
-  applyColorScheme(localStorage.getItem('sg_colorScheme'));
+  applyAllSettings();
   applyHoleOutDist();
   applyActiveClubs();
-  applyClubAutoExpand();
-  applyMissAutoExpand();
   renderHome();
 
   // Scroll focused inputs into view when iOS keyboard appears

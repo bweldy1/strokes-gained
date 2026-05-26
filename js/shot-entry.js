@@ -121,7 +121,7 @@ function selectResultLie(lie, silent) {
     state.shotMissDepth = null; state.shotMissSide = null;
   } else {
     missGroup.classList.remove('hidden');
-    const expanded = getMissAutoExpand();
+    const expanded = getSetting('sg_missAutoExpand');
     document.getElementById('miss-dir-expand').classList.toggle('hidden', !expanded);
     document.getElementById('miss-dir-hint').textContent = expanded ? '∨' : 'expand ›';
   }
@@ -259,7 +259,7 @@ function updateClubGroup(cat) {
   document.getElementById('club-pills').innerHTML = filtered.map(c =>
     `<div class="pill pill-sm${state.shotClub === c.id ? ' selected' : ''}" data-club="${c.id}" onclick="selectClub('${c.id}')">${c.label}</div>`
   ).join('');
-  if(getClubAutoExpand()) document.getElementById('club-pills-expand').classList.remove('hidden');
+  if(getSetting('sg_clubAutoExpand')) document.getElementById('club-pills-expand').classList.remove('hidden');
 }
 
 function selectClub(id, silent) {

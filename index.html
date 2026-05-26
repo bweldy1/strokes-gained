@@ -378,7 +378,7 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
     <div class="section-label">Recent Rounds</div>
     <div id="rounds-list"></div>
   </div>
-  <div id="build-version">Build: 2026-05-25 20:48</div>
+  <div id="build-version">Build: 2026-05-25 21:00</div>
 </div>
 
 <!-- COURSE SELECT -->
@@ -726,8 +726,8 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
       <div class="settings-section-label">Appearance</div>
       <div class="settings-hint" style="margin-bottom:8px">Color scheme for shot quality</div>
       <div style="display:flex;gap:8px;margin-bottom:20px">
-        <button class="pill scheme-pill" data-scheme="classic" onclick="setColorScheme('classic')">Classic</button>
-        <button class="pill scheme-pill" data-scheme="dusk" onclick="setColorScheme('dusk')">Dusk</button>
+        <button class="pill scheme-pill" data-scheme="classic" onclick="setSetting('sg_colorScheme','classic')">Classic</button>
+        <button class="pill scheme-pill" data-scheme="dusk" onclick="setSetting('sg_colorScheme','dusk')">Dusk</button>
       </div>
 
       <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px">
@@ -742,14 +742,14 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
 
       <div class="settings-hint" style="margin-bottom:8px">Club selection on shot form</div>
       <div style="display:flex;gap:8px;margin-bottom:16px">
-        <button class="pill club-expand-pill" data-expand="false" onclick="setClubAutoExpand(false)">Collapsed</button>
-        <button class="pill club-expand-pill" data-expand="true" onclick="setClubAutoExpand(true)">Expanded</button>
+        <button class="pill club-expand-pill" data-expand="false" onclick="setSetting('sg_clubAutoExpand',false)">Collapsed</button>
+        <button class="pill club-expand-pill" data-expand="true" onclick="setSetting('sg_clubAutoExpand',true)">Expanded</button>
       </div>
 
       <div class="settings-hint" style="margin-bottom:8px">Miss direction on shot form</div>
       <div style="display:flex;gap:8px;margin-bottom:20px">
-        <button class="pill miss-expand-pill" data-expand="false" onclick="setMissAutoExpand(false)">Collapsed</button>
-        <button class="pill miss-expand-pill" data-expand="true" onclick="setMissAutoExpand(true)">Expanded</button>
+        <button class="pill miss-expand-pill" data-expand="false" onclick="setSetting('sg_missAutoExpand',false)">Collapsed</button>
+        <button class="pill miss-expand-pill" data-expand="true" onclick="setSetting('sg_missAutoExpand',true)">Expanded</button>
       </div>
 
       <div class="settings-section-label">Data</div>
@@ -1260,13 +1260,45 @@ function getActiveClubs() {
   try { return new Set(JSON.parse(stored)); } catch { return new Set(CLUBS.map(c => c.id)); }
 }
 
-function getClubAutoExpand() {
-  return localStorage.getItem('sg_clubAutoExpand') === 'true';
+// ═══════════════════════════════════════════════════════════════
+// SETTINGS REGISTRY
+// ═══════════════════════════════════════════════════════════════
+
+const SETTINGS = {};
+
+// Register a pill-based setting. selector/dataAttr identify the toggle pills;
+// onApply handles any side effects beyond pill highlighting.
+function registerSetting(key, defaultVal, selector, dataAttr, onApply) {
+  SETTINGS[key] = {
+    get() {
+      const stored = localStorage.getItem(key);
+      if(stored === null) return defaultVal;
+      return typeof defaultVal === 'boolean' ? stored === 'true' : stored;
+    },
+    apply() {
+      const val = this.get();
+      if(selector) document.querySelectorAll(selector).forEach(p =>
+        p.classList.toggle('selected', p.dataset[dataAttr] === String(val))
+      );
+      if(onApply) onApply(val);
+    },
+    set(val) {
+      localStorage.setItem(key, String(val));
+      this.apply();
+    }
+  };
 }
 
-function getMissAutoExpand() {
-  const stored = localStorage.getItem('sg_missAutoExpand');
-  return stored === null ? true : stored === 'true';
+function getSetting(key) {
+  return SETTINGS[key] ? SETTINGS[key].get() : null;
+}
+
+function setSetting(key, val) {
+  if(SETTINGS[key]) SETTINGS[key].set(val);
+}
+
+function applyAllSettings() {
+  Object.values(SETTINGS).forEach(s => s.apply());
 }
 
 // CSS class for SG value coloring
@@ -1720,7 +1752,7 @@ function selectResultLie(lie, silent) {
     state.shotMissDepth = null; state.shotMissSide = null;
   } else {
     missGroup.classList.remove('hidden');
-    const expanded = getMissAutoExpand();
+    const expanded = getSetting('sg_missAutoExpand');
     document.getElementById('miss-dir-expand').classList.toggle('hidden', !expanded);
     document.getElementById('miss-dir-hint').textContent = expanded ? '∨' : 'expand ›';
   }
@@ -1858,7 +1890,7 @@ function updateClubGroup(cat) {
   document.getElementById('club-pills').innerHTML = filtered.map(c =>
     `<div class="pill pill-sm${state.shotClub === c.id ? ' selected' : ''}" data-club="${c.id}" onclick="selectClub('${c.id}')">${c.label}</div>`
   ).join('');
-  if(getClubAutoExpand()) document.getElementById('club-pills-expand').classList.remove('hidden');
+  if(getSetting('sg_clubAutoExpand')) document.getElementById('club-pills-expand').classList.remove('hidden');
 }
 
 function selectClub(id, silent) {
@@ -2969,42 +3001,15 @@ function toggleActiveClub(id) {
   applyActiveClubs();
 }
 
-function applyClubAutoExpand() {
-  const val = getClubAutoExpand();
-  document.querySelectorAll('.club-expand-pill').forEach(p =>
-    p.classList.toggle('selected', p.dataset.expand === String(val))
-  );
-}
+// ═══════════════════════════════════════════════════════════════
+// SETTINGS REGISTRATIONS
+// ═══════════════════════════════════════════════════════════════
 
-function setClubAutoExpand(val) {
-  localStorage.setItem('sg_clubAutoExpand', val);
-  applyClubAutoExpand();
-}
-
-function applyMissAutoExpand() {
-  const val = getMissAutoExpand();
-  document.querySelectorAll('.miss-expand-pill').forEach(p =>
-    p.classList.toggle('selected', p.dataset.expand === String(val))
-  );
-}
-
-function setMissAutoExpand(val) {
-  localStorage.setItem('sg_missAutoExpand', val);
-  applyMissAutoExpand();
-}
-
-function applyColorScheme(scheme) {
-  scheme = scheme || 'classic';
-  document.documentElement.setAttribute('data-scheme', scheme);
-  document.querySelectorAll('.scheme-pill').forEach(p => {
-    p.classList.toggle('selected', p.dataset.scheme === scheme);
-  });
-}
-
-function setColorScheme(scheme) {
-  localStorage.setItem('sg_colorScheme', scheme);
-  applyColorScheme(scheme);
-}
+registerSetting('sg_colorScheme', 'classic', '.scheme-pill', 'scheme', val => {
+  document.documentElement.setAttribute('data-scheme', val || 'classic');
+});
+registerSetting('sg_clubAutoExpand', false, '.club-expand-pill', 'expand');
+registerSetting('sg_missAutoExpand', true,  '.miss-expand-pill', 'expand');
 
 function applyHoleOutDist(dist) {
   dist = parseInt(dist) || getHoleOutDist();
@@ -3025,11 +3030,9 @@ function setHoleOutDist(dist) {
 // ═══════════════════════════════════════════════════════════════
 
 (function() {
-  applyColorScheme(localStorage.getItem('sg_colorScheme'));
+  applyAllSettings();
   applyHoleOutDist();
   applyActiveClubs();
-  applyClubAutoExpand();
-  applyMissAutoExpand();
   renderHome();
 
   // Scroll focused inputs into view when iOS keyboard appears

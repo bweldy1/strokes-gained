@@ -107,7 +107,7 @@ sgClass(sg)            // → 'sg-pos' | 'sg-neg' | 'sg-null' (CSS class for SG 
 `buildShotRow` in `summary.js` uses compact distance abbreviations (`y`/`ft`) directly — does **not** use `formatDist` since those are summary-view abbreviations, not full units.
 
 ### Storage
-All data in `localStorage` as JSON. Keys: `sg_rounds`, `sg_courses`, `sg_colorScheme`, `sg_holeOutDist`, `sg_activeClubs`.
+All data in `localStorage` as JSON. Keys: `sg_rounds`, `sg_courses`, `sg_colorScheme`, `sg_holeOutDist`, `sg_activeClubs`, `sg_clubAutoExpand`, `sg_missAutoExpand`.
 
 ### Show/Hide Pattern
 All conditional visibility uses the `.hidden` CSS utility class (`display: none !important`). Never set `element.style.display` directly.
@@ -134,7 +134,7 @@ Quality bands and CSS variables are aligned — each band color has a matching C
 - `classic` (default): green → amber → red
 - `dusk`: gold → gray → purple (avoids red)
 
-`applyColorScheme(scheme)` sets the attribute and syncs the settings pill UI. `setColorScheme(scheme)` persists to `localStorage` (`sg_colorScheme`) then calls `applyColorScheme`. Called once in the init IIFE on page load.
+Color scheme is a registered setting (see [Settings Registry](#settings-registry)). The `onApply` callback sets `data-scheme` on `<html>`; pill highlighting is handled automatically. `applyAllSettings()` is called once in the init IIFE.
 
 ### Shot Setup summary group (Category, Starting Lie, Distance)
 Category, Starting Lie, and Distance are grouped under a single collapsible summary row (`#shot-meta-group`) to reduce form height when values are pre-filled.
@@ -395,15 +395,32 @@ Tapping a card calls `resumeRound(id)`, which sets `state.currentRoundId`, seeks
 
 Accessed via the ⚙ gear button (top-right of the home header). Opens `#settings-sheet`. Logic lives in `home.js`.
 
-**Color Scheme** — Appearance section at the top of the sheet. Two pills (Classic / Dusk) backed by `sg_colorScheme` in `localStorage`. See [SG Value Colors](#sg-value-colors) for implementation details.
+### Settings Registry
 
-**Hole-Out Distance** — Appearance section. A range slider (`#holeout-dist-slider`, 1–10 ft) with a live label (`#holeout-dist-label`) showing the current value in green. Backed by `sg_holeOutDist` in `localStorage` (default `2`). See [Hole-Out Prompt](#hole-out-prompt) for implementation details.
+Pill-based settings use a shared registry (`SETTINGS` in `state.js`) instead of per-setting boilerplate:
 
-**My Clubs** — "My Clubs" section between Appearance and Data. A set of toggle pills for each club in the `CLUBS` constant. Backed by `sg_activeClubs` in `localStorage` (JSON array of club IDs). When unset, all clubs are active (backwards compatible). Logic in `home.js`:
-- `applyActiveClubs()` — reads `getActiveClubs()` and syncs the selected state of all `.club-toggle-pill` elements; called on init and after each toggle
-- `toggleActiveClub(id)` — adds/removes the club from the active set, persists to `localStorage`, calls `applyActiveClubs()`
-- `getActiveClubs()` (`state.js`) — returns a `Set<string>` of active club IDs; defaults to all clubs if key is missing or invalid JSON
-- The club group on the shot entry form (`updateClubGroup(cat)`) filters the rendered pills by both category (`c.cats.includes(cat)`) and user preference (`active.has(c.id)`), so deactivated clubs never appear during shot entry
+```js
+registerSetting(key, defaultVal, selector, dataAttr, onApply?)
+getSetting(key)       // read current value (with default fallback)
+setSetting(key, val)  // persist + apply
+applyAllSettings()    // sync all pill UI from storage — called once in init
+```
+
+`registerSetting` stores a `{ get, apply, set }` object. `apply` toggles `.selected` on all elements matching `selector` where `data-{dataAttr}` matches the current value, then calls `onApply(val)` for side effects. HTML pills call `setSetting(key, val)` directly via `onclick`.
+
+**Registered settings** (all in `home.js`):
+
+| Key | Default | Selector | Notes |
+|---|---|---|---|
+| `sg_colorScheme` | `'classic'` | `.scheme-pill` | `onApply` sets `data-scheme` on `<html>` |
+| `sg_clubAutoExpand` | `false` | `.club-expand-pill` | Controls club pills auto-open on shot form |
+| `sg_missAutoExpand` | `true` | `.miss-expand-pill` | Controls miss direction auto-open on shot form |
+
+**Adding a new pill setting:** one `registerSetting(...)` call in `home.js` + `onclick="setSetting(key,val)"` on the HTML pills. No named get/apply/set functions needed.
+
+**Non-registry settings** (different patterns, not pill-based):
+- **Hole-Out Distance** — range slider (`#holeout-dist-slider`, 1–10 ft); `applyHoleOutDist()` / `setHoleOutDist(n)` in `home.js`; backed by `sg_holeOutDist`
+- **My Clubs** — `applyActiveClubs()` / `toggleActiveClub(id)` in `home.js`; backed by `sg_activeClubs` (JSON array); pills generated dynamically from `CLUBS`; `getActiveClubs()` in `state.js` returns a `Set<string>`
 
 **Backup** (`backupData()`): Serializes `{ version, exported, rounds, courses }` as JSON and triggers a file download (`sg-backup-YYYY-MM-DD.json`) via a Blob URL. Falls back to `showExportModal(json)` if Blob download fails (e.g. restrictive browser).
 - `version`: hardcoded `1` — reserved for future migration logic if the data model changes. Currently written but not read by `confirmRestore()`; restore only validates that `payload.rounds` is an array.
