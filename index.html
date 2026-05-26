@@ -378,7 +378,7 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
     <div class="section-label">Recent Rounds</div>
     <div id="rounds-list"></div>
   </div>
-  <div id="build-version">Build: 2026-05-24 22:46</div>
+  <div id="build-version">Build: 2026-05-25 20:48</div>
 </div>
 
 <!-- COURSE SELECT -->
@@ -738,32 +738,7 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
 
       <div class="settings-section-label">My Clubs</div>
       <div class="settings-hint" style="margin-bottom:8px">Select the clubs in your bag</div>
-      <div class="pill-group" style="margin-bottom:20px">
-        <button class="pill pill-sm club-toggle-pill" data-club="driver" onclick="toggleActiveClub('driver')">Drv</button>
-        <button class="pill pill-sm club-toggle-pill" data-club="3w" onclick="toggleActiveClub('3w')">3 W</button>
-        <button class="pill pill-sm club-toggle-pill" data-club="5w" onclick="toggleActiveClub('5w')">5-W</button>
-        <button class="pill pill-sm club-toggle-pill" data-club="7w" onclick="toggleActiveClub('7w')">7-W</button>
-        <button class="pill pill-sm club-toggle-pill" data-club="3h" onclick="toggleActiveClub('3h')">3-H</button>
-        <button class="pill pill-sm club-toggle-pill" data-club="4h" onclick="toggleActiveClub('4h')">4-H</button>
-        <button class="pill pill-sm club-toggle-pill" data-club="5h" onclick="toggleActiveClub('5h')">5-H</button>
-        <button class="pill pill-sm club-toggle-pill" data-club="3i" onclick="toggleActiveClub('3i')">3-I</button>
-        <button class="pill pill-sm club-toggle-pill" data-club="4i" onclick="toggleActiveClub('4i')">4-I</button>
-        <button class="pill pill-sm club-toggle-pill" data-club="5i" onclick="toggleActiveClub('5i')">5-I</button>
-        <button class="pill pill-sm club-toggle-pill" data-club="6i" onclick="toggleActiveClub('6i')">6-I</button>
-        <button class="pill pill-sm club-toggle-pill" data-club="7i" onclick="toggleActiveClub('7i')">7-I</button>
-        <button class="pill pill-sm club-toggle-pill" data-club="8i" onclick="toggleActiveClub('8i')">8-I</button>
-        <button class="pill pill-sm club-toggle-pill" data-club="9i" onclick="toggleActiveClub('9i')">9-I</button>
-        <button class="pill pill-sm club-toggle-pill" data-club="pw" onclick="toggleActiveClub('pw')">PW</button>
-        <button class="pill pill-sm club-toggle-pill" data-club="gw" onclick="toggleActiveClub('gw')">GW</button>
-        <button class="pill pill-sm club-toggle-pill" data-club="sw" onclick="toggleActiveClub('sw')">SW</button>
-        <button class="pill pill-sm club-toggle-pill" data-club="lw" onclick="toggleActiveClub('lw')">LW</button>
-        <button class="pill pill-sm club-toggle-pill" data-club="50" onclick="toggleActiveClub('50')">50°</button>
-        <button class="pill pill-sm club-toggle-pill" data-club="52" onclick="toggleActiveClub('52')">52°</button>
-        <button class="pill pill-sm club-toggle-pill" data-club="54" onclick="toggleActiveClub('54')">54°</button>
-        <button class="pill pill-sm club-toggle-pill" data-club="56" onclick="toggleActiveClub('56')">56°</button>
-        <button class="pill pill-sm club-toggle-pill" data-club="58" onclick="toggleActiveClub('58')">58°</button>
-        <button class="pill pill-sm club-toggle-pill" data-club="60" onclick="toggleActiveClub('60')">60°</button>
-      </div>
+      <div class="pill-group" id="club-toggle-pills" style="margin-bottom:20px"></div>
 
       <div class="settings-hint" style="margin-bottom:8px">Club selection on shot form</div>
       <div style="display:flex;gap:8px;margin-bottom:16px">
@@ -1137,9 +1112,9 @@ const CLUBS = [
   { id: '3w',     label: '3 W',    cats: ['drive', 'approach'] },
   { id: '5w',     label: '5-W',    cats: ['drive', 'approach'] }, 
   { id: '7w',     label: '7-W',    cats: ['drive', 'approach'] },
-  { id: '3h',     label: '3-H',  cats: ['drive', 'approach'] },
-  { id: '4h',     label: '4-H',  cats: ['drive', 'approach'] },
-  { id: '5h',     label: '5-H',  cats: ['drive', 'approach'] },
+  { id: '3h',     label: '3-H',    cats: ['drive', 'approach'] },
+  { id: '4h',     label: '4-H',    cats: ['drive', 'approach'] },
+  { id: '5h',     label: '5-H',    cats: ['drive', 'approach'] },
   { id: '3i',     label: '3-I',    cats: ['approach'] },
   { id: '4i',     label: '4-I',    cats: ['approach'] },
   { id: '5i',     label: '5-I',    cats: ['approach'] },
@@ -1147,16 +1122,16 @@ const CLUBS = [
   { id: '7i',     label: '7-I',    cats: ['approach', 'shortgame'] },
   { id: '8i',     label: '8-I',    cats: ['approach', 'shortgame'] },
   { id: '9i',     label: '9-I',    cats: ['approach', 'shortgame'] },
-  { id: 'pw',     label: 'PW',        cats: ['approach', 'shortgame'] },
-  { id: 'gw',     label: 'GW',        cats: ['approach', 'shortgame'] },
-  { id: 'sw',     label: 'SW',        cats: ['approach', 'shortgame'] },
-  { id: 'lw',     label: 'LW',        cats: ['approach', 'shortgame'] },
-  { id: '50',     label: '50',        cats: ['approach', 'shortgame'] },
-  { id: '52',     label: '52',        cats: ['approach', 'shortgame'] },
-  { id: '54',     label: '54',        cats: ['approach', 'shortgame'] },
-  { id: '56',     label: '56',        cats: ['approach', 'shortgame'] },
-  { id: '58',     label: '58',        cats: ['approach', 'shortgame'] },
-  { id: '60',     label: '60',        cats: ['approach', 'shortgame'] }
+  { id: 'pw',     label: 'PW',     cats: ['approach', 'shortgame'] },
+  { id: 'gw',     label: 'GW',     cats: ['approach', 'shortgame'] },
+  { id: 'sw',     label: 'SW',     cats: ['approach', 'shortgame'] },
+  { id: 'lw',     label: 'LW',     cats: ['approach', 'shortgame'] },
+  { id: '50',     label: '50',     cats: ['approach', 'shortgame'] },
+  { id: '52',     label: '52',     cats: ['approach', 'shortgame'] },
+  { id: '54',     label: '54',     cats: ['approach', 'shortgame'] },
+  { id: '56',     label: '56',     cats: ['approach', 'shortgame'] },
+  { id: '58',     label: '58',     cats: ['approach', 'shortgame'] },
+  { id: '60',     label: '60',     cats: ['approach', 'shortgame'] }
 ];
 
 // ═══════════════════════════════════════════════════════════════
@@ -1626,13 +1601,13 @@ function recalcRoundShots(round) {
 // SHOT SHEET
 // ═══════════════════════════════════════════════════════════════
 
-function openShotSheet(editIndex) {
-  state.editingShotIndex = editIndex !== undefined ? editIndex : null;
-  state.shotLie = null; state.shotResultLie = null; state.shotCategory = null; state.shotMissDepth = null; state.shotMissSide = null; state.shotMissType = null; state.shotClub = null; state.targetsExpanded = false;
+function resetShotSheet() {
+  state.shotLie = null; state.shotResultLie = null; state.shotCategory = null;
+  state.shotMissDepth = null; state.shotMissSide = null; state.shotMissType = null;
+  state.shotClub = null; state.targetsExpanded = false;
   document.getElementById('sg-targets-toggle').classList.add('hidden');
   document.getElementById('sg-targets-toggle').textContent = 'What If? ›';
   document.getElementById('sg-targets-expand').classList.add('hidden');
-  document.getElementById('shot-sheet-title').textContent = editIndex !== undefined ? 'Edit Shot' : 'Add Shot';
   document.getElementById('shot-dist-from').value = '';
   document.getElementById('shot-dist-result').value = '';
   document.getElementById('result-dist-group').classList.add('hidden');
@@ -1649,7 +1624,9 @@ function openShotSheet(editIndex) {
   renderLieChip(null);
   renderDistChip('', 'yds');
   document.querySelectorAll('#lie-pills .pill,#lie-pills-secondary .pill,#result-lie-pills .pill,#result-lie-pills-secondary .pill,#category-pills .pill').forEach(p => p.classList.remove('selected'));
+}
 
+function prefillShotSheet(editIndex) {
   const hd = currentHoleData();
   if(editIndex !== undefined) {
     const s = hd.shots[editIndex];
@@ -1671,6 +1648,13 @@ function openShotSheet(editIndex) {
       if(sug.lie) selectCategory(autoCategory(sug.lie, sug.dist || 0, idx, hd.par), true);
     }
   }
+}
+
+function openShotSheet(editIndex) {
+  state.editingShotIndex = editIndex !== undefined ? editIndex : null;
+  document.getElementById('shot-sheet-title').textContent = editIndex !== undefined ? 'Edit Shot' : 'Add Shot';
+  resetShotSheet();
+  prefillShotSheet(editIndex);
   updateDistFromUnit(); updateResultDistVisibility(); updateSGPreview();
   renderShotMetaSummary();
   const anyMissing = !state.shotLie || !state.shotCategory || !document.getElementById('shot-dist-from').value;
@@ -2967,6 +2951,12 @@ function confirmRestore() {
 
 function applyActiveClubs() {
   const active = getActiveClubs();
+  const container = document.getElementById('club-toggle-pills');
+  if(container && !container.children.length) {
+    container.innerHTML = CLUBS.map(c =>
+      `<button class="pill pill-sm club-toggle-pill" data-club="${c.id}" onclick="toggleActiveClub('${c.id}')">${c.label}</button>`
+    ).join('');
+  }
   document.querySelectorAll('.club-toggle-pill').forEach(p =>
     p.classList.toggle('selected', active.has(p.dataset.club))
   );

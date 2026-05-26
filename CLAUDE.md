@@ -140,7 +140,7 @@ Quality bands and CSS variables are aligned — each band color has a matching C
 Category, Starting Lie, and Distance are grouped under a single collapsible summary row (`#shot-meta-group`) to reduce form height when values are pre-filled.
 
 **Collapsed state** — a single line: `SHOT SETUP  [cat badge] · [lie chip] · dist  expand ›`
-- `renderShotMetaSummary()` rebuilds this line; called from `selectCategory`, `selectLie`, `onDistInput`, and `openShotSheet`
+- `renderShotMetaSummary()` rebuilds this line; called from `selectCategory`, `selectLie`, `onDistInput`, and `openShotSheet` (after pre-fill)
 - `toggleShotMetaExpand()` toggles `#shot-meta-expand`, updates `#shot-meta-chevron-hint` (`expand ›` / `∨`), and hides/shows `#shot-meta-label`; also closes any open sub-expands when collapsing
 
 **Expanded state** — reveals the three chip rows (Category, Starting Lie, Distance) in their existing individual chip pattern:
@@ -151,7 +151,12 @@ Category, Starting Lie, and Distance are grouped under a single collapsible summ
 - `renderCategoryChip(cat)`, `renderLieChip(lie)`, `renderDistChip(val, unit)` handle chip DOM updates
 - Nested chip rows use `.form-group-inner` / `.form-group-inner-last` for tighter spacing inside the expand
 
-**Auto-expand on open** — `openShotSheet` checks if any of lie, category, or distance is missing; if so, `#shot-meta-expand` opens automatically and individual sub-rows for the missing fields also open (via `classList.remove('hidden')` on their pill-expand divs). If all values are pre-filled, the section stays collapsed.
+**Auto-expand on open** — after `prefillShotSheet` runs, `openShotSheet` checks if any of lie, category, or distance is missing; if so, `#shot-meta-expand` opens automatically and individual sub-rows for the missing fields also open (via `classList.remove('hidden')` on their pill-expand divs). If all values are pre-filled, the section stays collapsed.
+
+**Shot sheet function structure (`shot-entry.js`):**
+- `resetShotSheet()` — clears all state fields and resets every DOM element to blank/hidden
+- `prefillShotSheet(editIndex)` — populates from an existing shot (edit path) or `getSuggestion` (new shot path)
+- `openShotSheet(editIndex)` — thin orchestrator: sets `editingShotIndex` + title, calls reset → prefill → finalize (update units/visibility/preview/meta summary/auto-expand) → opens sheet
 
 ### Shot Pre-fill (getSuggestion)
 `getSuggestion(holeData)` returns `{ lie, dist, hint }` for new shots:
@@ -202,7 +207,7 @@ An optional field on the shot entry form for recording which club was used. Appe
   - **Approach only**: 3-I–6-I
   - **Approach + Short Game**: 7-I–9-I, PW, GW, SW, LW, 50°–60° (even degrees)
 - **Labels are short-form** (e.g. `Drv`, `3 W`, `3-H`, `3-I`) to fit pill UI; full names are not used
-- **`sheet-settings.html` hardcodes button labels** for the My Clubs section — these must be kept in sync with `CLUBS[].label` manually whenever labels change
+- **My Clubs pills are generated dynamically** — `applyActiveClubs()` populates `#club-toggle-pills` from `CLUBS` on first call; no hardcoded buttons in HTML. Adding or renaming a club in `CLUBS` automatically appears in settings.
 - `state.shotClub` — the selected club id, or `null`
 - `updateClubGroup(cat)` — shows/hides `#club-group` and rebuilds `#club-pills` filtered to the current category; called from `selectCategory()`. Hidden when `cat` is `null` or `'putt'`, clears `state.shotClub` in those cases.
 - `selectClub(id, silent)` — tap to select, tap again to deselect; updates `state.shotClub`, toggles `.selected` on pills via `data-club` attribute, updates chip; collapses expand on non-silent select
@@ -235,7 +240,7 @@ An on-demand shot expectation tool in the SG preview area of the shot entry shee
 - Shows a red `+1 stroke` badge (`.penalty-badge`) in the shot list row
 - `countStrokes(shots)` — helper that returns `shots.length + penalty count`; used everywhere strokes are displayed (home card, summary header, hole rows)
 - No auto-fill for the next shot's lie (drop location varies), but result distance carries forward as the distance pre-fill
-- `getSuggestion` returns `{ lie: null, dist }` after a penalty; `openShotSheet` guards `selectLie`/`selectCategory` with `if(sug.lie)`
+- `getSuggestion` returns `{ lie: null, dist }` after a penalty; `prefillShotSheet` guards `selectLie`/`selectCategory` with `if(sug.lie)`
 
 ### SG Calculation
 `calcSG(startLie, startDist, resultLie, resultDist, diffPct)` uses `sg_tables.js` lookup tables with linear interpolation. Result is rounded to 4 decimal places before being stored on the shot object.

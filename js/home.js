@@ -193,6 +193,12 @@ function confirmRestore() {
 
 function applyActiveClubs() {
   const active = getActiveClubs();
+  const container = document.getElementById('club-toggle-pills');
+  if(container && !container.children.length) {
+    container.innerHTML = CLUBS.map(c =>
+      `<button class="pill pill-sm club-toggle-pill" data-club="${c.id}" onclick="toggleActiveClub('${c.id}')">${c.label}</button>`
+    ).join('');
+  }
   document.querySelectorAll('.club-toggle-pill').forEach(p =>
     p.classList.toggle('selected', active.has(p.dataset.club))
   );

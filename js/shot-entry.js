@@ -2,13 +2,13 @@
 // SHOT SHEET
 // ═══════════════════════════════════════════════════════════════
 
-function openShotSheet(editIndex) {
-  state.editingShotIndex = editIndex !== undefined ? editIndex : null;
-  state.shotLie = null; state.shotResultLie = null; state.shotCategory = null; state.shotMissDepth = null; state.shotMissSide = null; state.shotMissType = null; state.shotClub = null; state.targetsExpanded = false;
+function resetShotSheet() {
+  state.shotLie = null; state.shotResultLie = null; state.shotCategory = null;
+  state.shotMissDepth = null; state.shotMissSide = null; state.shotMissType = null;
+  state.shotClub = null; state.targetsExpanded = false;
   document.getElementById('sg-targets-toggle').classList.add('hidden');
   document.getElementById('sg-targets-toggle').textContent = 'What If? ›';
   document.getElementById('sg-targets-expand').classList.add('hidden');
-  document.getElementById('shot-sheet-title').textContent = editIndex !== undefined ? 'Edit Shot' : 'Add Shot';
   document.getElementById('shot-dist-from').value = '';
   document.getElementById('shot-dist-result').value = '';
   document.getElementById('result-dist-group').classList.add('hidden');
@@ -25,7 +25,9 @@ function openShotSheet(editIndex) {
   renderLieChip(null);
   renderDistChip('', 'yds');
   document.querySelectorAll('#lie-pills .pill,#lie-pills-secondary .pill,#result-lie-pills .pill,#result-lie-pills-secondary .pill,#category-pills .pill').forEach(p => p.classList.remove('selected'));
+}
 
+function prefillShotSheet(editIndex) {
   const hd = currentHoleData();
   if(editIndex !== undefined) {
     const s = hd.shots[editIndex];
@@ -47,6 +49,13 @@ function openShotSheet(editIndex) {
       if(sug.lie) selectCategory(autoCategory(sug.lie, sug.dist || 0, idx, hd.par), true);
     }
   }
+}
+
+function openShotSheet(editIndex) {
+  state.editingShotIndex = editIndex !== undefined ? editIndex : null;
+  document.getElementById('shot-sheet-title').textContent = editIndex !== undefined ? 'Edit Shot' : 'Add Shot';
+  resetShotSheet();
+  prefillShotSheet(editIndex);
   updateDistFromUnit(); updateResultDistVisibility(); updateSGPreview();
   renderShotMetaSummary();
   const anyMissing = !state.shotLie || !state.shotCategory || !document.getElementById('shot-dist-from').value;
