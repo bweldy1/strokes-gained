@@ -39,8 +39,8 @@ js/
   hole.js                   # Hole screen: renderHole, renderShotList, holeOut, tally, yardage override, round edit, recalcRoundShots, toggleCondition
   shot-entry.js             # Shot sheet: all form interactions, selectLie/Category/ResultLie, saveShot
   courses.js                # Courses screen: renderCourses, openCourseEdit, saveCourseJSON, startRound
-  summary.js                # Summary screen: renderSummary, stats, CSV export, clipboard
-  trends.js                 # Trends screen: renderTrends, setTrendsFilter, toggleTrendsCat
+  summary.js                # Summary screen: renderSummary, stats, CSV export, clipboard; toggleShotExclusion, clearAllExclusions
+  trends.js                 # Trends screen: renderTrends, setTrendsFilter, setTrendsExclude, toggleTrendsCat
   home.js                   # Home screen + init IIFE (loads last — calls renderHome on startup); settings sheet (backup/restore)
 images/
   SG_logo.png               # App icon used on home screen header
@@ -61,12 +61,15 @@ Each round stored in `sg_rounds` (localStorage) includes:
   courseId: String,
   conditions: [],            // array of DIFFICULTY_CONDITIONS ids (e.g. ['cold', 'wind'])
   notes: '',                 // free-text round notes (empty string default)
+  excludedShots: [],         // array of {hole, shotIndex} for shots excluded from SG totals
   holes: [{ hole, par, yards, yardsOverride, shots }]
 }
 ```
 `conditions` defaults to `[]` on new rounds (`startRound`). Older rounds without this field are treated as having no conditions wherever `round.conditions || []` is used.
 
 `notes` defaults to `''`. Older rounds without the field are treated as having no note wherever `round.notes || ''` is used.
+
+`excludedShots` defaults to `[]`. Older rounds without the field are treated as having no exclusions wherever `getExcludedSet(round)` is used.
 
 ### Shot Data Model
 
@@ -92,7 +95,7 @@ Each shot stored in `round.holes[n].shots[]`:
 ### State
 Single `state` object — never persisted, resets on page load:
 ```js
-let state = { currentRoundId, currentHole, editingShotIndex, editingCourseId, excludedCategories, shotLie, shotResultLie, shotCategory, shotMissDepth, shotMissSide, shotMissType, shotClub, targetsExpanded, trendsFilter }
+let state = { currentRoundId, currentHole, editingShotIndex, editingCourseId, excludedCategories, shotLie, shotResultLie, shotCategory, shotMissDepth, shotMissSide, shotMissType, shotClub, targetsExpanded, trendsFilter, trendsExclude }
 ```
 
 ### Shared Constants and Helpers (`state.js`)
@@ -100,8 +103,9 @@ let state = { currentRoundId, currentHole, editingShotIndex, editingCourseId, ex
 CAT_LABELS  // {drive:'Drive', approach:'Approach', shortgame:'Short Game', putt:'Putt'}
 LIE_ABBR    // {tee:'Tee', fairway:'Fwy', rough:'Rgh', sand:'Sand', recovery:'Rcv', green:'Grn', holed:'Holed', penalty:'Pen'}
 
-formatDist(dist, lie)  // → "385 yds" or "12 ft" (full units; used on hole screen)
-sgClass(sg)            // → 'sg-pos' | 'sg-neg' | 'sg-null' (CSS class for SG value color)
+formatDist(dist, lie)      // → "385 yds" or "12 ft" (full units; used on hole screen)
+sgClass(sg)                // → 'sg-pos' | 'sg-neg' | 'sg-null' (CSS class for SG value color)
+getExcludedSet(round)      // → Set<"hole-shotIndex"> for O(1) exclusion lookup
 ```
 
 `buildShotRow` in `summary.js` uses compact distance abbreviations (`y`/`ft`) directly — does **not** use `formatDist` since those are summary-view abbreviations, not full units.
@@ -313,15 +317,17 @@ Sand, Recovery, and Penalty are infrequent. In lie pill rows, they appear as sec
 
 **summary-totals card** contains:
 1. Header row: Total SG + stroke count
-2. **Conditions row** (only when `round.conditions` is non-empty) — condition tags + per-category SG adjustment. See [Playing Conditions](#playing-conditions).
-3. Category rows (Drive, Approach, Short Game, Putt) — tappable to expand via `toggleSummaryCat(cat)` → `#ssum-{cat}` / `#ssum-icon-{cat}`
+2. **Exclusion badge** (only when `round.excludedShots` is non-empty) — "N shots excluded · Clear". Tapping Clear calls `clearAllExclusions()`. Excluded shots are filtered from all SG totals, category rows, bucket drill-downs, miss grids, club rows, rankings, and statistics. Stroke count is always the actual strokes played (unaffected by exclusion).
+3. **Conditions row** (only when `round.conditions` is non-empty) — condition tags + per-category SG adjustment. See [Playing Conditions](#playing-conditions).
+4. Category rows (Drive, Approach, Short Game, Putt) — tappable to expand via `toggleSummaryCat(cat)` → `#ssum-{cat}` / `#ssum-icon-{cat}`
    - Expanded rows show: `H1  Tee 385y · 235y drive › Fwy 150y Short-Left  +0.32`
    - Lie abbreviations from `LIE_ABBR`: Tee, Fwy, Rgh, Sand, Rcv, Grn, Holed, Pen
    - Miss in `.ssum-miss` (10px, `--text-dim`); drive distance in `.ssum-drive` (10px, `--text-dim`)
-3. **SG by Hole** — collapsible section at the bottom of the card, collapsed by default
+5. **SG by Hole** — collapsible section at the bottom of the card, collapsed by default
    - Toggle row styled as a section divider; `toggleHolesSection()` shows/hides `#summary-holes-wrap` and rotates `#holes-section-chevron`
    - Each hole row shows number, par, stroke count, total SG — tappable to expand via `toggleSummaryHole(holeNum)` → `#ssum-hole-{holeNum}`
    - Expanded hole rows use category name as label (`.ssum-hole-cat`, 62px wide)
+   - Each expanded shot row has a `⊘` button (`.sshot-excl-btn`) at the far right; tap to exclude/include. Excluded rows render at 35% opacity (`.excluded`)
 
 **summary-stats card:** four expandable groups — `toggleStatGroup(group)` toggles `#sstat-{group}` / `#sstat-icon-{group}`.
 - `statGroup(id, title, rows, headerVal='')` — helper that renders each group; `headerVal` appears inline in the collapsed header (dimmed, 12px) so key stats are visible without expanding
@@ -342,7 +348,7 @@ Sand, Recovery, and Penalty are infrequent. In lie pill rows, they appear as sec
 
 Buckets filter by `distFrom >= b.min && distFrom <= b.max` (inclusive). Buckets with a `lie` property (e.g. Approach › Recovery) filter by `s.lie === b.lie` instead of distance, and those lies are automatically excluded from distance-based buckets in the same category.
 
-`buildShotRow(s, label, labelClass)` — used by the hole drill-down (`toggleSummaryHole`) only; category drill-down now uses `buildBucketRows`.
+`buildShotRow(s, label, labelClass, holeNum, shotIdx, excluded)` — used by the hole drill-down (`toggleSummaryHole`) only; category drill-down uses `buildBucketRows`. When `holeNum`/`shotIdx` are provided, renders a `⊘` exclusion button; `excluded=true` dims the row and highlights the button red.
 
 `buildRankedBuckets(catShots)` — flattens all category buckets into a single list sorted best → worst by avg SG. Takes the same `catShots = {drive, approach, shortgame, putt}` shape used by `renderSummary` and `renderTrends`. Empty buckets are skipped. Each row shows category badge, bucket label, shot count, avg SG. Appears as a collapsible "Rankings" section in both summary (inside `#summary-totals`, between category rows and SG by Hole, toggled by `toggleRankingsSection()`) and trends (as a `.trends-rankings-card` at the bottom, toggled by `toggleTrendsRankings()`).
 
@@ -358,11 +364,27 @@ Buckets filter by `distFrom >= b.min && distFrom <= b.max` (inclusive). Buckets 
 
 Both use `countStrokes(shots)` for stroke totals (adds +1 per penalty shot).
 
+## Shot Exclusion
+
+Shots can be flagged to exclude them from SG calculations without deleting them. Useful for ignoring outlier holes while still seeing the full scorecard picture.
+
+**Data model:** `round.excludedShots: [{hole, shotIndex}]` — stored on the round object alongside `conditions` and `notes`. `shotIndex` is the 0-based index within `hole.shots[]`. `getExcludedSet(round)` (`state.js`) returns `Set<"hole-shotIndex">` for O(1) lookup.
+
+**UI entry point:** Expand "SG by Hole" on the summary screen, then tap a hole to drill down. Each shot row has a `⊘` button (`.sshot-excl-btn`) at the far right. Tap to exclude (button turns red, row dims to 35%); tap again to include. `toggleShotExclusion(holeNum, shotIdx)` in `summary.js` handles the toggle — updates `round.excludedShots`, calls `updateRound(round)`, then re-renders.
+
+**Scope of exclusion (summary screen):** Excluded shots are filtered from category totals, total SG, bucket drill-downs, miss grids, club rows, rankings, and the statistics card (driving/approach/short game/putting). Stroke count is never affected — it always reflects actual strokes played.
+
+**Exclusion badge:** When `round.excludedShots.length > 0`, a `.excl-badge` row appears below the Total SG header: "N shots excluded · Clear". Tapping Clear calls `clearAllExclusions()` which empties `round.excludedShots`, saves, and re-renders.
+
+**Scope of exclusion (Analysis screen):** The "Excl. flagged" pill (`#tf-excl`) toggles `state.trendsExclude`. When active, `renderTrends()` calls `getExcludedSet(r)` per round and skips flagged shots during aggregation.
+
 ## Analysis Screen
 
 `renderTrends()` builds the cross-round analysis view. Accessible via the "Analysis" button on the home screen. Internal identifiers (`screen-trends`, `renderTrends`, `trendsFilter`, etc.) all use `trends` — only the UI label changed.
 
 **Filter:** Last 5 / Last 10 / All rounds toggle (`state.trendsFilter`, default `10`). Pills use `.selected` class. `setTrendsFilter(n)` updates state and re-renders; `n=0` means all rounds.
+
+**Excl. flagged toggle** (`#tf-excl`): when active (`state.trendsExclude = true`), shots flagged as excluded in any round are filtered out before aggregation. `setTrendsExclude(val)` updates state and re-renders. The pill syncs its `.selected` class in `renderTrends()`.
 
 **Category cards:** Four cards (Drive, Approach, Short Game, Putt), each showing:
 - Category name, shot count, round count

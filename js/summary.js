@@ -200,7 +200,7 @@ function toggleRankingsSection() {
   if(icon) icon.style.transform = open ? 'rotate(90deg)' : '';
 }
 
-function buildShotRow(s, label, labelClass = 'ssum-hole') {
+function buildShotRow(s, label, labelClass = 'ssum-hole', holeNum = null, shotIdx = null, excluded = false) {
   const fromDist = s.lie === 'green' ? s.distFrom + 'ft' : s.distFrom + 'y';
   const toLabel = LIE_ABBR[s.resultLie] || s.resultLie;
   const toDist = s.resultLie === 'holed' ? '' : s.resultLie === 'green' ? (s.resultDist != null ? s.resultDist + 'ft' : '') : (s.resultDist != null ? s.resultDist + 'y' : '');
@@ -211,12 +211,16 @@ function buildShotRow(s, label, labelClass = 'ssum-hole') {
   const fromBlock = driveDist != null
     ? `${LIE_ABBR[s.lie] || s.lie} ${fromDist} <span class="ssum-drive">${driveDist}y drive</span>`
     : `${LIE_ABBR[s.lie] || s.lie} ${fromDist}`;
-  return `<div class="ssum-shot">
+  const exclBtn = holeNum != null && shotIdx != null
+    ? `<button class="sshot-excl-btn${excluded ? ' excl-active' : ''}" onclick="event.stopPropagation();toggleShotExclusion(${holeNum},${shotIdx})" title="${excluded ? 'Include shot' : 'Exclude shot'}">⊘</button>`
+    : '';
+  return `<div class="ssum-shot${excluded ? ' excluded' : ''}">
     <span class="${labelClass}">${label}</span>
     <span class="ssum-from">${fromBlock}</span>
     <span class="ssum-arrow">›</span>
     <span class="ssum-to">${toLabel}${toDist ? ' ' + toDist : ''}${missStr ? `<span class="ssum-miss"> ${missStr}</span>` : ''}</span>
     <span class="ssum-sg" style="color:${s.sg != null ? getQuality(s.sg, s.category).color : 'var(--text-muted)'}">${sgStr}</span>
+    ${exclBtn}
   </div>`;
 }
 
@@ -301,6 +305,8 @@ function renderScorecard(round) {
 
 function renderSummary() {
   const round = currentRound(); if(!round) return;
+  const excSet = getExcludedSet(round);
+  const hasExcluded = (round.excludedShots || []).length > 0;
 
   const cats = ['drive', 'approach', 'shortgame', 'putt'];
   const tot = {drive:0, approach:0, shortgame:0, putt:0}, cnt = {drive:0, approach:0, shortgame:0, putt:0};
@@ -310,9 +316,12 @@ function renderSummary() {
   for(const hole of round.holes) {
     const hShots = hole.shots || [];
     gStrokes += countStrokes(hShots);
-    for(const s of hShots) {
-      if(catShots[s.category]) catShots[s.category].push({...s, holeNum:hole.hole});
-      if(s.sg == null) continue; tot[s.category] += s.sg; cnt[s.category]++; gTotal += s.sg; gCount++;
+    for(let i = 0; i < hShots.length; i++) {
+      const s = hShots[i];
+      const isExcluded = excSet.has(`${hole.hole}-${i}`);
+      if(!isExcluded && catShots[s.category]) catShots[s.category].push({...s, holeNum:hole.hole});
+      if(isExcluded || s.sg == null) continue;
+      tot[s.category] += s.sg; cnt[s.category]++; gTotal += s.sg; gCount++;
     }
   }
 
@@ -341,9 +350,9 @@ function renderSummary() {
 
   const holesHTML = round.holes.map(h => {
     const shots = h.shots || []; if(shots.length === 0) return '';
-    const hsg = shots.reduce((s, sh) => s + (sh.sg || 0), 0);
+    const hsg = shots.reduce((sum, s, i) => excSet.has(`${h.hole}-${i}`) ? sum : sum + (s.sg || 0), 0);
     const hStrokes = countStrokes(shots);
-    const rows = shots.map(s => buildShotRow(s, CAT_LABELS[s.category] || s.category, 'ssum-hole-cat')).join('');
+    const rows = shots.map((s, i) => buildShotRow(s, CAT_LABELS[s.category] || s.category, 'ssum-hole-cat', h.hole, i, excSet.has(`${h.hole}-${i}`))).join('');
     return `<div class="hole-summary-row summary-cat-row" onclick="toggleSummaryHole(${h.hole})">
       <div class="hsrow-hole">${h.hole}</div>
       <div class="hsrow-par">P${h.par}</div>
@@ -395,12 +404,17 @@ function renderSummary() {
     </div>`;
   }
 
+  const exclNote = hasExcluded
+    ? `<div class="excl-badge"><span>${(round.excludedShots||[]).length} shot${(round.excludedShots||[]).length!==1?'s':''} excluded</span> · <span class="excl-clear" onclick="clearAllExclusions()">Clear</span></div>`
+    : '';
+
   document.getElementById('summary-totals').innerHTML = `
     <div class="summary-stat"><span class="summary-total-label">Total SG <span class="summary-total-sub">(${gStrokes} stroke${gStrokes !== 1 ? 's' : ''})</span></span><span class="summary-total-val ${sgCls(gTotal,gCount)}">${fmt(gTotal,gCount)}</span></div>
-    ${conditionsHTML}${catHTML}${rankingsSection}${byHoleSection}`;
+    ${exclNote}${conditionsHTML}${catHTML}${rankingsSection}${byHoleSection}`;
 
-  // Statistics
-  const allShots = round.holes.flatMap(h => (h.shots || []).map((s, i) => ({...s, holeNum:h.hole, shotIdx:i})));
+  // Statistics — exclude flagged shots
+  const allShots = round.holes.flatMap(h => (h.shots || []).map((s, i) => ({...s, holeNum:h.hole, shotIdx:i})))
+    .filter(s => !excSet.has(`${s.holeNum}-${s.shotIdx}`));
   const avg = arr => arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : null;
   const fmtFt = v => v != null ? Math.round(v) + ' ft' : '—';
   const fmtYd = v => v != null ? Math.round(v) + ' yds' : '—';
@@ -453,6 +467,56 @@ function renderSummary() {
     + statGroup('approach', 'Approach', approachStats, girStr)
     + statGroup('shortgame', 'Short Game', shortgameStats, proximityStr)
     + statGroup('putt', 'Putting', puttStats);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SHOT EXCLUSION
+// ═══════════════════════════════════════════════════════════════
+
+function saveExpandState() {
+  return new Set(
+    [...document.querySelectorAll('.ssum-expand, #summary-holes-wrap, #rankings-wrap')]
+      .filter(el => !el.classList.contains('hidden'))
+      .map(el => el.id)
+  );
+}
+
+function restoreExpandState(open) {
+  open.forEach(id => {
+    const el = document.getElementById(id); if(!el) return;
+    el.classList.remove('hidden');
+    const chevron =
+      id === 'summary-holes-wrap'     ? document.getElementById('holes-section-chevron') :
+      id === 'rankings-wrap'          ? document.getElementById('rankings-chevron') :
+      id.startsWith('ssum-hole-')     ? document.getElementById('ssum-hole-icon-' + id.slice('ssum-hole-'.length)) :
+      id.startsWith('ssum-')         ? document.getElementById('ssum-icon-' + id.slice('ssum-'.length)) :
+      id.startsWith('sstat-')        ? document.getElementById('sstat-icon-' + id.slice('sstat-'.length)) :
+      null;
+    if(chevron) chevron.style.transform = 'rotate(90deg)';
+  });
+}
+
+function toggleShotExclusion(holeNum, shotIdx) {
+  const round = currentRound(); if(!round) return;
+  const open = saveExpandState();
+  const excl = round.excludedShots || [];
+  const key = `${holeNum}-${shotIdx}`;
+  const idx = excl.findIndex(e => `${e.hole}-${e.shotIndex}` === key);
+  if(idx >= 0) excl.splice(idx, 1);
+  else excl.push({hole: holeNum, shotIndex: shotIdx});
+  round.excludedShots = excl;
+  updateRound(round);
+  renderSummary();
+  restoreExpandState(open);
+}
+
+function clearAllExclusions() {
+  const round = currentRound(); if(!round) return;
+  const open = saveExpandState();
+  round.excludedShots = [];
+  updateRound(round);
+  renderSummary();
+  restoreExpandState(open);
 }
 
 // ═══════════════════════════════════════════════════════════════

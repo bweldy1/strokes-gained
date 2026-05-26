@@ -339,6 +339,13 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
 .restore-option-row { display: flex; align-items: center; gap: 10px; font-size: 15px; color: var(--text); cursor: pointer; }
 .restore-option-row input[type="radio"] { width: 18px; height: 18px; accent-color: var(--fairway); flex-shrink: 0; }
 
+/* ── Shot exclusion ── */
+.sshot-excl-btn { background: none; border: none; color: var(--text-dim); font-size: 15px; padding: 0 2px; cursor: pointer; flex-shrink: 0; line-height: 1; opacity: .4; }
+.sshot-excl-btn.excl-active { color: var(--accent); opacity: 1; }
+.ssum-shot.excluded { opacity: .35; }
+.excl-badge { font-size: 11px; color: var(--text-dim); padding: 6px 0 8px; border-bottom: 1px solid var(--border); display: flex; gap: 6px; align-items: center; }
+.excl-clear { color: var(--fairway); cursor: pointer; }
+
 /* ── Utility ── */
 .hidden { display: none !important; }
 .sg-pos { color: var(--q-great); }

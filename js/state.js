@@ -125,7 +125,8 @@ let state = {
   shotMissType: null,
   shotClub: null,
   targetsExpanded: false,
-  trendsFilter: 10
+  trendsFilter: 10,
+  trendsExclude: false
 };
 
 // ═══════════════════════════════════════════════════════════════
@@ -144,6 +145,10 @@ function getRoundDifficultyPct(conditions, category) {
     const c = DIFFICULTY_CONDITIONS.find(d => d.id === id);
     return total + (c ? (c[category] || 0) : 0);
   }, 0);
+}
+
+function getExcludedSet(round) {
+  return new Set((round.excludedShots || []).map(e => `${e.hole}-${e.shotIndex}`));
 }
 
 function getHoleOutDist() {

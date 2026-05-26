@@ -10,6 +10,7 @@ function renderTrends() {
   [5, 10, 0].forEach(k => {
     document.getElementById('tf-' + k).classList.toggle('selected', state.trendsFilter === k);
   });
+  document.getElementById('tf-excl').classList.toggle('selected', state.trendsExclude);
 
   const el = document.getElementById('trends-cats');
   if(rounds.length === 0) {
@@ -19,8 +20,12 @@ function renderTrends() {
 
   const catShots = {drive:[], approach:[], shortgame:[], putt:[]};
   for(const r of rounds) {
+    const excSet = state.trendsExclude ? getExcludedSet(r) : null;
     for(const h of r.holes) {
-      for(const s of (h.shots || [])) {
+      const shots = h.shots || [];
+      for(let i = 0; i < shots.length; i++) {
+        const s = shots[i];
+        if(excSet && excSet.has(`${h.hole}-${i}`)) continue;
         if(catShots[s.category]) catShots[s.category].push(s);
       }
     }
@@ -60,6 +65,11 @@ function renderTrends() {
 
 function setTrendsFilter(n) {
   state.trendsFilter = n;
+  renderTrends();
+}
+
+function setTrendsExclude(val) {
+  state.trendsExclude = val;
   renderTrends();
 }
 
