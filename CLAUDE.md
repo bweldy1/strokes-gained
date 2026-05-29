@@ -313,32 +313,38 @@ Sand, Recovery, and Penalty are infrequent. In lie pill rows, they appear as sec
 
 ## Round Summary
 
-`renderSummary()` builds two cards: `#summary-totals` and `#summary-stats`. Layout order: SG card → Statistics card → Export.
+`renderSummary()` builds two cards separated by a "Breakdown" section label. Layout order: SG card → Breakdown card → Done.
 
 **summary-totals card** contains:
 1. Header row: Total SG + stroke count
-2. **Exclusion badge** (only when `round.excludedShots` is non-empty) — "N shots excluded · Clear". Tapping Clear calls `clearAllExclusions()`. Excluded shots are filtered from all SG totals, category rows, bucket drill-downs, miss grids, club rows, rankings, and statistics. Stroke count is always the actual strokes played (unaffected by exclusion).
+2. **Exclusion badge** (only when `round.excludedShots` is non-empty) — "N shots excluded · Clear". Tapping Clear calls `clearAllExclusions()`. Excluded shots are filtered from all SG totals, category rows, bucket drill-downs, miss grids, club rows, and rankings. Stroke count is always the actual strokes played (unaffected by exclusion).
 3. **Conditions row** (only when `round.conditions` is non-empty) — condition tags + per-category SG adjustment. See [Playing Conditions](#playing-conditions).
 4. Category rows (Drive, Approach, Short Game, Putt) — tappable to expand via `toggleSummaryCat(cat)` → `#ssum-{cat}` / `#ssum-icon-{cat}`
-   - Expanded rows show: `H1  Tee 385y · 235y drive › Fwy 150y Short-Left  +0.32`
+   - Each row is **two lines**: category name + shot count on line 1; **headline stat** always visible on line 2 (`.ssum-cat-headline`, `--text-dim`):
+     - Drive: `n/total fwy` (fairways hit)
+     - Approach: `n/total GIR`
+     - Short Game: `n ft prox` (avg proximity on green; `—` if none)
+     - Putt: `n ft avg 1st` (avg first putt distance)
+   - Right side shows **total SG** only (`.ssum-cat-total`, 20px) + chevron
+   - Expanded panel contains: SG bucket rows + miss direction grid + club rows (non-putt) or miss type (putt), then a **Statistics sub-section** (`.ssum-stats-section`) with a dimmed "STATISTICS" header (`.ssum-stats-header`) and stat rows (`.sstat-row`):
+     - Drive: Avg distance, Longest, Fairways hit
+     - Approach: Avg distance, GIR
+     - Short Game: Avg distance to hole, Avg proximity (on green)
+     - Putt: Avg first putt, Avg holed, Longest holed
    - Lie abbreviations from `LIE_ABBR`: Tee, Fwy, Rgh, Sand, Rcv, Grn, Holed, Pen
    - Miss in `.ssum-miss` (10px, `--text-dim`); drive distance in `.ssum-drive` (10px, `--text-dim`)
-5. **SG by Hole** — collapsible section at the bottom of the card, collapsed by default
-   - Toggle row styled as a section divider; `toggleHolesSection()` shows/hides `#summary-holes-wrap` and rotates `#holes-section-chevron`
-   - Each hole row shows number, par, stroke count, total SG — tappable to expand via `toggleSummaryHole(holeNum)` → `#ssum-hole-{holeNum}`
-   - Expanded hole rows use category name as label (`.ssum-hole-cat`, 62px wide)
-   - Each expanded shot row has a `⊘` button (`.sshot-excl-btn`) at the far right; tap to exclude/include. Excluded rows render at 35% opacity (`.excluded`)
+   - Stat rows use `.sstat-row`, `.sstat-label`, `.sstat-val`
+   - Stats computed in `renderSummary()` before catHTML so headline values are available for the row headers:
+     - Fairways hit = drive shots where `resultLie==='fairway'`
+     - GIR = any shot at or before regulation index (`par-3`) with `resultLie==='green'` or `'holed'`; handles eagle/albatross correctly
+     - Avg proximity = avg `resultDist` of shortgame shots where `resultLie==='green'` and `resultDist != null`
 
-**summary-stats card:** four expandable groups — `toggleStatGroup(group)` toggles `#sstat-{group}` / `#sstat-icon-{group}`.
-- `statGroup(id, title, rows, headerVal='')` — helper that renders each group; `headerVal` appears inline in the collapsed header (dimmed, 12px) so key stats are visible without expanding
-- **Driving** (`group='drive'`): header shows Fairways hit (`n/total (pct%)`); expands to Avg distance, Longest, Fairways hit
-  - Fairways hit = drive shots where `resultLie==='fairway'`
-- **Approach** (`group='approach'`): header shows GIR (`n/total (pct%)`); expands to Avg distance, GIR
-  - GIR = any shot at or before the regulation index (`par-3`) with `resultLie==='green'` or `'holed'`; handles eagle/albatross correctly
-- **Short Game** (`group='shortgame'`): header shows Avg proximity (feet); expands to Avg distance to hole (yards), Avg proximity (on green, feet)
-  - Avg proximity = avg `resultDist` of shortgame shots where `resultLie==='green'` and `resultDist != null`; excludes missed greens and holed shots; shows `—` if none
-- **Putting** (`group='putt'`): Avg first putt distance (first putt per hole), Avg holed distance, Longest holed (all in feet)
-- Stat rows use `.sstat-row`, `.sstat-label`, `.sstat-val`
+**summary-breakdown card** (`#summary-breakdown`) — rendered below the "Breakdown" section label:
+- **Rankings** — collapsible, collapsed by default; `toggleRankingsSection()` shows/hides `#rankings-wrap`, rotates `#rankings-chevron`
+- **SG by Hole** — collapsible, collapsed by default; `toggleHolesSection()` shows/hides `#summary-holes-wrap`, rotates `#holes-section-chevron`
+  - Each hole row shows number, par, stroke count, total SG — tappable to expand via `toggleSummaryHole(holeNum)` → `#ssum-hole-{holeNum}`
+  - Expanded hole rows use category name as label (`.ssum-hole-cat`, 62px wide)
+  - Each expanded shot row has a `⊘` button (`.sshot-excl-btn`) at the far right; tap to exclude/include. Excluded rows render at 35% opacity (`.excluded`)
 
 `buildBucketRows(shots, cat)` — renders the category drill-down as bucket rows (avg SG + total SG per bucket). Empty buckets are skipped. Defined in `state.js` as `SG_BUCKETS`:
 - **Putt** (feet, `distFrom`): 0–3, 4–8, 9–15, 16–25, 26+
@@ -350,7 +356,7 @@ Buckets filter by `distFrom >= b.min && distFrom <= b.max` (inclusive). Buckets 
 
 `buildShotRow(s, label, labelClass, holeNum, shotIdx, excluded)` — used by the hole drill-down (`toggleSummaryHole`) only; category drill-down uses `buildBucketRows`. When `holeNum`/`shotIdx` are provided, renders a `⊘` exclusion button; `excluded=true` dims the row and highlights the button red.
 
-`buildRankedBuckets(catShots)` — flattens all category buckets into a single list sorted best → worst by avg SG. Takes the same `catShots = {drive, approach, shortgame, putt}` shape used by `renderSummary` and `renderTrends`. Empty buckets are skipped. Each row shows category badge, bucket label, shot count, avg SG. Appears as a collapsible "Rankings" section in both summary (inside `#summary-totals`, between category rows and SG by Hole, toggled by `toggleRankingsSection()`) and trends (as a `.trends-rankings-card` at the bottom, toggled by `toggleTrendsRankings()`).
+`buildRankedBuckets(catShots)` — flattens all category buckets into a single list sorted best → worst by avg SG. Takes the same `catShots = {drive, approach, shortgame, putt}` shape used by `renderSummary` and `renderTrends`. Empty buckets are skipped. Each row shows category badge, bucket label, shot count, avg SG. Appears as a collapsible "Rankings" section in both summary (inside `#summary-breakdown`, toggled by `toggleRankingsSection()`) and trends (as a `.trends-rankings-card` at the bottom, toggled by `toggleTrendsRankings()`).
 
 `buildMissGrid(shots, cat)` — renders a miss direction percentage grid appended after bucket rows in each category's expand section (summary + trends). Shows a 3×3 grid of depth (Long/Even/Short) × side (Left/Middle/Right, or Low/Center/High for putts). Each cell shows percentage and shot count; cells with ≥20% get a subtle green highlight (`.miss-pct-cell-hi`). Column headers show side totals. Only `missSide` is required for inclusion — if `missDepth` is null (older data), it defaults to `'even'`. A metadata line shows how many shots had miss data vs total. Returns `''` if no shots have `missSide` set.
 
@@ -372,7 +378,7 @@ Shots can be flagged to exclude them from SG calculations without deleting them.
 
 **UI entry point:** Expand "SG by Hole" on the summary screen, then tap a hole to drill down. Each shot row has a `⊘` button (`.sshot-excl-btn`) at the far right. Tap to exclude (button turns red, row dims to 35%); tap again to include. `toggleShotExclusion(holeNum, shotIdx)` in `summary.js` handles the toggle — updates `round.excludedShots`, calls `updateRound(round)`, then re-renders.
 
-**Scope of exclusion (summary screen):** Excluded shots are filtered from category totals, total SG, bucket drill-downs, miss grids, club rows, rankings, and the statistics card (driving/approach/short game/putting). Stroke count is never affected — it always reflects actual strokes played.
+**Scope of exclusion (summary screen):** Excluded shots are filtered from category totals, total SG, bucket drill-downs, miss grids, club rows, rankings, and the Statistics sub-section inside each category expand. Stroke count is never affected — it always reflects actual strokes played.
 
 **Exclusion badge:** When `round.excludedShots.length > 0`, a `.excl-badge` row appears below the Total SG header: "N shots excluded · Clear". Tapping Clear calls `clearAllExclusions()` which empties `round.excludedShots`, saves, and re-renders.
 

@@ -328,24 +328,68 @@ function renderSummary() {
   const fmt = (v, c) => c === 0 ? '—' : (v >= 0 ? '+' : '') + v.toFixed(2);
   const sgCls = (v, c) => c === 0 ? 'sg-null' : v >= 0 ? 'sg-pos' : 'sg-neg';
 
+  // Statistics — computed here so headline stats are available for category rows
+  const allShots = round.holes.flatMap(h => (h.shots || []).map((s, i) => ({...s, holeNum:h.hole, shotIdx:i})))
+    .filter(s => !excSet.has(`${s.holeNum}-${s.shotIdx}`));
+  const avg = arr => arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : null;
+  const fmtFt = v => v != null ? Math.round(v) + ' ft' : '—';
+  const fmtYd = v => v != null ? Math.round(v) + ' yds' : '—';
+  const statRow = (label, val) => `<div class="sstat-row"><span class="sstat-label">${label}</span><span class="sstat-val">${val}</span></div>`;
+
+  const drives = allShots.filter(s => s.category === 'drive' && s.distFrom != null && s.resultDist != null);
+  const driveDists = drives.map(s => s.distFrom - s.resultDist);
+  const fairwaysHit = drives.filter(s => s.resultLie === 'fairway').length;
+  const fairwayTotal = drives.length;
+  const fairwayStr = fairwayTotal ? `${fairwaysHit}/${fairwayTotal} (${Math.round(fairwaysHit / fairwayTotal * 100)}%)` : '—';
+  const driveStats = statRow('Avg distance', fmtYd(avg(driveDists)))
+    + statRow('Longest', fmtYd(driveDists.length ? Math.max(...driveDists) : null))
+    + statRow('Fairways hit', fairwayStr);
+
+  const approaches = allShots.filter(s => s.category === 'approach' && s.distFrom != null);
+  const holesPlayed = round.holes.filter(h => (h.shots || []).length > 0);
+  const girHoles = holesPlayed.filter(h => {
+    const regIdx = h.par - 3;
+    return (h.shots || []).slice(0, regIdx + 1).some(s => s.resultLie === 'green' || s.resultLie === 'holed');
+  });
+  const girStr = holesPlayed.length ? `${girHoles.length}/${holesPlayed.length} (${Math.round(girHoles.length / holesPlayed.length * 100)}%)` : '—';
+  const approachStats = statRow('Avg distance', fmtYd(avg(approaches.map(s => s.distFrom))))
+    + statRow('GIR', girStr);
+
+  const shortgame = allShots.filter(s => s.category === 'shortgame' && s.distFrom != null);
+  const sgProximity = shortgame.filter(s => s.resultLie === 'green' && s.resultDist != null);
+  const proximityStr = sgProximity.length ? fmtFt(avg(sgProximity.map(s => s.resultDist))) : '—';
+  const shortgameStats = statRow('Avg distance to hole', fmtYd(avg(shortgame.map(s => s.distFrom))))
+    + statRow('Avg proximity (on green)', proximityStr);
+
+  const putts = allShots.filter(s => s.category === 'putt');
+  const firstPutts = round.holes.map(h => (h.shots || []).find(s => s.category === 'putt')).filter(Boolean);
+  const holedPutts = putts.filter(s => s.resultLie === 'holed');
+  const puttStats = statRow('Avg first putt', fmtFt(avg(firstPutts.map(s => s.distFrom))))
+    + statRow('Avg holed', fmtFt(avg(holedPutts.map(s => s.distFrom))))
+    + statRow('Longest holed', fmtFt(holedPutts.length ? Math.max(...holedPutts.map(s => s.distFrom)) : null));
+
+  const headlines = {
+    drive:     fairwayTotal    ? `${fairwaysHit}/${fairwayTotal} fwy` : '—',
+    approach:  holesPlayed.length ? `${girHoles.length}/${holesPlayed.length} GIR` : '—',
+    shortgame: sgProximity.length ? `${Math.round(avg(sgProximity.map(s => s.resultDist)))} ft prox` : '—',
+    putt:      firstPutts.length  ? `${Math.round(avg(firstPutts.map(s => s.distFrom)))} ft avg 1st` : '—'
+  };
+  const catStatRows = { drive: driveStats, approach: approachStats, shortgame: shortgameStats, putt: puttStats };
+
   const catHTML = cats.map(c => {
     const rows = buildBucketRows(catShots[c], c) + buildMissGrid(catShots[c], c) + (c === 'putt' ? buildMissType(catShots[c]) : '') + (c !== 'putt' ? buildClubRows(catShots[c]) : '');
-    const avg = fmt(cnt[c] > 0 ? tot[c] / cnt[c] : 0, cnt[c]);
+    const statsSection = `<div class="ssum-stats-section"><div class="ssum-stats-header">Statistics</div>${catStatRows[c]}</div>`;
     return `<div class="summary-stat summary-cat-row" onclick="toggleSummaryCat('${c}')">
-        <span class="summary-stat-label">${CAT_LABELS[c]} <span class="ssum-cat-meta">(${cnt[c]} shots)</span></span>
+        <div class="ssum-cat-left">
+          <span class="ssum-cat-name">${CAT_LABELS[c]} <span class="ssum-cat-meta">(${cnt[c]} shots)</span></span>
+          <span class="ssum-cat-headline">${headlines[c]}</span>
+        </div>
         <span class="ssum-cat-right">
-          <span class="ssum-cat-avg">
-            <span class="ssum-cat-avg-lbl">avg</span>
-            <span class="ssum-cat-avg-val ${sgCls(tot[c],cnt[c])}">${avg}</span>
-          </span>
-          <span class="ssum-cat-avg">
-            <span class="ssum-cat-avg-lbl">total</span>
-            <span class="ssum-cat-avg-val ${sgCls(tot[c],cnt[c])}">${fmt(tot[c],cnt[c])}</span>
-          </span>
+          <span class="ssum-cat-total ${sgCls(tot[c],cnt[c])}">${fmt(tot[c],cnt[c])}</span>
           <span class="ssum-chevron" id="ssum-icon-${c}">›</span>
         </span>
       </div>
-      <div class="ssum-expand hidden" id="ssum-${c}">${rows}</div>`;
+      <div class="ssum-expand hidden" id="ssum-${c}">${rows}${statsSection}</div>`;
   }).join('');
 
   const holesHTML = round.holes.map(h => {
@@ -410,63 +454,9 @@ function renderSummary() {
 
   document.getElementById('summary-totals').innerHTML = `
     <div class="summary-stat"><span class="summary-total-label">Total SG <span class="summary-total-sub">(${gStrokes} stroke${gStrokes !== 1 ? 's' : ''})</span></span><span class="summary-total-val ${sgCls(gTotal,gCount)}">${fmt(gTotal,gCount)}</span></div>
-    ${exclNote}${conditionsHTML}${catHTML}${rankingsSection}${byHoleSection}`;
+    ${exclNote}${conditionsHTML}${catHTML}`;
+  document.getElementById('summary-breakdown').innerHTML = rankingsSection + byHoleSection;
 
-  // Statistics — exclude flagged shots
-  const allShots = round.holes.flatMap(h => (h.shots || []).map((s, i) => ({...s, holeNum:h.hole, shotIdx:i})))
-    .filter(s => !excSet.has(`${s.holeNum}-${s.shotIdx}`));
-  const avg = arr => arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : null;
-  const fmtFt = v => v != null ? Math.round(v) + ' ft' : '—';
-  const fmtYd = v => v != null ? Math.round(v) + ' yds' : '—';
-  const statRow = (label, val) => `<div class="sstat-row"><span class="sstat-label">${label}</span><span class="sstat-val">${val}</span></div>`;
-  const statGroup = (id, title, rows, headerVal = '') => `
-    <div class="summary-stat summary-cat-row" onclick="toggleStatGroup('${id}')">
-      <span class="summary-stat-label">${title}${headerVal ? ` <span class="sstat-header-val">${headerVal}</span>` : ''}</span>
-      <span class="ssum-chevron" id="sstat-icon-${id}">›</span>
-    </div>
-    <div class="ssum-expand hidden" id="sstat-${id}">${rows}</div>`;
-
-  // Driving
-  const drives = allShots.filter(s => s.category === 'drive' && s.distFrom != null && s.resultDist != null);
-  const driveDists = drives.map(s => s.distFrom - s.resultDist);
-  const fairwaysHit = drives.filter(s => s.resultLie === 'fairway').length;
-  const fairwayTotal = drives.length;
-  const fairwayStr = fairwayTotal ? `${fairwaysHit}/${fairwayTotal} (${Math.round(fairwaysHit / fairwayTotal * 100)}%)` : '—';
-  const driveStats = statRow('Avg distance', fmtYd(avg(driveDists)))
-    + statRow('Longest', fmtYd(driveDists.length ? Math.max(...driveDists) : null))
-    + statRow('Fairways hit', fairwayStr);
-
-  // Approach
-  const approaches = allShots.filter(s => s.category === 'approach' && s.distFrom != null);
-  const holesPlayed = round.holes.filter(h => (h.shots || []).length > 0);
-  const girHoles = holesPlayed.filter(h => {
-    const regIdx = h.par - 3;
-    return (h.shots || []).slice(0, regIdx + 1).some(s => s.resultLie === 'green' || s.resultLie === 'holed');
-  });
-  const girStr = holesPlayed.length ? `${girHoles.length}/${holesPlayed.length} (${Math.round(girHoles.length / holesPlayed.length * 100)}%)` : '—';
-  const approachStats = statRow('Avg distance', fmtYd(avg(approaches.map(s => s.distFrom))))
-    + statRow('GIR', girStr);
-
-  // Short Game
-  const shortgame = allShots.filter(s => s.category === 'shortgame' && s.distFrom != null);
-  const sgProximity = shortgame.filter(s => s.resultLie === 'green' && s.resultDist != null);
-  const proximityStr = sgProximity.length ? fmtFt(avg(sgProximity.map(s => s.resultDist))) : '—';
-  const shortgameStats = statRow('Avg distance to hole', fmtYd(avg(shortgame.map(s => s.distFrom))))
-    + statRow('Avg proximity (on green)', proximityStr);
-
-  // Putting
-  const putts = allShots.filter(s => s.category === 'putt');
-  const firstPutts = round.holes.map(h => (h.shots || []).find(s => s.category === 'putt')).filter(Boolean);
-  const holedPutts = putts.filter(s => s.resultLie === 'holed');
-  const puttStats = statRow('Avg first putt', fmtFt(avg(firstPutts.map(s => s.distFrom))))
-    + statRow('Avg holed', fmtFt(avg(holedPutts.map(s => s.distFrom))))
-    + statRow('Longest holed', fmtFt(holedPutts.length ? Math.max(...holedPutts.map(s => s.distFrom)) : null));
-
-  document.getElementById('summary-stats').innerHTML =
-    statGroup('drive', 'Driving', driveStats, fairwayStr)
-    + statGroup('approach', 'Approach', approachStats, girStr)
-    + statGroup('shortgame', 'Short Game', shortgameStats, proximityStr)
-    + statGroup('putt', 'Putting', puttStats);
 }
 
 // ═══════════════════════════════════════════════════════════════
