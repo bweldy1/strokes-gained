@@ -76,20 +76,40 @@ function handleSettingsOverlayClick(e) {
 
 // ── Backup ──
 
-function backupData() {
-  const payload = { version: 1, exported: new Date().toISOString(), rounds: getRounds(), courses: getCourses() };
+function openBackupPanel() {
+  const n = getRounds().length;
+  document.getElementById('backup-all-label').textContent = `All rounds (${n})`;
+  document.getElementById('backup-panel').classList.remove('hidden');
+}
+
+function cancelBackupPanel() {
+  document.getElementById('backup-panel').classList.add('hidden');
+  const allRadio = document.querySelector('input[name="backup-scope"][value="all"]');
+  if(allRadio) allRadio.checked = true;
+}
+
+function confirmBackup() {
+  const scope = document.querySelector('input[name="backup-scope"]:checked')?.value || 'all';
+  const recentCount = scope === 'recent' ? (parseInt(document.getElementById('backup-recent-count').value, 10) || null) : null;
+  cancelBackupPanel();
+  backupData(recentCount);
+}
+
+function backupData(recentCount = null) {
+  let rounds = getRounds();
+  if(recentCount != null && recentCount > 0) rounds = rounds.slice(0, recentCount);
+  const payload = { version: 1, exported: new Date().toISOString(), rounds, courses: getCourses() };
   const json = JSON.stringify(payload, null, 2);
   const date = new Date().toISOString().slice(0, 10);
-  const filename = `sg-backup-${date}.json`;
+  const filename = recentCount != null ? `sg-export-last${recentCount}-${date}.json` : `sg-backup-${date}.json`;
   try {
     const blob = new Blob([json], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url; a.download = filename; a.click();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
-    showToast('Backup downloaded');
+    showToast(recentCount != null ? `Exported ${rounds.length} round${rounds.length !== 1 ? 's' : ''}` : 'Backup downloaded');
   } catch(e) {
-    // Fallback for environments where Blob/download fails
     showExportModal(json);
   }
 }

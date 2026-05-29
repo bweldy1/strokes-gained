@@ -36,8 +36,23 @@
 
       <div class="settings-section-label">Data</div>
 
-      <button class="btn btn-secondary settings-btn" onclick="backupData()">Backup</button>
-      <p class="settings-hint">Downloads a JSON file with all rounds and courses.</p>
+      <button class="btn btn-secondary settings-btn" onclick="openBackupPanel()">Backup / Export</button>
+      <p class="settings-hint">Downloads a JSON file with rounds and courses.</p>
+
+      <div id="backup-panel" class="hidden">
+        <div class="restore-options">
+          <label class="restore-option-row">
+            <input type="radio" name="backup-scope" value="all" checked> <span id="backup-all-label">All rounds</span>
+          </label>
+          <label class="restore-option-row">
+            <input type="radio" name="backup-scope" value="recent"> Most recent
+            <input type="number" id="backup-recent-count" class="backup-count-input" value="5" min="1" onclick="this.closest('label').querySelector('input[type=radio]').checked=true">
+            rounds
+          </label>
+        </div>
+        <button class="btn btn-primary" onclick="confirmBackup()">Download</button>
+        <button class="btn btn-ghost" style="margin-top:8px" onclick="cancelBackupPanel()">Cancel</button>
+      </div>
 
       <button class="btn btn-secondary settings-btn" onclick="triggerRestoreFilePicker()">Restore</button>
       <p class="settings-hint">Merge a backup file into your current data.</p>

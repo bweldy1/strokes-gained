@@ -450,8 +450,14 @@ applyAllSettings()    // sync all pill UI from storage — called once in init
 - **Hole-Out Distance** — range slider (`#holeout-dist-slider`, 1–10 ft); `applyHoleOutDist()` / `setHoleOutDist(n)` in `home.js`; backed by `sg_holeOutDist`
 - **My Clubs** — `applyActiveClubs()` / `toggleActiveClub(id)` in `home.js`; backed by `sg_activeClubs` (JSON array); pills generated dynamically from `CLUBS`; `getActiveClubs()` in `state.js` returns a `Set<string>`
 
-**Backup** (`backupData()`): Serializes `{ version, exported, rounds, courses }` as JSON and triggers a file download (`sg-backup-YYYY-MM-DD.json`) via a Blob URL. Falls back to `showExportModal(json)` if Blob download fails (e.g. restrictive browser).
-- `version`: hardcoded `1` — reserved for future migration logic if the data model changes. Currently written but not read by `confirmRestore()`; restore only validates that `payload.rounds` is an array.
+**Backup / Export** (`openBackupPanel()` → `confirmBackup()` → `backupData(recentCount)`):
+- Tapping "Backup / Export" calls `openBackupPanel()`, which shows the count of stored rounds and reveals `#backup-panel` inline (same pattern as the restore preview)
+- Panel offers two radio options:
+  - **All rounds (N)** — default; N is populated live from `getRounds().length`
+  - **Most recent [ N ] rounds** — number input (`.backup-count-input`); tapping the field auto-selects this radio
+- `confirmBackup()` reads the selected radio and count, calls `cancelBackupPanel()` to collapse the panel, then calls `backupData(recentCount)`
+- `backupData(recentCount = null)`: slices `getRounds()` to the first `recentCount` entries (newest-first order) if a count is given; serializes `{ version, exported, rounds, courses }` as JSON; triggers a Blob download. Filename: `sg-backup-YYYY-MM-DD.json` for all rounds, `sg-export-lastN-YYYY-MM-DD.json` for a subset. Falls back to `showExportModal(json)` if Blob download fails (e.g. restrictive browser).
+- `version`: hardcoded `1` — reserved for future migration logic. Currently written but not read by `confirmRestore()`; restore only validates that `payload.rounds` is an array.
 
 **Restore** (`triggerRestoreFilePicker()` → `onRestoreFileSelected()` → `confirmRestore()`):
 - File picker (`<input type="file" accept=".json">`) reads the backup JSON
@@ -477,7 +483,7 @@ Accessed via the "Show Scorecard" button above "Done" on the round summary. Navi
 
 ## CSV Export
 
-`exportCSV()` and `exportSummaryCSV()` remain in `summary.js` but are **not currently exposed in the UI**. The export buttons and hint card were removed from `screen-summary.html`; the topbar export icon was also removed. Use Backup (settings sheet) for data portability.
+`exportCSV()` and `exportSummaryCSV()` remain in `summary.js` but are **not currently exposed in the UI**. The export buttons and hint card were removed from `screen-summary.html`; the topbar export icon was also removed. Use Backup / Export (settings sheet) for data portability.
 
 ## Course Management
 

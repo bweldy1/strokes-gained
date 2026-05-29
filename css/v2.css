@@ -342,6 +342,9 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
 .restore-options { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
 .restore-option-row { display: flex; align-items: center; gap: 10px; font-size: 15px; color: var(--text); cursor: pointer; }
 .restore-option-row input[type="radio"] { width: 18px; height: 18px; accent-color: var(--fairway); flex-shrink: 0; }
+.backup-count-input { width: 52px; background: var(--input-bg); border: 1px solid var(--input-border); border-radius: 6px; color: var(--text); font-size: 14px; padding: 4px 6px; text-align: center; outline: none; -moz-appearance: textfield; }
+.backup-count-input:focus { border-color: var(--fairway); }
+.backup-count-input::-webkit-outer-spin-button, .backup-count-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 
 /* ── Shot exclusion ── */
 .sshot-excl-btn { background: none; border: none; color: var(--text-dim); font-size: 15px; padding: 0 2px; cursor: pointer; flex-shrink: 0; line-height: 1; opacity: .4; }
