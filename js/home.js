@@ -19,6 +19,8 @@ function showScreen(name) {
 // HOME
 // ═══════════════════════════════════════════════════════════════
 
+const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
 function renderHome() {
   const rounds = getRounds();
   const el = document.getElementById('rounds-list');
@@ -26,7 +28,19 @@ function renderHome() {
     el.innerHTML = `<div class="empty-state"><div class="empty-state-icon">⛳</div><div class="empty-state-text">No rounds yet.<br>Start a new round to begin tracking.</div></div>`;
     return;
   }
-  el.innerHTML = rounds.map(r => {
+
+  // Default open: group containing the most recent round
+  const defaultKey = (rounds[0].date || '').slice(0, 7); // "YYYY-MM"
+
+  // Group by "YYYY-MM" key (rounds already newest-first)
+  const byGroup = {};
+  for(const r of rounds) {
+    const key = (r.date || '').slice(0, 7) || '—';
+    if(!byGroup[key]) byGroup[key] = [];
+    byGroup[key].push(r);
+  }
+
+  const cardHTML = r => {
     const sg = roundTotalSG(r, null);
     const sgStr = sg !== null ? (sg >= 0 ? '+' : '') + sg.toFixed(1) : '—';
     const strokes = r.holes.reduce((s, h) => s + countStrokes(h.shots || []), 0);
@@ -36,7 +50,33 @@ function renderHome() {
       <div class="round-card-sg"><div class="round-card-sg-val ${sgClass(sg)}">${sgStr}</div><div class="round-card-sg-lbl">Total SG</div></div>
       <div class="round-del-btn" onclick="event.stopPropagation();deleteRound('${r.id}')">×</div>
     </div>`;
+  };
+
+  const keys = Object.keys(byGroup).sort((a, b) => b.localeCompare(a));
+  el.innerHTML = keys.map(key => {
+    const gRounds = byGroup[key];
+    const [year, month] = key.split('-');
+    const monthName = MONTH_NAMES[parseInt(month, 10) - 1] || month;
+    const label = `${monthName} ${year}`;
+    const isDefault = key === defaultKey;
+    return `<div class="month-group">
+      <div class="month-header" onclick="toggleMonth('${key}')">
+        <span class="month-label">${label}</span>
+        <span class="month-meta">${gRounds.length} round${gRounds.length !== 1 ? 's' : ''}</span>
+        <span class="month-chevron" id="mo-icon-${key}" style="transform:${isDefault ? 'rotate(90deg)' : ''}">›</span>
+      </div>
+      <div id="mo-body-${key}"${isDefault ? '' : ' class="hidden"'}>${gRounds.map(cardHTML).join('')}</div>
+    </div>`;
   }).join('');
+}
+
+function toggleMonth(key) {
+  const body = document.getElementById('mo-body-' + key);
+  const icon = document.getElementById('mo-icon-' + key);
+  if(!body) return;
+  const opening = body.classList.contains('hidden');
+  body.classList.toggle('hidden');
+  if(icon) icon.style.transform = opening ? 'rotate(90deg)' : '';
 }
 
 function goToNewRound() { showScreen('courses'); }
