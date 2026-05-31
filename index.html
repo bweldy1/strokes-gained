@@ -89,6 +89,12 @@ textarea.json-input:focus { border-color: var(--fairway); }
 .hole-num-block { text-align: center; cursor: pointer; -webkit-tap-highlight-color: transparent; }
 .hole-num-label { font-size: 11px; color: var(--text-muted); letter-spacing: 1px; text-transform: uppercase; }
 .hole-num { font-size: 48px; font-weight: 700; letter-spacing: -2px; line-height: 1; color: #fff; }
+.hole-num-row { display: flex; align-items: center; justify-content: center; gap: 8px; }
+.green-img-btn { width: 30px; height: 30px; border-radius: 50%; background: var(--input-bg); border: 1px solid var(--input-border); color: var(--text-muted); font-size: 15px; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
+.green-img-btn:active { opacity: .6; }
+.green-img-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.85); z-index: 200; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; }
+.green-img { display: block; width: 170px; height: 170px; border-radius: 10px; }
+.green-img-error { color: var(--text-muted); font-size: 14px; }
 .hole-picker { display: grid; grid-template-columns: repeat(9, 1fr); gap: 6px; padding: 10px 16px 4px; }
 .hole-pick-btn { height: 34px; border-radius: 8px; background: var(--input-bg); border: 1px solid var(--input-border); color: var(--text-muted); font-size: 13px; font-weight: 600; display: flex; align-items: center; justify-content: center; cursor: pointer; -webkit-tap-highlight-color: transparent; }
 .hole-pick-btn:active { opacity: .6; }
@@ -398,7 +404,7 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
     <div class="section-label">Rounds</div>
     <div id="rounds-list"></div>
   </div>
-  <div id="build-version">Build: 2026-05-28 21:24</div>
+  <div id="build-version">Build: 2026-05-30 20:50</div>
 </div>
 
 <!-- COURSE SELECT -->
@@ -445,7 +451,10 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
     <button class="hole-nav-btn" id="hole-prev-btn" onclick="prevHole()">‹</button>
     <div class="hole-num-block" onclick="toggleHolePicker()">
       <div class="hole-num-label">Hole</div>
-      <div class="hole-num" id="hole-num-display">1</div>
+      <div class="hole-num-row">
+        <div class="hole-num" id="hole-num-display">1</div>
+        <button class="green-img-btn hidden" id="green-img-btn" onclick="event.stopPropagation();openGreenImage()">🚩</button>
+      </div>
       <div class="hole-info">
         <span id="hole-par-display">Par 4</span> ·
         <span class="hole-yardage-edit" onclick="editYardage()">
@@ -465,6 +474,10 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
     <div class="tally-chip active" id="tally-putt" onclick="toggleTally('putt')"><span class="tally-chip-val" id="tv-putt">—</span><span class="tally-chip-lbl">Putt</span></div>
   </div>
   <div class="shot-list" id="shot-list"></div>
+  <div id="green-img-overlay" class="green-img-overlay hidden" onclick="closeGreenImage()">
+    <img id="green-img" src="" alt="Green diagram" class="green-img">
+    <div id="green-img-error" class="green-img-error hidden">No image available</div>
+  </div>
   <div id="hole-actions">
     <button id="hole-out-prompt" class="add-shot-btn hidden" onclick="holeOut()">⛳ Holed · <span id="hole-out-dist"></span> ft</button>
     <button id="add-shot-btn" class="add-shot-btn" onclick="openShotSheet()"><span class="add-shot-icon">+</span> Add Shot</button>
@@ -1459,12 +1472,37 @@ function getSuggestion(holeData) {
 // HOLE SCREEN
 // ═══════════════════════════════════════════════════════════════
 
+function getGreenImageFolder(course) {
+  if(!course) return null;
+  return course.greenImageFolder || (course.name === 'Wild Wood Golf Club' ? 'wildwood' : null);
+}
+
 function renderHoleScreen() {
   const round = currentRound(); if(!round) return;
   document.getElementById('hole-course-name').textContent = round.courseName;
   document.getElementById('hole-round-date').textContent = formatDate(round.date) + ' ✎';
+  const course = getCourses().find(c => c.id === round.courseId);
+  document.getElementById('green-img-btn').classList.toggle('hidden', !getGreenImageFolder(course));
   renderHole();
   updateTally();
+}
+
+function openGreenImage() {
+  const round = currentRound(); if(!round) return;
+  const course = getCourses().find(c => c.id === round.courseId);
+  const folder = getGreenImageFolder(course);
+  if(!folder) return;
+  const img = document.getElementById('green-img');
+  const err = document.getElementById('green-img-error');
+  img.classList.remove('hidden');
+  err.classList.add('hidden');
+  img.onerror = () => { img.classList.add('hidden'); err.classList.remove('hidden'); };
+  img.src = `images/greens/${folder}/hole-${state.currentHole}.png`;
+  document.getElementById('green-img-overlay').classList.remove('hidden');
+}
+
+function closeGreenImage() {
+  document.getElementById('green-img-overlay').classList.add('hidden');
 }
 
 function renderHole() {

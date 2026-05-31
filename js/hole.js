@@ -2,12 +2,37 @@
 // HOLE SCREEN
 // ═══════════════════════════════════════════════════════════════
 
+function getGreenImageFolder(course) {
+  if(!course) return null;
+  return course.greenImageFolder || (course.name === 'Wild Wood Golf Club' ? 'wildwood' : null);
+}
+
 function renderHoleScreen() {
   const round = currentRound(); if(!round) return;
   document.getElementById('hole-course-name').textContent = round.courseName;
   document.getElementById('hole-round-date').textContent = formatDate(round.date) + ' ✎';
+  const course = getCourses().find(c => c.id === round.courseId);
+  document.getElementById('green-img-btn').classList.toggle('hidden', !getGreenImageFolder(course));
   renderHole();
   updateTally();
+}
+
+function openGreenImage() {
+  const round = currentRound(); if(!round) return;
+  const course = getCourses().find(c => c.id === round.courseId);
+  const folder = getGreenImageFolder(course);
+  if(!folder) return;
+  const img = document.getElementById('green-img');
+  const err = document.getElementById('green-img-error');
+  img.classList.remove('hidden');
+  err.classList.add('hidden');
+  img.onerror = () => { img.classList.add('hidden'); err.classList.remove('hidden'); };
+  img.src = `images/greens/${folder}/hole-${state.currentHole}.png`;
+  document.getElementById('green-img-overlay').classList.remove('hidden');
+}
+
+function closeGreenImage() {
+  document.getElementById('green-img-overlay').classList.add('hidden');
 }
 
 function renderHole() {

@@ -36,7 +36,7 @@ js/
   state.js                  # Quality bands, DIFFICULTY_CONDITIONS, CLUBS, shared constants/helpers, state object, showToast, formatDate
   storage.js                # localStorage helpers: getRounds, getCourses, currentRound, updateRound, etc.
   sg-engine.js              # interpolate, getExpected, calcSG, getQuality, autoCategory, getSuggestion
-  hole.js                   # Hole screen: renderHole, renderShotList, holeOut, tally, yardage override, round edit, recalcRoundShots, toggleCondition
+  hole.js                   # Hole screen: renderHole, renderShotList, holeOut, tally, yardage override, round edit, recalcRoundShots, toggleCondition, green image viewer
   shot-entry.js             # Shot sheet: all form interactions, selectLie/Category/ResultLie, saveShot
   courses.js                # Courses screen: renderCourses, openCourseEdit, saveCourseJSON, startRound
   summary.js                # Summary screen: renderSummary, stats, CSV export, clipboard; toggleShotExclusion, clearAllExclusions
@@ -180,6 +180,25 @@ Tapping calls `holeOut()` (`hole.js`), which auto-saves a shot with no confirmat
 After saving: `renderHole()`, `updateTally()`, and a "Holed out ⛳" toast. The prompt disappears because the new last shot is `resultLie: 'holed'`, which fails the trigger condition. If the user ignores the prompt and taps Add Shot instead, the normal shot sheet opens pre-filled to green at the remaining distance.
 
 **Threshold setting:** `getHoleOutDist()` (`state.js`) reads `sg_holeOutDist` from `localStorage`, defaulting to `2`. Configurable via a 1–10 ft slider in Settings → Appearance. `setHoleOutDist(n)` persists the value and calls `applyHoleOutDist(n)` to sync the slider position and label. Both `renderShotList` and `holeOut()` call `getHoleOutDist()` so the display and save guard stay in sync.
+
+### Green Image Viewer
+
+A per-hole green diagram overlay accessible from the hole screen. When the current course has `greenImageFolder` set (or matches the Wild Wood CC default), a 🚩 flag button appears inline to the right of the large hole number inside `.hole-num-row`.
+
+**Image URL pattern:** `images/greens/{folder}/hole-{n}.png` — files are always `.png`, 170×170 px.
+
+**`getGreenImageFolder(course)`** (`hole.js`) — resolves the folder name:
+- Returns `course.greenImageFolder` if set
+- Falls back to `'wildwood'` when `course.name === 'Wild Wood Golf Club'`
+- Returns `null` otherwise (button hidden)
+
+**`openGreenImage()`** — looks up the folder via `getGreenImageFolder`, sets `img.src`, and shows `#green-img-overlay`. The `img.onerror` handler hides the `<img>` and shows `#green-img-error` ("No image available") if the file is missing.
+
+**`closeGreenImage()`** — hides the overlay. The overlay itself also has `onclick="closeGreenImage()"` so tapping anywhere dismisses it.
+
+The flag button uses `event.stopPropagation()` so tapping it doesn't trigger the hole picker (`.hole-num-block` click handler).
+
+**To enable for a course:** add `"greenImageFolder": "foldername"` to the course JSON and place `hole-1.png` … `hole-18.png` in `images/greens/foldername/`.
 
 ### Short Game definition
 Short Game = any non-putt, non-drive shot from **under 30 yards** (`autoCategory` returns `'shortgame'` when `distYards < 30`). Chips, pitches, and bunker shots within 30 yards. Users can manually override category on any shot.
@@ -411,7 +430,21 @@ Tapping the hole number block opens an inline hole picker (`#hole-picker`) — a
 
 ## Home Screen
 
-`renderHome()` builds the recent rounds list (`#rounds-list`). Each round renders as a `.round-card` showing:
+`renderHome()` builds `#rounds-list` as a **month/year accordion**. Rounds are grouped by `"YYYY-MM"` key (sliced directly from `r.date`) and sorted newest-first. Each group renders as:
+
+```
+May 2026  ·  3 rounds  ›   ← .month-header (tappable)
+  [round cards]             ← #mo-body-2026-05
+April 2026  ·  5 rounds  ›
+  [collapsed]
+```
+
+- `MONTH_NAMES` constant maps month index → full name
+- Default open group: the `"YYYY-MM"` key of `rounds[0]` (most recent round); all others collapsed
+- `toggleMonth(key)` — toggles `#mo-body-{key}` and rotates `#mo-icon-{key}`
+- After deletion `renderHome()` re-renders, resetting to the default open group
+
+Each round card (`.round-card`) shows:
 - Course name, date, stroke count (`.round-card-meta`)
 - Note snippet (`.round-card-note`) — up to 55 characters, truncated with `…`; only shown when `r.notes` is non-empty
 - Total SG value (colored via `sgClass`) and "Total SG" label
@@ -502,6 +535,10 @@ Buttons use `event.stopPropagation()` to prevent triggering `startRound`.
 
 ### JSON import (`saveCourseJSON`)
 Updated to replace existing course if `c.id` matches an existing entry, rather than always pushing a new one. This supports the "edit holes in JSON" workflow.
+
+### Course data model
+Course objects stored in `sg_courses` include optional fields beyond `name`, `tees`, and `holes`:
+- `greenImageFolder` (optional `String`) — folder name used to resolve green diagram images for the hole screen. If absent, the green image button is hidden. See [Green Image Viewer](#green-image-viewer).
 
 ### Data safety
 Rounds store `courseName` at creation time — deleting a course does **not** affect existing round data.

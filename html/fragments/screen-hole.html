@@ -12,7 +12,10 @@
     <button class="hole-nav-btn" id="hole-prev-btn" onclick="prevHole()">‹</button>
     <div class="hole-num-block" onclick="toggleHolePicker()">
       <div class="hole-num-label">Hole</div>
-      <div class="hole-num" id="hole-num-display">1</div>
+      <div class="hole-num-row">
+        <div class="hole-num" id="hole-num-display">1</div>
+        <button class="green-img-btn hidden" id="green-img-btn" onclick="event.stopPropagation();openGreenImage()">🚩</button>
+      </div>
       <div class="hole-info">
         <span id="hole-par-display">Par 4</span> ·
         <span class="hole-yardage-edit" onclick="editYardage()">
@@ -32,6 +35,10 @@
     <div class="tally-chip active" id="tally-putt" onclick="toggleTally('putt')"><span class="tally-chip-val" id="tv-putt">—</span><span class="tally-chip-lbl">Putt</span></div>
   </div>
   <div class="shot-list" id="shot-list"></div>
+  <div id="green-img-overlay" class="green-img-overlay hidden" onclick="closeGreenImage()">
+    <img id="green-img" src="" alt="Green diagram" class="green-img">
+    <div id="green-img-error" class="green-img-error hidden">No image available</div>
+  </div>
   <div id="hole-actions">
     <button id="hole-out-prompt" class="add-shot-btn hidden" onclick="holeOut()">⛳ Holed · <span id="hole-out-dist"></span> ft</button>
     <button id="add-shot-btn" class="add-shot-btn" onclick="openShotSheet()"><span class="add-shot-icon">+</span> Add Shot</button>
