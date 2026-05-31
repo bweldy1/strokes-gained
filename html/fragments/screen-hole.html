@@ -12,10 +12,7 @@
     <button class="hole-nav-btn" id="hole-prev-btn" onclick="prevHole()">‹</button>
     <div class="hole-num-block" onclick="toggleHolePicker()">
       <div class="hole-num-label">Hole</div>
-      <div class="hole-num-row">
-        <div class="hole-num" id="hole-num-display">1</div>
-        <button class="green-img-btn hidden" id="green-img-btn" onclick="event.stopPropagation();openGreenImage()">🚩</button>
-      </div>
+      <div class="hole-num" id="hole-num-display">1</div>
       <div class="hole-info">
         <span id="hole-par-display">Par 4</span> ·
         <span class="hole-yardage-edit" onclick="editYardage()">
@@ -23,6 +20,7 @@
           <span class="yardage-edit-icon">✎</span>
         </span>
       </div>
+      <button class="green-img-btn hidden" id="green-img-btn" onclick="event.stopPropagation();openGreenImage()">View Green</button>
     </div>
     <button class="hole-nav-btn" id="hole-next-btn" onclick="nextHole()">›</button>
   </div>

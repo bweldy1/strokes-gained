@@ -80,11 +80,10 @@ textarea.json-input:focus { border-color: var(--fairway); }
 .hole-num-block { text-align: center; cursor: pointer; -webkit-tap-highlight-color: transparent; }
 .hole-num-label { font-size: 11px; color: var(--text-muted); letter-spacing: 1px; text-transform: uppercase; }
 .hole-num { font-size: 48px; font-weight: 700; letter-spacing: -2px; line-height: 1; color: #fff; }
-.hole-num-row { display: flex; align-items: center; justify-content: center; gap: 8px; }
-.green-img-btn { width: 30px; height: 30px; border-radius: 50%; background: var(--input-bg); border: 1px solid var(--input-border); color: var(--text-muted); font-size: 15px; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
+.green-img-btn { margin-top: 6px; padding: 5px 14px; border-radius: 20px; background: rgba(82,183,136,.15); border: 1px solid rgba(82,183,136,.4); color: var(--fairway); font-size: 12px; font-weight: 600; letter-spacing: .3px; cursor: pointer; }
 .green-img-btn:active { opacity: .6; }
 .green-img-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.85); z-index: 200; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; }
-.green-img { display: block; width: 170px; height: 170px; border-radius: 10px; }
+.green-img { display: block; width: min(90vw, 340px); height: min(90vw, 340px); border-radius: 10px; }
 .green-img-error { color: var(--text-muted); font-size: 14px; }
 .hole-picker { display: grid; grid-template-columns: repeat(9, 1fr); gap: 6px; padding: 10px 16px 4px; }
 .hole-pick-btn { height: 34px; border-radius: 8px; background: var(--input-bg); border: 1px solid var(--input-border); color: var(--text-muted); font-size: 13px; font-weight: 600; display: flex; align-items: center; justify-content: center; cursor: pointer; -webkit-tap-highlight-color: transparent; }
