@@ -13,6 +13,7 @@ function showScreen(name) {
   if(name === 'summary')    renderSummary();
   if(name === 'scorecard')  renderScorecardScreen();
   if(name === 'trends')     renderTrends();
+  if(name === 'yardages')   renderYardagesScreen();
 }
 
 // ═══════════════════════════════════════════════════════════════

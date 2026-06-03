@@ -15,3 +15,5 @@ function updateRound(round) {
 }
 function currentRound()    { return getRound(state.currentRoundId); }
 function currentHoleData() { const r = currentRound(); return r ? r.holes[state.currentHole - 1] : null; }
+function getYardages()  { try { return JSON.parse(localStorage.getItem('sg_yardages') || '[]'); } catch(e) { return []; } }
+function saveYardages(y){ localStorage.setItem('sg_yardages', JSON.stringify(y)); }

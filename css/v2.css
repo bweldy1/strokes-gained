@@ -80,8 +80,9 @@ textarea.json-input:focus { border-color: var(--fairway); }
 .hole-num-block { text-align: center; cursor: pointer; -webkit-tap-highlight-color: transparent; }
 .hole-num-label { font-size: 11px; color: var(--text-muted); letter-spacing: 1px; text-transform: uppercase; }
 .hole-num { font-size: 48px; font-weight: 700; letter-spacing: -2px; line-height: 1; color: #fff; }
-.green-img-btn { margin-top: 6px; padding: 5px 14px; border-radius: 20px; background: rgba(82,183,136,.15); border: 1px solid rgba(82,183,136,.4); color: var(--fairway); font-size: 12px; font-weight: 600; letter-spacing: .3px; cursor: pointer; }
-.green-img-btn:active { opacity: .6; }
+.hole-pills-row { display: flex; gap: 8px; margin-top: 6px; justify-content: center; flex-wrap: wrap; }
+.hole-pill-btn { padding: 5px 14px; border-radius: 20px; background: rgba(82,183,136,.15); border: 1px solid rgba(82,183,136,.4); color: var(--fairway); font-size: 12px; font-weight: 600; letter-spacing: .3px; cursor: pointer; }
+.hole-pill-btn:active { opacity: .6; }
 .green-img-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.85); z-index: 200; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; }
 .green-img { display: block; width: min(90vw, 340px); height: min(90vw, 340px); border-radius: 10px; }
 .green-img-error { color: var(--text-muted); font-size: 14px; }
@@ -369,6 +370,41 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
 .sg-pos { color: var(--q-great); }
 .sg-neg { color: var(--q-poor); }
 .sg-null { color: var(--text-muted); }
+
+/* ── Yardages screen ── */
+.yrd-row { display: flex; align-items: center; justify-content: space-between; padding: 13px 16px; border-bottom: 1px solid var(--border); cursor: pointer; gap: 8px; }
+.yrd-row:active { opacity: .7; }
+.yrd-row:last-child { border-bottom: none; }
+.yrd-row-left { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0; }
+.yrd-row-label { font-size: 14px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.yrd-row-dist { font-size: 13px; color: var(--text-muted); text-align: right; flex-shrink: 0; }
+.yrd-club-badge { font-size: 13px; font-weight: 700; padding: 3px 9px; border-radius: 10px; background: rgba(82,183,136,.15); color: var(--fairway); border: 1px solid rgba(82,183,136,.3); white-space: nowrap; flex-shrink: 0; }
+.yardages-form { padding: 16px; border-top: 2px solid var(--border); margin-top: 8px; }
+.yardages-form-title { font-size: 11px; font-weight: 600; letter-spacing: 1px; color: var(--text-dim); text-transform: uppercase; margin-bottom: 14px; }
+.yrd-text-input { width: 100%; background: var(--input-bg); border: 1px solid var(--input-border); border-radius: var(--radius-sm); color: var(--text); font-size: 15px; padding: 10px 14px; outline: none; font-family: inherit; }
+.yrd-text-input:focus { border-color: var(--fairway); }
+.yrd-num-input { width: 100%; background: var(--input-bg); border: 1px solid var(--input-border); border-radius: var(--radius-sm); color: var(--text); font-size: 20px; font-weight: 600; padding: 10px 14px; outline: none; -moz-appearance: textfield; }
+.yrd-num-input:focus { border-color: var(--fairway); }
+.yrd-num-input::-webkit-outer-spin-button, .yrd-num-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.yrd-form-actions { display: flex; gap: 8px; }
+.yrd-form-actions > .btn { flex: 1; width: auto; }
+/* ── Yardages overlay (hole screen) ── */
+.yrd-filter-area { padding-bottom: 12px; border-bottom: 1px solid var(--border); margin-bottom: 8px; }
+.yrd-range-filter { display: flex; align-items: center; gap: 8px; }
+.yrd-filter-label { font-size: 12px; font-weight: 600; color: var(--text-muted); min-width: 40px; text-transform: uppercase; letter-spacing: .5px; }
+.yrd-range-input { width: 58px; background: var(--input-bg); border: 1px solid var(--input-border); border-radius: 6px; color: var(--text); font-size: 15px; padding: 5px 8px; text-align: center; outline: none; -moz-appearance: textfield; }
+.yrd-range-input:focus { border-color: var(--fairway); }
+.yrd-range-input::-webkit-outer-spin-button, .yrd-range-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.yrd-filter-sep { color: var(--text-dim); font-size: 16px; }
+.yrd-filter-unit { font-size: 13px; color: var(--text-dim); }
+.yrd-overlay-list { overflow-y: auto; max-height: 52vh; }
+.yrd-overlay-row { display: flex; align-items: center; justify-content: space-between; padding: 11px 0; border-bottom: 1px solid var(--border); gap: 8px; }
+.yrd-overlay-row:last-child { border-bottom: none; }
+.yrd-overlay-dist { font-size: 13px; color: var(--text-muted); text-align: right; flex-shrink: 0; }
+.yrd-overlay-carry { color: var(--text-dim); }
+.yrd-overlay-total { color: var(--text); font-weight: 600; }
+.yrd-overlay-unit { color: var(--text-dim); }
+.yrd-overlay-sep { color: var(--border2); }
 
 /* ── Misc IDs ── */
 #build-version { position: absolute; bottom: 0; left: 0; right: 0; text-align: center; font-size: 10px; color: var(--text); padding: 4px; }

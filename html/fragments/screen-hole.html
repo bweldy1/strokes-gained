@@ -20,7 +20,10 @@
           <span class="yardage-edit-icon">✎</span>
         </span>
       </div>
-      <button class="green-img-btn hidden" id="green-img-btn" onclick="event.stopPropagation();openGreenImage()">View Green</button>
+      <div class="hole-pills-row">
+        <button class="hole-pill-btn hidden" id="green-img-btn" onclick="event.stopPropagation();openGreenImage()">View Green</button>
+        <button class="hole-pill-btn hidden" id="yardages-btn" onclick="event.stopPropagation();openYardagesOverlay()">Yardages</button>
+      </div>
     </div>
     <button class="hole-nav-btn" id="hole-next-btn" onclick="nextHole()">›</button>
   </div>
@@ -41,5 +44,25 @@
     <button id="hole-out-prompt" class="add-shot-btn hidden" onclick="holeOut()">⛳ Holed · <span id="hole-out-dist"></span> ft</button>
     <button id="add-shot-btn" class="add-shot-btn" onclick="openShotSheet()"><span class="add-shot-icon">+</span> Add Shot</button>
     <button id="next-hole-btn" class="add-shot-btn hidden" onclick="nextHole()">Next Hole ›</button>
+  </div>
+  <!-- Yardages overlay -->
+  <div class="sheet-overlay" id="yardages-overlay" onclick="handleYardagesOverlayClick(event)">
+    <div class="sheet">
+      <div class="sheet-handle"></div>
+      <div class="sheet-title">My Yardages</div>
+      <div class="sheet-body">
+        <div class="yrd-filter-area">
+          <div class="yrd-range-filter">
+            <span class="yrd-filter-label">Range</span>
+            <input type="number" id="yrd-low-input" class="yrd-range-input" placeholder="0" min="0" inputmode="numeric" oninput="onYrdRangeInput()">
+            <span class="yrd-filter-sep">–</span>
+            <input type="number" id="yrd-high-input" class="yrd-range-input" placeholder="∞" min="0" inputmode="numeric" oninput="onYrdRangeInput()">
+            <span class="yrd-filter-unit">yds</span>
+          </div>
+          <div id="yrd-club-filter-pills" class="pill-group hidden" style="margin-top:10px"></div>
+        </div>
+        <div id="yrd-overlay-list" class="yrd-overlay-list"></div>
+      </div>
+    </div>
   </div>
 </div>

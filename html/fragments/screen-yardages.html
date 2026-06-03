@@ -1,0 +1,44 @@
+<!-- YARDAGES SCREEN -->
+<div class="screen" id="screen-yardages">
+  <div class="topbar">
+    <button class="btn-topbar" onclick="showScreen('home')">⌂ Home</button>
+    <div class="topbar-center">
+      <div class="topbar-title">My Yardages</div>
+    </div>
+    <div style="width:80px"></div>
+  </div>
+  <div class="scroll-body">
+    <div id="yardages-list"></div>
+
+    <div class="yardages-form" id="yardages-form">
+      <div class="yardages-form-title" id="yardages-form-title">Add Yardage</div>
+
+      <div class="form-group">
+        <div class="form-label">Club (optional)</div>
+        <div class="pill-group" id="yrd-club-pills"></div>
+      </div>
+
+      <div class="form-group">
+        <div class="form-label">Description (optional)</div>
+        <input type="text" id="yrd-label-input" class="yrd-text-input" placeholder="e.g. 3/4 58° bump">
+      </div>
+
+      <div class="form-group" style="display:flex;gap:12px">
+        <div style="flex:1">
+          <div class="form-label">Carry (yds)</div>
+          <input type="number" id="yrd-carry-input" class="yrd-num-input" placeholder="—" min="0" inputmode="numeric">
+        </div>
+        <div style="flex:1">
+          <div class="form-label">Total (yds)</div>
+          <input type="number" id="yrd-total-input" class="yrd-num-input" placeholder="—" min="0" inputmode="numeric">
+        </div>
+      </div>
+
+      <div class="yrd-form-actions">
+        <button class="btn btn-primary" onclick="saveYardageEntry()">Save</button>
+        <button id="yrd-delete-btn" class="btn btn-accent hidden" onclick="deleteYardage()">Delete</button>
+        <button class="btn btn-ghost" onclick="cancelYardageEdit()">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>

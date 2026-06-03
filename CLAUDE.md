@@ -24,6 +24,7 @@ html/
     screen-summary.html     # Round summary + CSV export
     screen-scorecard.html   # Scorecard view (reached via "Show Scorecard" button on summary)
     screen-trends.html      # Cross-round trends: filter + category avg SG + bucket drill-down
+    screen-yardages.html    # My Yardages management screen (accessed from Settings)
     sheet-shot.html         # Bottom sheet: shot entry form
     sheet-course-edit.html  # Bottom sheet: course name/tees editor
     sheet-yardage.html      # Bottom sheet: yardage override
@@ -41,12 +42,13 @@ js/
   courses.js                # Courses screen: renderCourses, openCourseEdit, saveCourseJSON, startRound
   summary.js                # Summary screen: renderSummary, stats, CSV export, clipboard; toggleShotExclusion, clearAllExclusions
   trends.js                 # Trends screen: renderTrends, setTrendsFilter, setTrendsExclude, toggleTrendsCat
+  yardages.js               # Yardages screen + hole overlay: renderYardagesScreen, saveYardageEntry, deleteYardage, openYardagesOverlay, renderYrdOverlayList
   home.js                   # Home screen + init IIFE (loads last — calls renderHome on startup); settings sheet (backup/restore)
 images/
   SG_logo.png               # App icon used on home screen header
 ```
 
-**Load order matters:** `hole.js` and `shot-entry.js` before `courses.js`/`summary.js` (which use `countStrokes`, `catLabel`); `trends.js` before `home.js`; `home.js` last (contains the init IIFE).
+**Load order matters:** `hole.js` and `shot-entry.js` before `courses.js`/`summary.js` (which use `countStrokes`, `catLabel`); `trends.js` before `home.js`; `yardages.js` before `home.js`; `home.js` last (contains the init IIFE).
 
 ## Data Models
 
@@ -111,7 +113,7 @@ getExcludedSet(round)      // → Set<"hole-shotIndex"> for O(1) exclusion looku
 `buildShotRow` in `summary.js` uses compact distance abbreviations (`y`/`ft`) directly — does **not** use `formatDist` since those are summary-view abbreviations, not full units.
 
 ### Storage
-All data in `localStorage` as JSON. Keys: `sg_rounds`, `sg_courses`, `sg_colorScheme`, `sg_holeOutDist`, `sg_activeClubs`, `sg_clubAutoExpand`, `sg_missAutoExpand`.
+All data in `localStorage` as JSON. Keys: `sg_rounds`, `sg_courses`, `sg_colorScheme`, `sg_holeOutDist`, `sg_activeClubs`, `sg_clubAutoExpand`, `sg_missAutoExpand`, `sg_yardages`.
 
 ### Show/Hide Pattern
 All conditional visibility uses the `.hidden` CSS utility class (`display: none !important`). Never set `element.style.display` directly.
@@ -420,7 +422,7 @@ Shots are aggregated from `round.holes[n].shots[]` across all filtered rounds be
 
 ## Screen Navigation
 
-`showScreen(name)` — shows `#screen-{name}`, hides all others, calls the matching render function. Screens: `home`, `courses`, `hole`, `summary`, `scorecard`, `trends`.
+`showScreen(name)` — shows `#screen-{name}`, hides all others, calls the matching render function. Screens: `home`, `courses`, `hole`, `summary`, `scorecard`, `trends`, `yardages`.
 
 The hole screen topbar uses a `⌂` home icon (`.btn-icon`) to navigate back to the home screen — intentionally distinct from the `‹ ›` hole navigation arrows.
 
@@ -452,6 +454,59 @@ Each round card (`.round-card`) shows:
 
 Tapping a card calls `resumeRound(id)`, which sets `state.currentRoundId`, seeks to the last hole with shots, and navigates to the hole screen.
 
+## Custom Yardages
+
+A personal reference library for club distances (e.g. "3/4 58° — 75 carry, 80 total"). Stored in `sg_yardages` (localStorage). Logic lives in `yardages.js`.
+
+### Data model
+
+```js
+{
+  id: 'yrd_' + Date.now(),
+  clubId: String|null,   // CLUBS id; null if no club tagged
+  label: String,         // free-text description (e.g. "3/4 58° bump")
+  carry: Number|null,    // carry distance in yards; at least one of carry/total required
+  total: Number|null,    // total distance in yards
+}
+```
+
+`getYardages()` / `saveYardages(y)` in `storage.js`.
+
+### Management screen (`screen-yardages`)
+
+Accessed via Settings → Data → **My Yardages ›** (`closeSettingsSheet(); showScreen('yardages')`). Rendered by `renderYardagesScreen()`.
+
+- **List** (`#yardages-list`) — sorted shortest → longest by `total ?? carry`. Each row (`.yrd-row`) shows a club badge (`.yrd-club-badge`), description label, and carry/total distances. Tap a row to fill the edit form.
+- **Inline add/edit form** (`#yardages-form`) at the bottom of the scroll body:
+  - Club pills (`#yrd-club-pills`) — generated from active clubs (`getActiveClubs()`); tap to select/deselect via `selectYrdFormClub(id)`
+  - Description text input (`#yrd-label-input`, `.yrd-text-input`)
+  - Carry + Total number inputs (`.yrd-num-input`), side by side; at least one required
+  - Save / Delete / Cancel buttons in `.yrd-form-actions` (all `flex:1`)
+  - Delete button (`#yrd-delete-btn`) only visible when editing an existing entry
+- `openYardageEdit(id)` — fills form from existing entry or clears for new; scrolls form into view
+- `cancelYardageEdit()` — resets form and clears `_editingYrdId`
+- `saveYardageEntry()` — validates, saves, re-renders list
+- `deleteYardage()` — `confirm()` dialog, then removes entry
+
+### Hole screen integration
+
+A **"Yardages" pill button** (`#yardages-btn`, `.hole-pill-btn`) appears in `.hole-pills-row` alongside "View Green". Hidden when `getYardages().length === 0`; visibility updated in `renderHoleScreen()` in `hole.js`.
+
+Tapping opens `#yardages-overlay` (bottom sheet) via `openYardagesOverlay()`:
+
+**Pre-fill logic:**
+- If no shots on the hole → pre-fill range from hole yardage (`yardsOverride ?? yards`)
+- If last shot result is not green/holed → pre-fill range from `last.resultDist`
+- If last shot is on green or holed → no pre-fill (show all entries unfiltered)
+- Pre-fill sets range = `[remainDist − 10, remainDist + 10]` yds
+
+**Filter — two mutually exclusive modes** (tracked in `_yrdOverlayFilterMode`, `_yrdOverlayFilterClub`):
+- **Range** (`#yrd-low-input` / `#yrd-high-input`, `.yrd-range-input`): shows entries where carry OR total falls within `[low, high]`. Activated on any input change via `onYrdRangeInput()`, which clears any active club selection.
+- **Club** (`#yrd-club-filter-pills`): shows only entries for the selected club. Only clubs that have at least one yardage entry appear. `selectYrdOverlayClub(id)` toggles selection and clears the range inputs. The pill group is hidden if no clubs are tagged on any entry.
+- Switching either filter resets the other.
+
+**List** (`#yrd-overlay-list`, `.yrd-overlay-list`): filtered entries sorted shortest → longest. Each row (`.yrd-overlay-row`) shows club badge, label, carry (`.yrd-overlay-carry`, dimmer) and total (`.yrd-overlay-total`, bold). `max-height: 52vh` with scroll.
+
 ## Settings & Backup
 
 Accessed via the ⚙ gear button (top-right of the home header). Opens `#settings-sheet`. Logic lives in `home.js`.
@@ -482,6 +537,7 @@ applyAllSettings()    // sync all pill UI from storage — called once in init
 **Non-registry settings** (different patterns, not pill-based):
 - **Hole-Out Distance** — range slider (`#holeout-dist-slider`, 1–10 ft); `applyHoleOutDist()` / `setHoleOutDist(n)` in `home.js`; backed by `sg_holeOutDist`
 - **My Clubs** — `applyActiveClubs()` / `toggleActiveClub(id)` in `home.js`; backed by `sg_activeClubs` (JSON array); pills generated dynamically from `CLUBS`; `getActiveClubs()` in `state.js` returns a `Set<string>`
+- **My Yardages** — dedicated `screen-yardages` accessed via Settings → Data. See [Custom Yardages](#custom-yardages).
 
 **Backup / Export** (`openBackupPanel()` → `confirmBackup()` → `backupData(recentCount)`):
 - Tapping "Backup / Export" calls `openBackupPanel()`, which shows the count of stored rounds and reveals `#backup-panel` inline (same pattern as the restore preview)

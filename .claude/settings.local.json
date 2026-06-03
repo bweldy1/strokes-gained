@@ -1,7 +1,10 @@
 {
   "permissions": {
     "allow": [
-      "Bash(python:*)"
+      "Bash(python:*)",
+      "Bash(Select-String -Path \"C:\\\\dev\\\\strokes-gained\\\\index.html\" -Pattern \"screen-yardages|yardages-overlay|yrd-low-input|getYardages|renderYardagesScreen|hole-pill-btn|hole-pills-row|My Yardages\")",
+      "Bash(Measure-Object)",
+      "Bash(Select-Object -ExpandProperty Count)"
     ]
   }
 }

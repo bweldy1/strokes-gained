@@ -13,6 +13,7 @@ function renderHoleScreen() {
   document.getElementById('hole-round-date').textContent = formatDate(round.date) + ' ✎';
   const course = getCourses().find(c => c.id === round.courseId);
   document.getElementById('green-img-btn').classList.toggle('hidden', !getGreenImageFolder(course));
+  document.getElementById('yardages-btn').classList.toggle('hidden', getYardages().length === 0);
   renderHole();
   updateTally();
 }
