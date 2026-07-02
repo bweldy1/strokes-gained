@@ -341,6 +341,17 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
 .trends-cat-meta { font-size: 12px; color: var(--text-dim); }
 .trends-cat-avg { font-size: 20px; font-weight: 700; }
 
+/* ── SG per Round trend chart ── */
+.trend-chart-card { padding: 14px 16px; }
+.trend-pills-row { display: flex; gap: 6px; margin: 12px 0 10px; }
+.trend-cat-pill { padding: 6px 0; flex: 1; text-align: center; }
+.trend-chart-svg { width: 100%; height: auto; display: block; }
+.trend-chart-svg .trend-tick { font-size: 9px; fill: var(--text-dim); font-variant-numeric: tabular-nums; }
+.trend-caption { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 12px; color: var(--text-muted); margin-top: 8px; min-height: 16px; }
+.trend-caption > span:first-child { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.trend-caption-val { font-size: 14px; font-weight: 700; flex-shrink: 0; }
+.trend-empty { font-size: 13px; color: var(--text-dim); text-align: center; padding: 24px 0; }
+
 /* ── Settings sheet ── */
 .home-gear-btn { position: absolute; top: 16px; right: 16px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); color: var(--text-muted); font-size: 20px; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 2; }
 .home-gear-btn:active { opacity: .6; }

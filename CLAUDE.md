@@ -115,6 +115,10 @@ getExcludedSet(round)      // → Set<"hole-shotIndex"> for O(1) exclusion looku
 ### Storage
 All data in `localStorage` as JSON. Keys: `sg_rounds`, `sg_courses`, `sg_colorScheme`, `sg_holeOutDist`, `sg_activeClubs`, `sg_clubAutoExpand`, `sg_missAutoExpand`, `sg_yardages`.
 
+**Read caching:** `getRounds()`, `getCourses()`, and `getYardages()` parse localStorage once and return the same cached array on every subsequent call; the matching `saveRounds`/`saveCourses`/`saveYardages` replaces the cache and writes through to localStorage. Two rules for callers:
+- Never write these keys via `localStorage.setItem` directly — always go through the save functions, or the cache goes stale.
+- Treat returned arrays/objects as **shared, live state** — don't mutate them unless you immediately save (`updateRound` etc.). For display-order sorting, copy first: `[...getYardages()].sort(...)`.
+
 ### Show/Hide Pattern
 All conditional visibility uses the `.hidden` CSS utility class (`display: none !important`). Never set `element.style.display` directly.
 - Hide: `el.classList.add('hidden')`
@@ -418,6 +422,13 @@ Shots can be flagged to exclude them from SG calculations without deleting them.
 `renderTrends()` builds the cross-round analysis view. Accessible via the "Analysis" button on the home screen. Internal identifiers (`screen-trends`, `renderTrends`, `trendsFilter`, etc.) all use `trends` — only the UI label changed.
 
 **Filter:** Last 5 / Last 10 / All rounds toggle (`state.trendsFilter`, default `10`). Pills use `.selected` class. `setTrendsFilter(n)` updates state and re-renders; `n=0` means all rounds.
+
+**SG per Round trend chart** — card at the top of the screen, above the category cards. Inline SVG line chart of per-round SG totals, oldest → newest, respecting the round filter and Excl. flagged toggle.
+- **Series pills** (Total / Drive / Appr / Short / Putt) switch the plotted category via `setTrendsChartCat(cat)` → `state.trendsChartCat` (default `'total'`); full re-render
+- `buildTrendData(rounds)` — per-round sums + valid-shot counts per category (chronological order); `buildTrendChart(allPts)` — card HTML; `buildTrendSVG(pts)` — the SVG (340×170 viewBox, responsive width)
+- **Marks:** 2px neutral line (`--text-dim`), 9px dots sign-colored via `--q-great`/`--q-poor` (matches app-wide `sgClass` convention, adapts to color scheme) with a 2px `--card` surface ring; hairline gridlines (`--border`), zero baseline emphasized (`--border2`); y ticks at clean steps, first/last round dates as x labels
+- **Tap a dot** → invisible 13px-radius hit circle calls `selectTrendPoint(i)`: enlarges the dot and fills the caption row (`#trend-caption`) with date · course · SG value (colored via `sgClass`). Latest round is selected by default after each render. Module-level `_trendPts` holds the current series.
+- Rounds with no valid (non-null SG) shots in the selected category are skipped; an empty series shows a "No shots recorded" placeholder
 
 **Excl. flagged toggle** (`#tf-excl`): when active (`state.trendsExclude = true`), shots flagged as excluded in any round are filtered out before aggregation. `setTrendsExclude(val)` updates state and re-renders. The pill syncs its `.selected` class in `renderTrends()`.
 

@@ -4,7 +4,15 @@
       "Bash(python:*)",
       "Bash(Select-String -Path \"C:\\\\dev\\\\strokes-gained\\\\index.html\" -Pattern \"screen-yardages|yardages-overlay|yrd-low-input|getYardages|renderYardagesScreen|hole-pill-btn|hole-pills-row|My Yardages\")",
       "Bash(Measure-Object)",
-      "Bash(Select-Object -ExpandProperty Count)"
+      "Bash(Select-Object -ExpandProperty Count)",
+      "Skill(dataviz)",
+      "Bash(node validate_palette.js \"#69f0ae,#ef5350\" --mode dark --surface \"#16213e\")",
+      "Bash(node validate_palette.js \"#F5C518,#AB47BC\" --mode dark --surface \"#16213e\")",
+      "PowerShell(python build.py)",
+      "PowerShell(Test-Path *)",
+      "PowerShell(New-Item *)",
+      "Read(//c/Users/bweld/AppData/Local/Temp/claude/C--dev-strokes-gained/6a944691-8fc0-4889-98ff-eca0c60c53cb/scratchpad/**)",
+      "Bash(sed 's|showScreen\\('\"'\"'trends'\"'\"'\\);|state.trendsChartCat = \"putt\"; showScreen\\(\"trends\"\\); setTimeout\\(function\\(\\){ selectTrendPoint\\(2\\); }, 100\\);|' preview.html)"
     ]
   }
 }

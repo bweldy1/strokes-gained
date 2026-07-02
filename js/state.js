@@ -126,7 +126,8 @@ let state = {
   shotClub: null,
   targetsExpanded: false,
   trendsFilter: 10,
-  trendsExclude: false
+  trendsExclude: false,
+  trendsChartCat: 'total'
 };
 
 // ═══════════════════════════════════════════════════════════════

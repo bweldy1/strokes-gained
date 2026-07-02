@@ -227,7 +227,7 @@ function renderYrdOverlayList() {
     yardages = yardages.filter(y => y.clubId === _yrdOverlayFilterClub);
   }
 
-  yardages.sort((a, b) => (a.total ?? a.carry ?? 0) - (b.total ?? b.carry ?? 0));
+  yardages = [...yardages].sort((a, b) => (a.total ?? a.carry ?? 0) - (b.total ?? b.carry ?? 0));
 
   const el = document.getElementById('yrd-overlay-list');
   if(!el) return;
