@@ -81,7 +81,7 @@ Each shot stored in `round.holes[n].shots[]`:
 {
   lie: 'tee'|'fairway'|'rough'|'sand'|'recovery'|'green',
   distFrom: Number,                    // yards (feet if lie=green)
-  resultLie: 'fairway'|'rough'|'sand'|'recovery'|'green'|'holed'|'penalty',
+  resultLie: 'fairway'|'rough'|'sand'|'recovery'|'green'|'holed'|'penalty'|'ob',
   resultDist: Number|null,             // yards (feet if resultLie=green); null if holed
   category: 'drive'|'approach'|'shortgame'|'putt',
   sg: Number|null,                     // strokes gained, rounded to 4 decimal places on save
@@ -267,6 +267,14 @@ An on-demand shot expectation tool in the SG preview area of the shot entry shee
 - No auto-fill for the next shot's lie (drop location varies), but result distance carries forward as the distance pre-fill
 - `getSuggestion` returns `{ lie: null, dist }` after a penalty; `prefillShotSheet` guards `selectLie`/`selectCategory` with `if(sug.lie)`
 
+### Out of Bounds (OB) Shots
+`resultLie: 'ob'` is a secondary result pill (alongside Sand, Recovery, and Penalty). Modeled as **stroke-and-distance**: the golfer replays from the same spot with a penalty stroke, so no progress is made.
+- No result distance is collected — `result-dist-group` stays hidden (same as Holed); miss direction is still shown/optional
+- SG is fixed at `-2` (plus any playing-conditions adjustment) — replaying from the same spot means expected strokes after ≈ expected strokes before, and two strokes (the OB shot + the penalty stroke) were consumed
+- Shows the same red `+1 stroke` badge (`.penalty-badge`) in the shot list row as Penalty; `countStrokes(shots)` counts OB shots the same way it counts penalty shots
+- `getSuggestion` returns `{ lie: prev.lie, dist: prev.distFrom }` after an OB shot — the next shot is pre-filled to replay from the **same spot**, not a drop location. Because that replay tee shot is not `shots[0]`, `autoCategory(lie, distYards, holePar)` determines "drive" by `lie === 'tee'` rather than shot index — a signature change made specifically to support OB replays.
+- `LIE_ABBR.ob = 'OB'` for shot-list/summary/scorecard labels
+
 ### SG Calculation
 `calcSG(startLie, startDist, resultLie, resultDist, diffPct)` uses `sg_tables.js` lookup tables with linear interpolation. Result is rounded to 4 decimal places before being stored on the shot object.
 
@@ -326,9 +334,9 @@ Category badge colors: `.cat-drive` (gold), `.cat-approach` (green), `.cat-short
 
 ## Lie Hierarchy (UI)
 
-Sand, Recovery, and Penalty are infrequent. In lie pill rows, they appear as secondary pills (`.pill-sm`, `.pill-group-secondary`) below the primary row:
+Sand, Recovery, Penalty, and OB are infrequent. In lie pill rows, they appear as secondary pills (`.pill-sm`, `.pill-group-secondary`) below the primary row:
 - **Primary result lies**: Fairway · Rough · Green · Holed
-- **Secondary result lies**: Sand · Recovery · Penalty
+- **Secondary result lies**: Sand · Recovery · Penalty · OB
 - **Primary starting lies**: Tee · Fairway · Rough · Green
 - **Secondary starting lies**: Sand · Recovery
 

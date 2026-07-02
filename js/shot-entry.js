@@ -45,8 +45,7 @@ function prefillShotSheet(editIndex) {
     if(sug) {
       if(sug.lie) selectLie(sug.lie, true);
       if(sug.dist !== '') document.getElementById('shot-dist-from').value = sug.dist;
-      const idx = hd.shots.length;
-      if(sug.lie) selectCategory(autoCategory(sug.lie, sug.dist || 0, idx, hd.par), true);
+      if(sug.lie) selectCategory(autoCategory(sug.lie, sug.dist || 0, hd.par), true);
     }
   }
 }
@@ -127,13 +126,13 @@ function selectResultLie(lie, silent) {
   }
   updateMissTypeVisibility();
   if(!silent) { autoSetCategory(); updateSGPreview(); }
-  if(!silent && lie !== 'holed') {
+  if(!silent && lie !== 'holed' && lie !== 'ob') {
     setTimeout(() => document.getElementById('shot-dist-result').focus(), 150);
   }
 }
 
 function updateResultDistVisibility() {
-  const show = state.shotResultLie && state.shotResultLie !== 'holed';
+  const show = state.shotResultLie && state.shotResultLie !== 'holed' && state.shotResultLie !== 'ob';
   document.getElementById('result-dist-group').classList.toggle('hidden', !show);
   if(show) {
     const green = state.shotResultLie === 'green';
@@ -323,8 +322,8 @@ function toggleShotMetaExpand() {
 function autoSetCategory() {
   if(!state.shotLie) return;
   const dist = parseFloat(document.getElementById('shot-dist-from').value) || 0;
-  const hd = currentHoleData(), idx = state.editingShotIndex !== null ? state.editingShotIndex : (hd.shots || []).length;
-  selectCategory(autoCategory(state.shotLie, dist, idx, hd.par), true);
+  const hd = currentHoleData();
+  selectCategory(autoCategory(state.shotLie, dist, hd.par), true);
 }
 
 function onShotFormChange() { autoSetCategory(); updateSGPreview(); }
@@ -397,15 +396,16 @@ function saveShot() {
   if(!lie) { showToast('Select a starting lie'); return; }
   if(isNaN(dFrom) || dFrom <= 0) { showToast('Enter distance from pin'); return; }
   if(!rLie) { showToast('Select result location'); return; }
-  if(rLie !== 'holed' && (isNaN(dRes) || dRes <= 0)) { showToast('Enter result distance'); return; }
-  const hd = currentHoleData(), idx = state.editingShotIndex !== null ? state.editingShotIndex : hd.shots.length;
-  const cat = state.shotCategory || autoCategory(lie, dFrom, idx, hd.par);
+  if(rLie !== 'holed' && rLie !== 'ob' && (isNaN(dRes) || dRes <= 0)) { showToast('Enter result distance'); return; }
+  const hd = currentHoleData();
+  const cat = state.shotCategory || autoCategory(lie, dFrom, hd.par);
   const round = currentRound();
   const pct = getRoundDifficultyPct(round.conditions, cat);
   const sgRaw = calcSG(lie, dFrom, rLie, isNaN(dRes) ? 0 : dRes, pct);
   const sg = sgRaw !== null ? Math.round(sgRaw * 10000) / 10000 : null;
   const missType = (cat === 'putt' && rLie !== 'holed') ? (state.shotMissType || null) : null;
-  const shot = { lie, distFrom:dFrom, resultLie:rLie, resultDist:(rLie !== 'holed' && !isNaN(dRes)) ? dRes : null, category:cat, sg, club:state.shotClub || null, missDepth:state.shotMissDepth || null, missSide:state.shotMissSide || null, missType };
+  const noResultDist = rLie === 'holed' || rLie === 'ob';
+  const shot = { lie, distFrom:dFrom, resultLie:rLie, resultDist:(!noResultDist && !isNaN(dRes)) ? dRes : null, category:cat, sg, club:state.shotClub || null, missDepth:state.shotMissDepth || null, missSide:state.shotMissSide || null, missType };
   if(state.editingShotIndex !== null) round.holes[state.currentHole - 1].shots[state.editingShotIndex] = shot;
   else round.holes[state.currentHole - 1].shots.push(shot);
   updateRound(round); closeShotSheet(); renderHole(); updateTally();

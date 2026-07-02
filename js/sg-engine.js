@@ -21,6 +21,11 @@ function calcSG(startLie, startDist, resultLie, resultDist, diffPct) {
   if(resultLie === 'holed') {
     return s !== null ? s - 1 + adj : null;
   }
+  // OB: stroke and distance — replay from the same spot, so no progress is made
+  // (E after ≈ E start), consuming 1 shot + 1 penalty stroke. SG = -2 (plus conditions adj).
+  if(resultLie === 'ob') {
+    return s !== null ? -2 + adj : null;
+  }
   // Penalty: use 'rough' table for drop position, subtract extra stroke for the penalty
   const lookupLie = resultLie === 'penalty' ? 'rough' : resultLie;
   const e = getExpected(lookupLie, resultDist);
@@ -38,9 +43,9 @@ function getQuality(sg, category) {
 // CATEGORY AUTO-ASSIGN
 // ═══════════════════════════════════════════════════════════════
 
-function autoCategory(lie, distYards, shotIndex, holePar) {
+function autoCategory(lie, distYards, holePar) {
   if(lie === 'green') return 'putt';
-  if(shotIndex === 0 && (holePar === 4 || holePar === 5)) return 'drive';
+  if(lie === 'tee' && (holePar === 4 || holePar === 5)) return 'drive';
   if(distYards >= 30) return 'approach';
   return 'shortgame';
 }
@@ -60,6 +65,10 @@ function getSuggestion(holeData) {
   if(prev.resultLie === 'penalty') {
     const dist = prev.resultDist;
     return dist != null ? { lie:null, dist, hint:'From shot ' + shots.length + ': penalty drop · ' + dist + ' yds' } : null;
+  }
+  if(prev.resultLie === 'ob') {
+    // Stroke and distance — replay from the same spot as the OB shot
+    return { lie: prev.lie, dist: prev.distFrom, hint:'From shot ' + shots.length + ': OB · replay · ' + prev.distFrom + ' yds' };
   }
   const lie = prev.resultLie;
   const dist = prev.resultDist;

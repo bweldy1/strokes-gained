@@ -439,7 +439,7 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
     <div class="section-label">Rounds</div>
     <div id="rounds-list"></div>
   </div>
-  <div id="build-version">Build: 2026-06-02 22:07</div>
+  <div id="build-version">Build: 2026-07-02 19:23</div>
 </div>
 
 <!-- COURSE SELECT -->
@@ -728,6 +728,7 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
           <div class="pill pill-sm" onclick="selectResultLie('sand')">Sand</div>
           <div class="pill pill-sm" onclick="selectResultLie('recovery')">Recovery</div>
           <div class="pill pill-sm" onclick="selectResultLie('penalty')">Penalty</div>
+          <div class="pill pill-sm" onclick="selectResultLie('ob')">OB</div>
         </div>
       </div>
 
@@ -1330,7 +1331,7 @@ const QUALITY_BANDS = {
 // ═══════════════════════════════════════════════════════════════
 
 const CAT_LABELS = {drive:'Drive', approach:'Approach', shortgame:'Short Game', putt:'Putt'};
-const LIE_ABBR   = {tee:'Tee', fairway:'Fwy', rough:'Rgh', sand:'Sand', recovery:'Rcv', green:'Grn', holed:'Holed', penalty:'Pen'};
+const LIE_ABBR   = {tee:'Tee', fairway:'Fwy', rough:'Rgh', sand:'Sand', recovery:'Rcv', green:'Grn', holed:'Holed', penalty:'Pen', ob:'OB'};
 
 // Distance buckets for category drill-down analysis.
 // distFrom unit: feet for putt, yards for all others.
@@ -1526,6 +1527,11 @@ function calcSG(startLie, startDist, resultLie, resultDist, diffPct) {
   if(resultLie === 'holed') {
     return s !== null ? s - 1 + adj : null;
   }
+  // OB: stroke and distance — replay from the same spot, so no progress is made
+  // (E after ≈ E start), consuming 1 shot + 1 penalty stroke. SG = -2 (plus conditions adj).
+  if(resultLie === 'ob') {
+    return s !== null ? -2 + adj : null;
+  }
   // Penalty: use 'rough' table for drop position, subtract extra stroke for the penalty
   const lookupLie = resultLie === 'penalty' ? 'rough' : resultLie;
   const e = getExpected(lookupLie, resultDist);
@@ -1543,9 +1549,9 @@ function getQuality(sg, category) {
 // CATEGORY AUTO-ASSIGN
 // ═══════════════════════════════════════════════════════════════
 
-function autoCategory(lie, distYards, shotIndex, holePar) {
+function autoCategory(lie, distYards, holePar) {
   if(lie === 'green') return 'putt';
-  if(shotIndex === 0 && (holePar === 4 || holePar === 5)) return 'drive';
+  if(lie === 'tee' && (holePar === 4 || holePar === 5)) return 'drive';
   if(distYards >= 30) return 'approach';
   return 'shortgame';
 }
@@ -1565,6 +1571,10 @@ function getSuggestion(holeData) {
   if(prev.resultLie === 'penalty') {
     const dist = prev.resultDist;
     return dist != null ? { lie:null, dist, hint:'From shot ' + shots.length + ': penalty drop · ' + dist + ' yds' } : null;
+  }
+  if(prev.resultLie === 'ob') {
+    // Stroke and distance — replay from the same spot as the OB shot
+    return { lie: prev.lie, dist: prev.distFrom, hint:'From shot ' + shots.length + ': OB · replay · ' + prev.distFrom + ' yds' };
   }
   const lie = prev.resultLie;
   const dist = prev.resultDist;
@@ -1638,9 +1648,9 @@ function renderShotList(hd) {
     const sg = s.sg, sgStr = sg != null ? (sg >= 0 ? '+' : '') + sg.toFixed(2) : '—';
     const sgColor = sg != null ? getQuality(sg, s.category).color : 'var(--text-muted)';
     const distStr = formatDist(s.distFrom, s.lie);
-    const isPenalty = s.resultLie === 'penalty';
-    const resLabel = s.resultLie === 'holed' ? 'Holed ⛳' : s.resultLie.charAt(0).toUpperCase() + s.resultLie.slice(1);
-    const resDist = s.resultLie === 'holed' ? '' : formatDist(s.resultDist, s.resultLie);
+    const isPenalty = s.resultLie === 'penalty' || s.resultLie === 'ob';
+    const resLabel = s.resultLie === 'holed' ? 'Holed ⛳' : s.resultLie === 'ob' ? 'OB' : s.resultLie.charAt(0).toUpperCase() + s.resultLie.slice(1);
+    const resDist = (s.resultLie === 'holed' || s.resultLie === 'ob') ? '' : formatDist(s.resultDist, s.resultLie);
     const missParts = [s.missDepth === 'even' ? null : s.missDepth, s.missSide].filter(Boolean).map(v => v.charAt(0).toUpperCase() + v.slice(1));
     const missStr = missParts.length ? ` · ${missParts.join('-')}` : '';
     const driveDist = (s.category === 'drive' && s.distFrom != null && s.resultDist != null) ? Math.round(s.distFrom - s.resultDist) : null;
@@ -1678,7 +1688,7 @@ function holeOut() {
 }
 
 function catLabel(cat) { return CAT_LABELS[cat] || cat; }
-function countStrokes(shots) { return shots.length + shots.filter(s => s.resultLie === 'penalty').length; }
+function countStrokes(shots) { return shots.length + shots.filter(s => s.resultLie === 'penalty' || s.resultLie === 'ob').length; }
 function prevHole() { const r = currentRound(); state.currentHole = state.currentHole > 1 ? state.currentHole - 1 : r.holes.length; closeHolePicker(); renderHole(); updateTally(); }
 function nextHole() { const r = currentRound(); state.currentHole = state.currentHole < r.holes.length ? state.currentHole + 1 : 1; closeHolePicker(); renderHole(); updateTally(); }
 
@@ -1862,8 +1872,7 @@ function prefillShotSheet(editIndex) {
     if(sug) {
       if(sug.lie) selectLie(sug.lie, true);
       if(sug.dist !== '') document.getElementById('shot-dist-from').value = sug.dist;
-      const idx = hd.shots.length;
-      if(sug.lie) selectCategory(autoCategory(sug.lie, sug.dist || 0, idx, hd.par), true);
+      if(sug.lie) selectCategory(autoCategory(sug.lie, sug.dist || 0, hd.par), true);
     }
   }
 }
@@ -1944,13 +1953,13 @@ function selectResultLie(lie, silent) {
   }
   updateMissTypeVisibility();
   if(!silent) { autoSetCategory(); updateSGPreview(); }
-  if(!silent && lie !== 'holed') {
+  if(!silent && lie !== 'holed' && lie !== 'ob') {
     setTimeout(() => document.getElementById('shot-dist-result').focus(), 150);
   }
 }
 
 function updateResultDistVisibility() {
-  const show = state.shotResultLie && state.shotResultLie !== 'holed';
+  const show = state.shotResultLie && state.shotResultLie !== 'holed' && state.shotResultLie !== 'ob';
   document.getElementById('result-dist-group').classList.toggle('hidden', !show);
   if(show) {
     const green = state.shotResultLie === 'green';
@@ -2140,8 +2149,8 @@ function toggleShotMetaExpand() {
 function autoSetCategory() {
   if(!state.shotLie) return;
   const dist = parseFloat(document.getElementById('shot-dist-from').value) || 0;
-  const hd = currentHoleData(), idx = state.editingShotIndex !== null ? state.editingShotIndex : (hd.shots || []).length;
-  selectCategory(autoCategory(state.shotLie, dist, idx, hd.par), true);
+  const hd = currentHoleData();
+  selectCategory(autoCategory(state.shotLie, dist, hd.par), true);
 }
 
 function onShotFormChange() { autoSetCategory(); updateSGPreview(); }
@@ -2214,15 +2223,16 @@ function saveShot() {
   if(!lie) { showToast('Select a starting lie'); return; }
   if(isNaN(dFrom) || dFrom <= 0) { showToast('Enter distance from pin'); return; }
   if(!rLie) { showToast('Select result location'); return; }
-  if(rLie !== 'holed' && (isNaN(dRes) || dRes <= 0)) { showToast('Enter result distance'); return; }
-  const hd = currentHoleData(), idx = state.editingShotIndex !== null ? state.editingShotIndex : hd.shots.length;
-  const cat = state.shotCategory || autoCategory(lie, dFrom, idx, hd.par);
+  if(rLie !== 'holed' && rLie !== 'ob' && (isNaN(dRes) || dRes <= 0)) { showToast('Enter result distance'); return; }
+  const hd = currentHoleData();
+  const cat = state.shotCategory || autoCategory(lie, dFrom, hd.par);
   const round = currentRound();
   const pct = getRoundDifficultyPct(round.conditions, cat);
   const sgRaw = calcSG(lie, dFrom, rLie, isNaN(dRes) ? 0 : dRes, pct);
   const sg = sgRaw !== null ? Math.round(sgRaw * 10000) / 10000 : null;
   const missType = (cat === 'putt' && rLie !== 'holed') ? (state.shotMissType || null) : null;
-  const shot = { lie, distFrom:dFrom, resultLie:rLie, resultDist:(rLie !== 'holed' && !isNaN(dRes)) ? dRes : null, category:cat, sg, club:state.shotClub || null, missDepth:state.shotMissDepth || null, missSide:state.shotMissSide || null, missType };
+  const noResultDist = rLie === 'holed' || rLie === 'ob';
+  const shot = { lie, distFrom:dFrom, resultLie:rLie, resultDist:(!noResultDist && !isNaN(dRes)) ? dRes : null, category:cat, sg, club:state.shotClub || null, missDepth:state.shotMissDepth || null, missSide:state.shotMissSide || null, missType };
   if(state.editingShotIndex !== null) round.holes[state.currentHole - 1].shots[state.editingShotIndex] = shot;
   else round.holes[state.currentHole - 1].shots.push(shot);
   updateRound(round); closeShotSheet(); renderHole(); updateTally();

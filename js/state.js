@@ -73,7 +73,7 @@ const QUALITY_BANDS = {
 // ═══════════════════════════════════════════════════════════════
 
 const CAT_LABELS = {drive:'Drive', approach:'Approach', shortgame:'Short Game', putt:'Putt'};
-const LIE_ABBR   = {tee:'Tee', fairway:'Fwy', rough:'Rgh', sand:'Sand', recovery:'Rcv', green:'Grn', holed:'Holed', penalty:'Pen'};
+const LIE_ABBR   = {tee:'Tee', fairway:'Fwy', rough:'Rgh', sand:'Sand', recovery:'Rcv', green:'Grn', holed:'Holed', penalty:'Pen', ob:'OB'};
 
 // Distance buckets for category drill-down analysis.
 // distFrom unit: feet for putt, yards for all others.

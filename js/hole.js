@@ -62,9 +62,9 @@ function renderShotList(hd) {
     const sg = s.sg, sgStr = sg != null ? (sg >= 0 ? '+' : '') + sg.toFixed(2) : '—';
     const sgColor = sg != null ? getQuality(sg, s.category).color : 'var(--text-muted)';
     const distStr = formatDist(s.distFrom, s.lie);
-    const isPenalty = s.resultLie === 'penalty';
-    const resLabel = s.resultLie === 'holed' ? 'Holed ⛳' : s.resultLie.charAt(0).toUpperCase() + s.resultLie.slice(1);
-    const resDist = s.resultLie === 'holed' ? '' : formatDist(s.resultDist, s.resultLie);
+    const isPenalty = s.resultLie === 'penalty' || s.resultLie === 'ob';
+    const resLabel = s.resultLie === 'holed' ? 'Holed ⛳' : s.resultLie === 'ob' ? 'OB' : s.resultLie.charAt(0).toUpperCase() + s.resultLie.slice(1);
+    const resDist = (s.resultLie === 'holed' || s.resultLie === 'ob') ? '' : formatDist(s.resultDist, s.resultLie);
     const missParts = [s.missDepth === 'even' ? null : s.missDepth, s.missSide].filter(Boolean).map(v => v.charAt(0).toUpperCase() + v.slice(1));
     const missStr = missParts.length ? ` · ${missParts.join('-')}` : '';
     const driveDist = (s.category === 'drive' && s.distFrom != null && s.resultDist != null) ? Math.round(s.distFrom - s.resultDist) : null;
@@ -102,7 +102,7 @@ function holeOut() {
 }
 
 function catLabel(cat) { return CAT_LABELS[cat] || cat; }
-function countStrokes(shots) { return shots.length + shots.filter(s => s.resultLie === 'penalty').length; }
+function countStrokes(shots) { return shots.length + shots.filter(s => s.resultLie === 'penalty' || s.resultLie === 'ob').length; }
 function prevHole() { const r = currentRound(); state.currentHole = state.currentHole > 1 ? state.currentHole - 1 : r.holes.length; closeHolePicker(); renderHole(); updateTally(); }
 function nextHole() { const r = currentRound(); state.currentHole = state.currentHole < r.holes.length ? state.currentHole + 1 : 1; closeHolePicker(); renderHole(); updateTally(); }
 
