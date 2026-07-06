@@ -124,6 +124,8 @@ let state = {
   shotMissSide: null,
   shotMissType: null,
   shotClub: null,
+  shotUntrackedMode: false,
+  shotUntrackedCount: 1,
   targetsExpanded: false,
   trendsFilter: 10,
   trendsExclude: false,

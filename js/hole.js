@@ -59,6 +59,16 @@ function renderShotList(hd) {
     return;
   }
   el.innerHTML = shots.map((s, i) => {
+    if(s.untrackedCount != null) {
+      return `<div class="shot-row" onclick="editShot(${i})">
+        <div class="shot-num">${i + 1}</div>
+        <div class="shot-info">
+          <div class="shot-info-main">+${s.untrackedCount} stroke${s.untrackedCount !== 1 ? 's' : ''} <span class="shot-res-lie">· untracked</span></div>
+        </div>
+        <div class="shot-sg"><div class="shot-sg-val" style="color:var(--text-muted)">—</div></div>
+        <div class="shot-del" onclick="event.stopPropagation();deleteShot(${i})">×</div>
+      </div>`;
+    }
     const sg = s.sg, sgStr = sg != null ? (sg >= 0 ? '+' : '') + sg.toFixed(2) : '—';
     const sgColor = sg != null ? getQuality(sg, s.category).color : 'var(--text-muted)';
     const distStr = formatDist(s.distFrom, s.lie);
@@ -102,7 +112,7 @@ function holeOut() {
 }
 
 function catLabel(cat) { return CAT_LABELS[cat] || cat; }
-function countStrokes(shots) { return shots.length + shots.filter(s => s.resultLie === 'penalty' || s.resultLie === 'ob').length; }
+function countStrokes(shots) { return shots.reduce((sum, s) => sum + (s.untrackedCount || 1) + (s.resultLie === 'penalty' || s.resultLie === 'ob' ? 1 : 0), 0); }
 function prevHole() { const r = currentRound(); state.currentHole = state.currentHole > 1 ? state.currentHole - 1 : r.holes.length; closeHolePicker(); renderHole(); updateTally(); }
 function nextHole() { const r = currentRound(); state.currentHole = state.currentHole < r.holes.length ? state.currentHole + 1 : 1; closeHolePicker(); renderHole(); updateTally(); }
 

@@ -12,7 +12,16 @@
       "PowerShell(Test-Path *)",
       "PowerShell(New-Item *)",
       "Read(//c/Users/bweld/AppData/Local/Temp/claude/C--dev-strokes-gained/6a944691-8fc0-4889-98ff-eca0c60c53cb/scratchpad/**)",
-      "Bash(sed 's|showScreen\\('\"'\"'trends'\"'\"'\\);|state.trendsChartCat = \"putt\"; showScreen\\(\"trends\"\\); setTimeout\\(function\\(\\){ selectTrendPoint\\(2\\); }, 100\\);|' preview.html)"
+      "Bash(sed 's|showScreen\\('\"'\"'trends'\"'\"'\\);|state.trendsChartCat = \"putt\"; showScreen\\(\"trends\"\\); setTimeout\\(function\\(\\){ selectTrendPoint\\(2\\); }, 100\\);|' preview.html)",
+      "Bash(node --check js/hole.js)",
+      "Bash(node --check js/shot-entry.js)",
+      "Bash(node --check js/summary.js)",
+      "Bash(node --check js/state.js)",
+      "Skill(run)",
+      "Bash('/c/Program Files \\(x86\\)/Microsoft/Edge/Application/msedge.exe' --headless --disable-gpu --screenshot=C:/Users/bweld/AppData/Local/Temp/claude/C--dev-strokes-gained/0d3b021d-1883-4975-a030-14eafd64c1d2/scratchpad/hole1.png --window-size=500,900 file:///C:/Users/bweld/AppData/Local/Temp/claude/C--dev-strokes-gained/0d3b021d-1883-4975-a030-14eafd64c1d2/scratchpad/preview.html)",
+      "Bash('/c/Program Files \\(x86\\)/Microsoft/Edge/Application/msedge.exe' --headless --disable-gpu --screenshot=C:/Users/bweld/AppData/Local/Temp/claude/C--dev-strokes-gained/0d3b021d-1883-4975-a030-14eafd64c1d2/scratchpad/hole2.png --window-size=500,900 file:///C:/Users/bweld/AppData/Local/Temp/claude/C--dev-strokes-gained/0d3b021d-1883-4975-a030-14eafd64c1d2/scratchpad/preview2.html)",
+      "Bash(sed 's/showScreen\\(.summary.\\);.*$/showScreen\\(\"scorecard\"\\);/' C:/Users/bweld/AppData/Local/Temp/claude/C--dev-strokes-gained/0d3b021d-1883-4975-a030-14eafd64c1d2/scratchpad/preview4.html)",
+      "Bash('/c/Program Files \\(x86\\)/Microsoft/Edge/Application/msedge.exe' --headless --disable-gpu --screenshot=C:/Users/bweld/AppData/Local/Temp/claude/C--dev-strokes-gained/0d3b021d-1883-4975-a030-14eafd64c1d2/scratchpad/scorecard1.png --window-size=500,600 file:///C:/Users/bweld/AppData/Local/Temp/claude/C--dev-strokes-gained/0d3b021d-1883-4975-a030-14eafd64c1d2/scratchpad/preview5.html)"
     ]
   }
 }

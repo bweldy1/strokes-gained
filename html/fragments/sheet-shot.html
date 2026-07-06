@@ -5,6 +5,23 @@
     <div class="sheet-title" id="shot-sheet-title">Add Shot</div>
     <div class="sheet-body">
 
+      <div class="untracked-toggle-row">
+        <span class="category-override-hint" id="untracked-toggle-link" onclick="toggleUntrackedMode()">Just add strokes (no detail) ›</span>
+      </div>
+
+      <!-- Untracked quick-entry (no shot detail, just a stroke count) -->
+      <div class="form-group hidden" id="untracked-form">
+        <div class="form-label">Strokes (no detail)</div>
+        <div class="untracked-stepper">
+          <button type="button" class="untracked-step-btn" onclick="adjustUntrackedCount(-1)">−</button>
+          <span class="untracked-count-val" id="untracked-count-val">1</span>
+          <button type="button" class="untracked-step-btn" onclick="adjustUntrackedCount(1)">+</button>
+        </div>
+        <button class="btn btn-primary" onclick="saveUntrackedShot()">Save</button>
+      </div>
+
+      <div id="detailed-form-fields">
+
       <!-- Category / Lie / Distance (summary group) -->
       <div class="form-group" id="shot-meta-group">
         <div class="shot-meta-summary" onclick="toggleShotMetaExpand()">
@@ -147,6 +164,9 @@
         </div>
       </div>
       <button class="btn btn-primary" id="save-shot-btn" onclick="saveShot()">Save Shot</button>
+
+      </div>
+
     </div>
   </div>
 </div>

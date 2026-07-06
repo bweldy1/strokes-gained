@@ -6,6 +6,7 @@ function resetShotSheet() {
   state.shotLie = null; state.shotResultLie = null; state.shotCategory = null;
   state.shotMissDepth = null; state.shotMissSide = null; state.shotMissType = null;
   state.shotClub = null; state.targetsExpanded = false;
+  state.shotUntrackedMode = false; state.shotUntrackedCount = 1;
   document.getElementById('sg-targets-toggle').classList.add('hidden');
   document.getElementById('sg-targets-toggle').textContent = 'What If? ›';
   document.getElementById('sg-targets-expand').classList.add('hidden');
@@ -31,6 +32,11 @@ function prefillShotSheet(editIndex) {
   const hd = currentHoleData();
   if(editIndex !== undefined) {
     const s = hd.shots[editIndex];
+    if(s.untrackedCount != null) {
+      state.shotUntrackedMode = true;
+      state.shotUntrackedCount = s.untrackedCount;
+      return;
+    }
     selectLie(s.lie, true);
     document.getElementById('shot-dist-from').value = s.distFrom;
     selectResultLie(s.resultLie, true);
@@ -55,16 +61,19 @@ function openShotSheet(editIndex) {
   document.getElementById('shot-sheet-title').textContent = editIndex !== undefined ? 'Edit Shot' : 'Add Shot';
   resetShotSheet();
   prefillShotSheet(editIndex);
-  updateDistFromUnit(); updateResultDistVisibility(); updateSGPreview();
-  renderShotMetaSummary();
-  const anyMissing = !state.shotLie || !state.shotCategory || !document.getElementById('shot-dist-from').value;
-  document.getElementById('shot-meta-expand').classList.toggle('hidden', !anyMissing);
-  document.getElementById('shot-meta-chevron-hint').textContent = anyMissing ? '∨' : 'expand ›';
-  document.getElementById('shot-meta-label').classList.toggle('hidden', anyMissing);
-  if(anyMissing) {
-    if(!state.shotCategory) document.getElementById('category-pills-expand').classList.remove('hidden');
-    if(!state.shotLie) document.getElementById('lie-pills-expand').classList.remove('hidden');
-    if(!document.getElementById('shot-dist-from').value) document.getElementById('dist-from-expand').classList.remove('hidden');
+  applyUntrackedModeUI();
+  if(!state.shotUntrackedMode) {
+    updateDistFromUnit(); updateResultDistVisibility(); updateSGPreview();
+    renderShotMetaSummary();
+    const anyMissing = !state.shotLie || !state.shotCategory || !document.getElementById('shot-dist-from').value;
+    document.getElementById('shot-meta-expand').classList.toggle('hidden', !anyMissing);
+    document.getElementById('shot-meta-chevron-hint').textContent = anyMissing ? '∨' : 'expand ›';
+    document.getElementById('shot-meta-label').classList.toggle('hidden', anyMissing);
+    if(anyMissing) {
+      if(!state.shotCategory) document.getElementById('category-pills-expand').classList.remove('hidden');
+      if(!state.shotLie) document.getElementById('lie-pills-expand').classList.remove('hidden');
+      if(!document.getElementById('shot-dist-from').value) document.getElementById('dist-from-expand').classList.remove('hidden');
+    }
   }
   document.getElementById('shot-sheet').classList.add('open');
 }
@@ -72,6 +81,39 @@ function openShotSheet(editIndex) {
 function editShot(i) { openShotSheet(i); }
 function closeShotSheet() { document.getElementById('shot-sheet').classList.remove('open'); }
 function handleSheetOverlayClick(e) { if(e.target === document.getElementById('shot-sheet')) closeShotSheet(); }
+
+// ═══════════════════════════════════════════════════════════════
+// UNTRACKED STROKES — bundle N strokes with no shot detail
+// ═══════════════════════════════════════════════════════════════
+
+function toggleUntrackedMode() {
+  state.shotUntrackedMode = !state.shotUntrackedMode;
+  if(state.shotUntrackedMode && !state.shotUntrackedCount) state.shotUntrackedCount = 1;
+  applyUntrackedModeUI();
+}
+
+function applyUntrackedModeUI() {
+  const quick = !!state.shotUntrackedMode;
+  document.getElementById('untracked-form').classList.toggle('hidden', !quick);
+  document.getElementById('detailed-form-fields').classList.toggle('hidden', quick);
+  document.getElementById('untracked-toggle-link').textContent = quick ? '‹ Back to detailed entry' : 'Just add strokes (no detail) ›';
+  document.getElementById('untracked-count-val').textContent = state.shotUntrackedCount || 1;
+}
+
+function adjustUntrackedCount(delta) {
+  state.shotUntrackedCount = Math.max(1, (state.shotUntrackedCount || 1) + delta);
+  document.getElementById('untracked-count-val').textContent = state.shotUntrackedCount;
+}
+
+function saveUntrackedShot() {
+  const round = currentRound();
+  const hd = round.holes[state.currentHole - 1];
+  const shot = { lie:null, distFrom:null, resultLie:null, resultDist:null, category:null, sg:null, missDepth:null, missSide:null, missType:null, club:null, untrackedCount: state.shotUntrackedCount || 1 };
+  if(state.editingShotIndex !== null) hd.shots[state.editingShotIndex] = shot;
+  else hd.shots.push(shot);
+  updateRound(round); closeShotSheet(); renderHole(); updateTally();
+  showToast(state.editingShotIndex !== null ? 'Shot updated' : 'Strokes added');
+}
 
 function selectLie(lie, silent) {
   state.shotLie = lie;

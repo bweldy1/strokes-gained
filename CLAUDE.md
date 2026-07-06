@@ -89,15 +89,18 @@ Each shot stored in `round.holes[n].shots[]`:
   missSide: 'left'|'middle'|'right'|null,  // OR 'low'|'center'|'high' for putts
   missType: 'read'|'pace'|'push'|'pull'|null,  // putt miss type; null if non-putt, holed, or not recorded
   club: String|null,                           // club used (CLUBS id); null if not recorded or putt
+  untrackedCount: Number|null,                 // see Untracked Strokes below; null for normal shots
 }
 ```
+
+**Untracked Strokes:** an alternate shot entry for when you want to keep your score without logging every shot's detail. When `untrackedCount` is set (a positive integer), every other field on the shot is `null` — it's a bundle representing that many strokes with no lie/distance/result/category/SG data. See [Untracked Strokes](#untracked-strokes) for the full behavior.
 
 ## Key JS Patterns
 
 ### State
 Single `state` object — never persisted, resets on page load:
 ```js
-let state = { currentRoundId, currentHole, editingShotIndex, editingCourseId, excludedCategories, shotLie, shotResultLie, shotCategory, shotMissDepth, shotMissSide, shotMissType, shotClub, targetsExpanded, trendsFilter, trendsExclude }
+let state = { currentRoundId, currentHole, editingShotIndex, editingCourseId, excludedCategories, shotLie, shotResultLie, shotCategory, shotMissDepth, shotMissSide, shotMissType, shotClub, shotUntrackedMode, shotUntrackedCount, targetsExpanded, trendsFilter, trendsExclude }
 ```
 
 ### Shared Constants and Helpers (`state.js`)
@@ -267,7 +270,7 @@ An on-demand shot expectation tool in the SG preview area of the shot entry shee
 - Result distance and miss direction are required/shown (same as any non-holed result)
 - SG = `getExpected(startLie, startDist) - getExpected('rough', resultDist) - 2` — uses `rough` table as proxy for drop position, subtracts an extra stroke for the penalty
 - Shows a red `+1 stroke` badge (`.penalty-badge`) in the shot list row
-- `countStrokes(shots)` — helper that returns `shots.length + penalty count`; used everywhere strokes are displayed (home card, summary header, hole rows)
+- `countStrokes(shots)` — helper that sums `s.untrackedCount || 1` per shot plus penalty/OB count; used everywhere strokes are displayed (home card, summary header, hole rows)
 - No auto-fill for the next shot's lie (drop location varies), but result distance carries forward as the distance pre-fill
 - `getSuggestion` returns `{ lie: null, dist }` after a penalty; `prefillShotSheet` guards `selectLie`/`selectCategory` with `if(sug.lie)`
 
@@ -278,6 +281,17 @@ An on-demand shot expectation tool in the SG preview area of the shot entry shee
 - Shows the same red `+1 stroke` badge (`.penalty-badge`) in the shot list row as Penalty; `countStrokes(shots)` counts OB shots the same way it counts penalty shots
 - `getSuggestion` returns `{ lie: prev.lie, dist: prev.distFrom }` after an OB shot — the next shot is pre-filled to replay from the **same spot**, not a drop location. Because that replay tee shot is not `shots[0]`, `autoCategory(lie, distYards, holePar)` determines "drive" by `lie === 'tee'` rather than shot index — a signature change made specifically to support OB replays.
 - `LIE_ABBR.ob = 'OB'` for shot-list/summary/scorecard labels
+
+### Untracked Strokes
+Lets the golfer keep an accurate score on a hole without logging every shot's detail — a hole-by-hole, shot-by-shot decision, not a round-level mode. Useful when you've picked up on tracking mid-hole but still want the scorecard/round total to be right.
+
+- **Entry point:** a "Just add strokes (no detail) ›" link at the top of the shot sheet (both Add and Edit) toggles into quick-entry mode via `toggleUntrackedMode()`, swapping the whole detailed form (`#detailed-form-fields`) for a single stroke-count stepper (`#untracked-form`, `adjustUntrackedCount(delta)`). `saveUntrackedShot()` pushes/overwrites the shot with only `untrackedCount` set (all other shot fields `null`) and closes the sheet — no lie/category/result/SG is collected.
+- **Editing:** tapping an untracked row (`editShot(i)` → `openShotSheet(i)`) opens directly into quick-entry mode pre-filled with the existing count (`prefillShotSheet` short-circuits on `s.untrackedCount != null`). The toggle link still works, so a shot can be converted between detailed and untracked by switching modes before saving.
+- **Shot list / summary display:** rendered as its own row — `renderShotList` (hole.js) and `buildShotRow` (summary.js) both special-case `s.untrackedCount != null` into a plain `+N strokes · untracked` row with no category badge and no SG value (`—`), still deletable/tappable like a normal shot row.
+- **Strokes:** `countStrokes(shots)` sums `s.untrackedCount || 1` per shot (plus `+1` for penalty/OB) instead of just `shots.length` — this one function change is what keeps the tally bar, scorecard, summary, and home round totals correct with no further changes needed anywhere else.
+- **SG, category tallies, bucket/miss/club drill-downs:** unaffected by construction — these all filter or aggregate by `s.category`, and an untracked shot's `category` is `null`, so it's automatically excluded everywhere a normal shot would be counted.
+- **GIR / Scrambling (best-effort):** `girHoles` calculations (`summary.js`, `trends.js`) look at `shots.slice(0, regIdx+1).some(s => s.resultLie === 'green' || s.resultLie === 'holed')` with no special-casing — an untracked shot's `resultLie` is `null`, so it simply doesn't satisfy the GIR check. This means GIR/Scrambling stay accurate as long as the real tee/approach shot reaching (or missing) the green is still logged; bundling strokes *across* the regulation shot itself will under-count GIR for that hole. This is an accepted, intentional limitation rather than a bug.
+- **`getSuggestion`** already returns `null` after any shot with a falsy `resultLie` (existing guard), so no pre-fill is offered for the shot following an untracked entry.
 
 ### SG Calculation
 `calcSG(startLie, startDist, resultLie, resultDist, diffPct)` uses `sg_tables.js` lookup tables with linear interpolation. Result is rounded to 4 decimal places before being stored on the shot object.
@@ -401,7 +415,7 @@ Buckets filter by `distFrom >= b.min && distFrom <= b.max` (inclusive). Buckets 
 - Drive distance calculated as `distFrom - resultDist`, shown in `.shot-drive-dist` (12px, `--text-dim`)
 - SG value colored using `getQuality(sg, category).color` (7-band); no quality dot
 
-Both use `countStrokes(shots)` for stroke totals (adds +1 per penalty shot).
+Both use `countStrokes(shots)` for stroke totals (sums `untrackedCount` per bundled entry, plus +1 per penalty/OB shot).
 
 ## Shot Exclusion
 

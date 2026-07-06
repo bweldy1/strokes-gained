@@ -201,6 +201,15 @@ function toggleRankingsSection() {
 }
 
 function buildShotRow(s, label, labelClass = 'ssum-hole', holeNum = null, shotIdx = null, excluded = false) {
+  if(s.untrackedCount != null) {
+    return `<div class="ssum-shot">
+      <span class="${labelClass}">—</span>
+      <span class="ssum-from">+${s.untrackedCount} stroke${s.untrackedCount !== 1 ? 's' : ''}</span>
+      <span class="ssum-arrow"></span>
+      <span class="ssum-to">untracked</span>
+      <span class="ssum-sg">—</span>
+    </div>`;
+  }
   const fromDist = s.lie === 'green' ? s.distFrom + 'ft' : s.distFrom + 'y';
   const toLabel = LIE_ABBR[s.resultLie] || s.resultLie;
   const toDist = s.resultLie === 'holed' ? '' : s.resultLie === 'green' ? (s.resultDist != null ? s.resultDist + 'ft' : '') : (s.resultDist != null ? s.resultDist + 'y' : '');
