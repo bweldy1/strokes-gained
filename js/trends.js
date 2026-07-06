@@ -150,6 +150,20 @@ function renderTrends() {
   const cats = ['drive', 'approach', 'shortgame', 'putt'];
   const roundLabel = `${rounds.length} round${rounds.length !== 1 ? 's' : ''}`;
 
+  const holesPlayed = [], girHoles = [];
+  for(const r of rounds) {
+    for(const h of r.holes) {
+      if((h.shots || []).length === 0) continue;
+      holesPlayed.push(h);
+      const regIdx = h.par - 3;
+      if((h.shots || []).slice(0, regIdx + 1).some(s => s.resultLie === 'green' || s.resultLie === 'holed')) girHoles.push(h);
+    }
+  }
+  const missedGirHoles = holesPlayed.filter(h => !girHoles.includes(h));
+  const scrambleSuccess = missedGirHoles.filter(h => countStrokes(h.shots || []) <= h.par).length;
+  const scrambleStr = missedGirHoles.length ? `${scrambleSuccess}/${missedGirHoles.length} (${Math.round(scrambleSuccess / missedGirHoles.length * 100)}%)` : '—';
+  const scrambleStats = `<div class="ssum-stats-section"><div class="ssum-stats-header">Statistics</div><div class="sstat-row"><span class="sstat-label">Scrambling</span><span class="sstat-val">${scrambleStr}</span></div></div>`;
+
   const rankingsCard = `<div class="card trends-rankings-card">
     <div class="trends-cat-header" onclick="toggleTrendsRankings()">
       <div class="trends-cat-name">Rankings</div>
@@ -167,7 +181,7 @@ function renderTrends() {
     const tot = valid.reduce((sum, s) => sum + s.sg, 0);
     const avg = cnt > 0 ? tot / cnt : null;
     const avgStr = avg !== null ? (avg >= 0 ? '+' : '') + avg.toFixed(2) : '—';
-    const bucketRows = buildBucketRows(shots, cat, false) + buildMissGrid(shots, cat) + (cat === 'putt' ? buildMissType(shots) : '') + (cat !== 'putt' ? buildClubRows(shots) : '');
+    const bucketRows = buildBucketRows(shots, cat, false) + buildMissGrid(shots, cat) + (cat === 'putt' ? buildMissType(shots) : '') + (cat !== 'putt' ? buildClubRows(shots) : '') + (cat === 'shortgame' ? scrambleStats : '');
 
     return `<div class="card trends-cat-card">
       <div class="trends-cat-header" onclick="toggleTrendsCat('${cat}')">

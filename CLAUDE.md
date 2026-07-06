@@ -362,7 +362,7 @@ Sand, Recovery, Penalty, and OB are infrequent. In lie pill rows, they appear as
    - Expanded panel contains: SG bucket rows + miss direction grid + club rows (non-putt) or miss type (putt), then a **Statistics sub-section** (`.ssum-stats-section`) with a dimmed "STATISTICS" header (`.ssum-stats-header`) and stat rows (`.sstat-row`):
      - Drive: Avg distance, Longest, Fairways hit
      - Approach: Avg distance, GIR
-     - Short Game: Avg distance to hole, Avg proximity (on green)
+     - Short Game: Avg distance to hole, Avg proximity (on green), Scrambling (missed GIR holes where hole was finished at par or better, `x/y (pct%)`)
      - Putt: Avg first putt, Avg holed, Longest holed
    - Lie abbreviations from `LIE_ABBR`: Tee, Fwy, Rgh, Sand, Rcv, Grn, Holed, Pen
    - Miss in `.ssum-miss` (10px, `--text-dim`); drive distance in `.ssum-drive` (10px, `--text-dim`)
@@ -436,6 +436,7 @@ Shots can be flagged to exclude them from SG calculations without deleting them.
 - Category name, shot count, round count
 - Avg SG across filtered rounds (colored via `sgClass`)
 - Tappable to expand bucket drill-down — reuses `buildBucketRows(shots, cat)` + `buildMissGrid(shots, cat)` from `summary.js`
+- Short Game's expand also appends a Statistics sub-section with **Scrambling** (missed-GIR holes across the filtered rounds where the hole was finished at par or better, `x/y (pct%)`) — computed in `renderTrends()` over `holesPlayed`/`girHoles` the same way as the summary screen's stat, independent of the Excl. flagged toggle (GIR/scrambling is hole-level, not shot-level)
 
 Shots are aggregated from `round.holes[n].shots[]` across all filtered rounds before being passed to `buildBucketRows` and `buildMissGrid`.
 

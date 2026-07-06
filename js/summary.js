@@ -358,8 +358,12 @@ function renderSummary() {
   const shortgame = allShots.filter(s => s.category === 'shortgame' && s.distFrom != null);
   const sgProximity = shortgame.filter(s => s.resultLie === 'green' && s.resultDist != null);
   const proximityStr = sgProximity.length ? fmtFt(avg(sgProximity.map(s => s.resultDist))) : '—';
+  const missedGirHoles = holesPlayed.filter(h => !girHoles.includes(h));
+  const scrambleSuccess = missedGirHoles.filter(h => countStrokes(h.shots || []) <= h.par).length;
+  const scrambleStr = missedGirHoles.length ? `${scrambleSuccess}/${missedGirHoles.length} (${Math.round(scrambleSuccess / missedGirHoles.length * 100)}%)` : '—';
   const shortgameStats = statRow('Avg distance to hole', fmtYd(avg(shortgame.map(s => s.distFrom))))
-    + statRow('Avg proximity (on green)', proximityStr);
+    + statRow('Avg proximity (on green)', proximityStr)
+    + statRow('Scrambling', scrambleStr);
 
   const putts = allShots.filter(s => s.category === 'putt');
   const firstPutts = round.holes.map(h => (h.shots || []).find(s => s.category === 'putt')).filter(Boolean);
