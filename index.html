@@ -456,7 +456,7 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
     <div class="section-label">Rounds</div>
     <div id="rounds-list"></div>
   </div>
-  <div id="build-version">Build: 2026-08-28 09:39</div>
+  <div id="build-version">Build: 2026-08-28 09:56</div>
 </div>
 
 <!-- COURSE SELECT -->
@@ -3124,7 +3124,11 @@ function buildTrendData(rounds) {
 function buildTrendChart(allPts) {
   const cat = state.trendsChartCat;
   const pts = allPts.filter(p => p.counts[cat] > 0)
-    .map(p => ({date: p.date, courseName: p.courseName, sg: p.sums[cat]}));
+    .map(p => ({
+      date: p.date, 
+      courseName: p.courseName, 
+      sg: p.sums[cat] / p.counts[cat] // Updated to average per shot
+    }));
   _trendPts = pts;
 
   const catPills = [['total','Total'],['drive','Drive'],['approach','Appr'],['shortgame','Short'],['putt','Putt']]
@@ -3140,13 +3144,14 @@ function buildTrendChart(allPts) {
 
   return `<div class="card trend-chart-card">
     <div class="trends-cat-header" style="cursor:default">
-      <div class="trends-cat-name">SG per Round</div>
+      <div class="trends-cat-name">Avg SG per Shot</div>
       <div class="trends-cat-meta">oldest → newest</div>
     </div>
     <div class="trend-pills-row">${catPills}</div>
     ${body}
   </div>`;
 }
+
 
 function buildTrendSVG(pts) {
   const W = 340, H = 170, padL = 34, padR = 12, padT = 10, padB = 20;
@@ -3207,9 +3212,10 @@ function selectTrendPoint(i) {
   document.querySelectorAll('.trend-dot').forEach(d => d.setAttribute('r', 4.5));
   const dot = document.getElementById('trend-dot-' + i);
   if(dot) dot.setAttribute('r', 6.5);
-  const sgStr = (p.sg >= 0 ? '+' : '') + p.sg.toFixed(1);
+  const sgStr = (p.sg >= 0 ? '+' : '') + p.sg.toFixed(2); // Precision updated to 2 decimal places
   cap.innerHTML = `<span>${formatDate(p.date)} · ${p.courseName}</span><span class="trend-caption-val ${sgClass(p.sg)}">${sgStr}</span>`;
 }
+
 
 function renderTrends() {
   const allRounds = getRounds();
