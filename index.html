@@ -456,7 +456,7 @@ input[type="date"].date-input:focus { border-color: var(--fairway); }
     <div class="section-label">Rounds</div>
     <div id="rounds-list"></div>
   </div>
-  <div id="build-version">Build: 2026-07-05 21:07</div>
+  <div id="build-version">Build: 2026-08-28 09:39</div>
 </div>
 
 <!-- COURSE SELECT -->
@@ -1660,7 +1660,7 @@ function getSuggestion(holeData) {
 
 function getGreenImageFolder(course) {
   if(!course) return null;
-  return course.greenImageFolder || (course.name === 'Wild Wood Golf Club' ? 'wildwood' : null);
+  return course.greenImageFolder || (course.name.toLowerCase().startsWith('wild wood') ? 'wildwood' : null);
 }
 
 function renderHoleScreen() {

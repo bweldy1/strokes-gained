@@ -198,7 +198,7 @@ A per-hole green diagram overlay accessible from the hole screen. When the curre
 
 **`getGreenImageFolder(course)`** (`hole.js`) — resolves the folder name:
 - Returns `course.greenImageFolder` if set
-- Falls back to `'wildwood'` when `course.name === 'Wild Wood Golf Club'`
+- Falls back to `'wildwood'` when `course.name.toLowerCase().startsWith('wild wood')`
 - Returns `null` otherwise (button hidden)
 
 **`openGreenImage()`** — looks up the folder via `getGreenImageFolder`, sets `img.src`, and shows `#green-img-overlay`. The `img.onerror` handler hides the `<img>` and shows `#green-img-error` ("No image available") if the file is missing.

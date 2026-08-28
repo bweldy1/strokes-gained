@@ -4,7 +4,7 @@
 
 function getGreenImageFolder(course) {
   if(!course) return null;
-  return course.greenImageFolder || (course.name === 'Wild Wood Golf Club' ? 'wildwood' : null);
+  return course.greenImageFolder || (course.name.toLowerCase().startsWith('wild wood') ? 'wildwood' : null);
 }
 
 function renderHoleScreen() {
